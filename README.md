@@ -1,1 +1,1 @@
-"# HololensSharedSurface" 
+# HololensSharedSurface
