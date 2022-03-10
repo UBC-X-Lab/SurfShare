@@ -322,8 +322,8 @@ MonoBehaviour:
   PeerConnection: {fileID: 114452440398351871}
   AutoLogErrors: 1
   LocalPeerId: UNITY
-  RemotePeerId: PC
-  HttpServerAddress: http://127.0.0.1:3000/
+  RemotePeerId: HOLOLENS
+  HttpServerAddress: http://128.189.242.180:3000/http://128.189.242.180:3000/
   PollTimeMs: 500
 --- !u!4 &599126880
 Transform:
