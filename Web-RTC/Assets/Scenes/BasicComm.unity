@@ -1154,9 +1154,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PeerConnection: {fileID: 1777798721}
   AutoLogErrors: 1
-  LocalPeerId: Hololens
-  RemotePeerId: Unity
-  HttpServerAddress: http://128.189.243.90:3000/
+  LocalPeerId: Unity
+  RemotePeerId: Hololens
+  HttpServerAddress: http://128.189.241.96:3000/
   PollTimeMs: 500
 --- !u!4 &948766571
 Transform:
