@@ -4,6 +4,8 @@ public class WorldCursor : MonoBehaviour
 {
     private MeshRenderer meshRenderer;
 
+    int cornersDetermined = 0; // should have different behavior when different numbers of corners are determined, or maybe directly use a list of lines?
+
     // Use this for initialization
     void Start()
     {
@@ -16,12 +18,13 @@ public class WorldCursor : MonoBehaviour
     {
         // Do a raycast into the world based on the user's
         // head position and orientation.
-        var headPosition = Camera.main.transform.position;
-        var gazeDirection = Camera.main.transform.forward;
+        Vector3 headPosition = Camera.main.transform.position;
+        Vector3 gazeDirection = Camera.main.transform.forward;
 
         RaycastHit hitInfo;
 
-        if (Physics.Raycast(headPosition, gazeDirection, out hitInfo))
+        if (Physics.Raycast(headPosition, gazeDirection, out hitInfo,
+            30.0f, SpatialMapping.PhysicsRaycastMask))
         {
             // If the raycast hit a hologram...
             // Display the cursor mesh.
@@ -35,8 +38,12 @@ public class WorldCursor : MonoBehaviour
         }
         else
         {
-            // If the raycast did not hit a hologram, hide the cursor mesh.
             meshRenderer.enabled = false;
         }
+    }
+
+    public void OnTapped()
+    {
+        Debug.Log("tapped");
     }
 }
