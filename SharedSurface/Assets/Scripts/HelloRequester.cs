@@ -14,12 +14,16 @@ public class HelloRequester : RunAbleThread
     ///     Request Hello message to server and receive message back. Do it 10 times.
     ///     Stop requesting when Running=false.
     /// </summary>
+    /// 
+    public string serverIP;
+    public string serverPort;
+
     protected override void Run()
     {
         ForceDotNet.Force(); // this line is needed to prevent unity freeze after one use, not sure why yet
         using (RequestSocket client = new RequestSocket())
         {
-            client.Connect("tcp://206.87.232.232:8000");
+            client.Connect("tcp://" + this.serverIP + ":" + this.serverPort);
 
             while (Running)
             {

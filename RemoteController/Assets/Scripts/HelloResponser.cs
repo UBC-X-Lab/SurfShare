@@ -2,6 +2,7 @@
 using NetMQ;
 using NetMQ.Sockets;
 using UnityEngine;
+using System.Threading;
 
 /// <summary>
 ///     Example of requester who only sends Hello. Very nice guy.
@@ -14,6 +15,7 @@ public class HelloResponser : RunAbleThread
     ///     Request Hello message to server and receive message back. Do it 10 times.
     ///     Stop requesting when Running=false.
     /// </summary>
+    /// 
     protected override void Run()
     {
         ForceDotNet.Force(); // this line is needed to prevent unity freeze after one use, not sure why yet
@@ -35,7 +37,7 @@ public class HelloResponser : RunAbleThread
                 if (gotMessage)
                 { 
                     Debug.Log("Message received: " + message);
-                    server.SendFrame("Hi");
+                    server.SendFrame(Paintable.cursor_pos_x.ToString() + "," + Paintable.cursor_pos_y.ToString() + "," + Paintable.clicked.ToString());
                 }
             }
         }
