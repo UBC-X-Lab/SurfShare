@@ -1237,12 +1237,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Brush: {fileID: 927832387982527519, guid: 365adc602ad81e04eb70acacee492bb9, type: 3}
-  origin_x: -0.5
-  origin_y: -3.3
-  width: 12
-  height: 9
-  cursor_pos_x: 0
-  cursor_pos_y: 0
 --- !u!1 &2077516123
 GameObject:
   m_ObjectHideFlags: 0
@@ -1259,7 +1253,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2077516124
 MonoBehaviour:
   m_ObjectHideFlags: 0

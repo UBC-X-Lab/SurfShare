@@ -40,8 +40,16 @@ public class HelloRequester : RunAbleThread
 
                 // parse message
                 if (gotMessage)
-                { 
-                    Debug.Log("Message received: " + message);
+                {
+                    string[] message_parsed = message.Split(',');
+                    WorldCursor.remote_cursor_x = float.Parse(message_parsed[0]);
+                    WorldCursor.remote_cursor_y = float.Parse(message_parsed[1]);
+                    WorldCursor.remote_cursor_clicked = int.Parse(message_parsed[2]);
+
+                    // DEBUG
+                    //Debug.Log(WorldCursor.remote_cursor_x);
+                    //Debug.Log(WorldCursor.remote_cursor_y);
+                    //Debug.Log(WorldCursor.remote_cursor_clicked);
                 }
             }
         }

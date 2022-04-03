@@ -13,6 +13,23 @@ public class WorldCursor : MonoBehaviour
 
     //int cornersDetermined = 0; // should have different behavior when different numbers of corners are determined, or maybe directly use a list of lines?
 
+    // remote cursor
+    public GameObject remoteCursor;
+    private MeshRenderer remoteCursorMesh;
+
+    public GameObject Brush;
+    public GameObject Annotation;
+
+    // data in transmission
+    public static float remote_cursor_x;
+    public static float remote_cursor_y;
+    public static int remote_cursor_clicked;
+
+    // surface stats
+    private Vector3 sf_origin;
+    private Vector3 sf_xAxis;
+    private Vector3 sf_yAxis;
+
     // Use this for initialization
     void Start()
     {
@@ -20,6 +37,9 @@ public class WorldCursor : MonoBehaviour
         meshRenderer = this.gameObject.GetComponentInChildren<MeshRenderer>();
         lineRenderers = new List<LineRenderer>();
         corners = new List<Vector3>();
+
+        // do the similar to remote cursor
+        remoteCursorMesh = this.remoteCursor.GetComponentInChildren<MeshRenderer>();
     }
 
     // Update is called once per frame
@@ -37,7 +57,7 @@ public class WorldCursor : MonoBehaviour
         {
             // If the raycast hit a hologram...
             // Display the cursor mesh.
-            meshRenderer.enabled = true;
+            this.meshRenderer.enabled = true;
 
             // Move the cursor to the point where the raycast hit.
             this.transform.position = hitInfo.point;
@@ -47,7 +67,7 @@ public class WorldCursor : MonoBehaviour
         }
         else
         {
-            meshRenderer.enabled = false;
+            this.meshRenderer.enabled = false;
         }
 
         // drawing borders
@@ -63,6 +83,25 @@ public class WorldCursor : MonoBehaviour
             Vector3 target_vec = cursorVec - middle_point; // MC
             this.lineRenderers[1].SetPosition(1, corners[0] + target_vec);
             this.lineRenderers[2].SetPosition(1, corners[1] + target_vec);
+        }
+
+        // remote cursor control
+        if (corners.Count == 4) // the rect has been set!
+        {
+            this.remoteCursorMesh.enabled = true;
+            // placement of cursor
+            this.remoteCursor.transform.rotation = this.transform.rotation;
+            this.remoteCursor.transform.position = remote_cursor_x * this.sf_xAxis + remote_cursor_y * this.sf_yAxis + this.sf_origin;
+
+            // draw when clicked
+            if (remote_cursor_clicked == 1)
+            {
+                GameObject newBrush = Instantiate(Brush, this.remoteCursor.transform.position, this.remoteCursor.transform.rotation, this.Annotation.transform);
+            }
+        }
+        else
+        {
+            this.remoteCursorMesh.enabled = false;
         }
     }
 
@@ -85,11 +124,15 @@ public class WorldCursor : MonoBehaviour
             this.lineRenderers.Add(thirdBorder);
         }else if (cornersDetermined == 2) // Done!
         {
-            // TODO
             this.corners.Add(this.lineRenderers[1].GetPosition(1)); // left bottom corner - second border
             this.corners.Add(this.lineRenderers[2].GetPosition(1)); // right bottom corner - third border
             LineRenderer fourthBorder = CreateNewLine(this.corners[2], this.corners[3], "fourthBorder");
             this.lineRenderers.Add(fourthBorder);
+
+            // set surface stats
+            this.sf_origin = this.corners[2];
+            this.sf_xAxis = this.corners[3] - this.sf_origin;
+            this.sf_yAxis = this.corners[0] - this.sf_origin;
         }
     }
 
