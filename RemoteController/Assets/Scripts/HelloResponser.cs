@@ -35,9 +35,15 @@ public class HelloResponser : RunAbleThread
 
                 // parse message
                 if (gotMessage)
-                { 
-                    Debug.Log("Message received: " + message);
-                    server.SendFrame(Paintable.cursor_pos_x.ToString() + "," + Paintable.cursor_pos_y.ToString() + "," + Paintable.clicked.ToString());
+                {
+                    //Debug.Log("Message received: " + message);
+                    string toSend = "";
+                    while (Paintable.buffer.Count > 0)
+                    {
+                        toSend += Paintable.buffer.Dequeue() + ";";
+                    }
+                    toSend.TrimEnd(';');
+                    server.SendFrame(toSend);
                 }
             }
         }

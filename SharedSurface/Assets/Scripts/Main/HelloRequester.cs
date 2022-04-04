@@ -41,15 +41,16 @@ public class HelloRequester : RunAbleThread
                 // parse message
                 if (gotMessage)
                 {
-                    string[] message_parsed = message.Split(',');
+                    string[] message_parsed = message.Split(','); // cursor_x, cursor_y, cursor_state, r, g, b
                     WorldCursor.remote_cursor_x = float.Parse(message_parsed[0]);
                     WorldCursor.remote_cursor_y = float.Parse(message_parsed[1]);
-                    WorldCursor.remote_cursor_clicked = int.Parse(message_parsed[2]);
+                    WorldCursor.remote_cursor_state = int.Parse(message_parsed[2]);
+                    WorldCursor.remote_cursor_color_r = float.Parse(message_parsed[3]);
+                    WorldCursor.remote_cursor_color_g = float.Parse(message_parsed[4]);
+                    WorldCursor.remote_cursor_color_b = float.Parse(message_parsed[5]);
 
                     // DEBUG
-                    //Debug.Log(WorldCursor.remote_cursor_x);
-                    //Debug.Log(WorldCursor.remote_cursor_y);
-                    //Debug.Log(WorldCursor.remote_cursor_clicked);
+                    Debug.Log(message);
                 }
             }
         }

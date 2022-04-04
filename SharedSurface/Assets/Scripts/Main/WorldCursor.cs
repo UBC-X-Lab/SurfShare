@@ -21,9 +21,12 @@ public class WorldCursor : MonoBehaviour
     public GameObject Annotation;
 
     // data in transmission
-    public static float remote_cursor_x;
-    public static float remote_cursor_y;
-    public static int remote_cursor_clicked;
+    public static float remote_cursor_x = 0;
+    public static float remote_cursor_y = 0;
+    public static int remote_cursor_state = -1; // -1: outside, 0: hover, 1: draw (clicked), 2: clear
+    public static float remote_cursor_color_r = 1;
+    public static float remote_cursor_color_g = 1;
+    public static float remote_cursor_color_b = 1;
 
     // surface stats
     private Vector3 sf_origin;
@@ -93,10 +96,17 @@ public class WorldCursor : MonoBehaviour
             this.remoteCursor.transform.rotation = this.transform.rotation;
             this.remoteCursor.transform.position = remote_cursor_x * this.sf_xAxis + remote_cursor_y * this.sf_yAxis + this.sf_origin;
 
-            // draw when clicked
-            if (remote_cursor_clicked == 1)
+            if (remote_cursor_state == 1) // draw
             {
                 GameObject newBrush = Instantiate(Brush, this.remoteCursor.transform.position, this.remoteCursor.transform.rotation, this.Annotation.transform);
+                newBrush.GetComponent<MeshRenderer>().material.color = new Color(remote_cursor_color_r, remote_cursor_color_g, remote_cursor_color_b);
+            }else if (remote_cursor_state == 2) // clear
+            {
+                GameObject[] paints = GameObject.FindGameObjectsWithTag("paints");
+                foreach (GameObject paint in paints)
+                {
+                    Destroy(paint);
+                }
             }
         }
         else
@@ -142,7 +152,7 @@ public class WorldCursor : MonoBehaviour
         newLine.name = name;
         LineRenderer newLineRenderer = newLine.GetComponent<LineRenderer>();
         newLineRenderer.enabled = true;
-        newLineRenderer.SetWidth(0.02f, 0.02f); 
+        newLineRenderer.SetWidth(0.01f, 0.01f); 
         newLineRenderer.positionCount = 2;
         newLineRenderer.SetPosition(0, start);
         newLineRenderer.SetPosition(1, end);
