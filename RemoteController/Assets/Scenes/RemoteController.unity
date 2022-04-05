@@ -431,8 +431,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 151445054}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6, y: 1.13, z: 0}
-  m_LocalScale: {x: 10, y: 7.5, z: 1}
+  m_LocalPosition: {x: -6.08, y: 1.13, z: 0}
+  m_LocalScale: {x: 11, y: 6.1875, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
@@ -1749,7 +1749,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Brush: {fileID: 927832387982527519, guid: 365adc602ad81e04eb70acacee492bb9, type: 3}
+  cursor_pos_x: 0
+  cursor_pos_y: 0
   brush_state: 0
+  brush_info: 0,1,1,0
   clearButton: {fileID: 2059888446}
   blue: {fileID: 1870668963}
   yellow: {fileID: 634120751}

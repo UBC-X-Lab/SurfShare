@@ -21,12 +21,10 @@ public class WorldCursor : MonoBehaviour
     public GameObject Annotation;
 
     // data in transmission
-    public static float remote_cursor_x = 0;
-    public static float remote_cursor_y = 0;
-    public static int remote_cursor_state = -1; // -1: outside, 0: hover, 1: draw (clicked), 2: clear
-    public static float remote_cursor_color_r = 1;
-    public static float remote_cursor_color_g = 1;
-    public static float remote_cursor_color_b = 1;
+    public static Queue<string> buffer = new Queue<string>();
+
+    // my lock
+    public static readonly object myLock = new object();
 
     // surface stats
     private Vector3 sf_origin;
@@ -92,25 +90,55 @@ public class WorldCursor : MonoBehaviour
         if (corners.Count == 4) // the rect has been set!
         {
             this.remoteCursorMesh.enabled = true;
-            // placement of cursor
-            this.remoteCursor.transform.rotation = this.transform.rotation;
-            this.remoteCursor.transform.position = remote_cursor_x * this.sf_xAxis + remote_cursor_y * this.sf_yAxis + this.sf_origin;
 
-            if (remote_cursor_state == 1) // draw
+            // parse buffer
+            //WorldCursor.remote_cursor_x = float.Parse(message_parsed[0]);
+            //WorldCursor.remote_cursor_y = float.Parse(message_parsed[1]);
+            //WorldCursor.remote_cursor_state = int.Parse(message_parsed[2]);
+            //WorldCursor.remote_cursor_color_r = float.Parse(message_parsed[3]);
+            //WorldCursor.remote_cursor_color_g = float.Parse(message_parsed[4]);
+            //WorldCursor.remote_cursor_color_b = float.Parse(message_parsed[5]);
+
+            lock (myLock)
             {
-                GameObject newBrush = Instantiate(Brush, this.remoteCursor.transform.position, this.remoteCursor.transform.rotation, this.Annotation.transform);
-                newBrush.GetComponent<MeshRenderer>().material.color = new Color(remote_cursor_color_r, remote_cursor_color_g, remote_cursor_color_b);
-            }else if (remote_cursor_state == 2) // clear
-            {
-                GameObject[] paints = GameObject.FindGameObjectsWithTag("paints");
-                foreach (GameObject paint in paints)
+                while (buffer.Count > 0)
                 {
-                    Destroy(paint);
+                    string remote_cursor_info = buffer.Dequeue();
+                    string[] message_parsed = remote_cursor_info.Split(',');
+
+                    float remote_cursor_x = float.Parse(message_parsed[0]); ;
+                    float remote_cursor_y = float.Parse(message_parsed[1]); ;
+                    int remote_cursor_state = int.Parse(message_parsed[2]); // -1: outside, 0: hover, 1: draw (clicked), 2: clear
+                    float remote_cursor_color_r = float.Parse(message_parsed[3]);
+                    float remote_cursor_color_g = float.Parse(message_parsed[3]);
+                    float remote_cursor_color_b = float.Parse(message_parsed[3]);
+
+                    // placement of cursor
+                    this.remoteCursor.transform.rotation = this.transform.rotation;
+                    this.remoteCursor.transform.position = remote_cursor_x * this.sf_xAxis + remote_cursor_y * this.sf_yAxis + this.sf_origin;
+
+                    if (remote_cursor_state == 1) // draw
+                    {
+                        GameObject newBrush = Instantiate(Brush, this.remoteCursor.transform.position, this.remoteCursor.transform.rotation, this.Annotation.transform);
+                        newBrush.GetComponent<MeshRenderer>().material.color = new Color(remote_cursor_color_r, remote_cursor_color_g, remote_cursor_color_b);
+                    }
+                    else if (remote_cursor_state == 2) // clear
+                    {
+                        GameObject[] paints = GameObject.FindGameObjectsWithTag("paints");
+                        foreach (GameObject paint in paints)
+                        {
+                            Destroy(paint);
+                        }
+                    }
                 }
             }
         }
         else
         {
+            lock (myLock)
+            {
+                buffer.Clear(); // just clear it
+            }
             this.remoteCursorMesh.enabled = false;
         }
     }

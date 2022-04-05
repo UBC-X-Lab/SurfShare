@@ -38,12 +38,15 @@ public class HelloResponser : RunAbleThread
                 {
                     //Debug.Log("Message received: " + message);
                     string toSend = "";
-                    while (Paintable.buffer.Count > 0)
+                    lock (Paintable.myLock)
                     {
-                        toSend += Paintable.buffer.Dequeue() + ";";
-                    }
-                    toSend.TrimEnd(';');
-                    server.SendFrame(toSend);
+                        while (Paintable.buffer.Count > 0)
+                        {
+                            toSend += Paintable.buffer.Dequeue() + ";";
+                        }
+                    } 
+                    server.SendFrame(toSend.TrimEnd(';'));
+                    //Debug.Log(toSend);
                 }
             }
         }

@@ -16,12 +16,12 @@ public class Paintable : MonoBehaviour
     private float height;
 
     // cursor pos
-    public static float cursor_pos_x;
-    public static float cursor_pos_y;
+    public float cursor_pos_x;
+    public float cursor_pos_y;
 
     // cursor click
     public int brush_state = 0; // -1: outside, 0: hover, 1: draw (clicked), 2: clear
-    public static string brush_info = "0,1,1,0";
+    public string brush_info = "0,1,1,0";
 
     //color control
     public Button clearButton;
@@ -32,7 +32,10 @@ public class Paintable : MonoBehaviour
     private Color BrushColor;
 
     // the buffer
-    public static Queue<string> buffer;
+    public static Queue<string> buffer = new Queue<string>();
+
+    // my lock
+    public static readonly object myLock = new object();
 
     // Start is called before the first frame update
     void Start()
@@ -49,8 +52,6 @@ public class Paintable : MonoBehaviour
         green.onClick.AddListener(() => SetColor("green"));
 
         this.BrushColor = new Color(1, 1, 0);
-
-        buffer = new Queue<string>();
     }
 
     // Update is called once per frame
@@ -60,30 +61,34 @@ public class Paintable : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit)) // only the panel has collider
         {
-            cursor_pos_x = Mathf.Abs(hit.point.x - this.origin_x) / this.width;
-            cursor_pos_y = Mathf.Abs(hit.point.y - this.origin_y) / this.height;
+            this.cursor_pos_x = Mathf.Abs(hit.point.x - this.origin_x) / this.width;
+            this.cursor_pos_y = Mathf.Abs(hit.point.y - this.origin_y) / this.height;
             if (Input.GetMouseButton(0))
             {
                 GameObject newBrush = Instantiate(Brush, hit.point - Vector3.forward * 0.1f, hit.collider.gameObject.transform.rotation, transform);
                 newBrush.GetComponent<MeshRenderer>().material.color = this.BrushColor;
-                brush_state = 1;
+                this.brush_state = 1;
                 //newBrush.transform.localScale = Vector3.one * BrushSize;
             }
             else
             {
-                brush_state = 0;
+                this.brush_state = 0;
             }
         }
         else
         {
-            if (brush_state == 0 || brush_state == 1) // set to outside panel if not button clicked
+            if (this.brush_state == 0 || this.brush_state == 1) // set to outside panel if not button clicked
             {
-                brush_state = -1;
+                this.brush_state = -1;
             }
         }
-        brush_info = brush_state.ToString() + "," + BrushColor.r.ToString() + "," + BrushColor.g.ToString() + "," + BrushColor.b.ToString();
-        buffer.Enqueue(cursor_pos_x.ToString() + "," + cursor_pos_y.ToString() + "," + brush_info);
-        Debug.Log(brush_info);
+        brush_info = this.brush_state.ToString() + "," + this.BrushColor.r.ToString() + "," + this.BrushColor.g.ToString() + "," + this.BrushColor.b.ToString();
+
+        lock (myLock)
+        {
+            buffer.Enqueue(this.cursor_pos_x.ToString() + "," + this.cursor_pos_y.ToString() + "," + this.brush_info);
+        }
+        //Debug.Log(brush_info);
     }
 
     void ClearAll()
