@@ -455,7 +455,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &634120750
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1233,7 +1233,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1024996351
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1403,7 +1403,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Blue
+  m_Text: White
 --- !u!222 &1235561400
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1693,7 +1693,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 9b0b416ff6dd26d46a80788ab6f3a3b6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1751,10 +1751,12 @@ MonoBehaviour:
   Brush: {fileID: 927832387982527519, guid: 365adc602ad81e04eb70acacee492bb9, type: 3}
   cursor_pos_x: 0
   cursor_pos_y: 0
+  previous_pos_x: 0
+  previous_pos_y: 0
   brush_state: 0
-  brush_info: 0,1,1,0
+  brush_info: 0,1,1,1
   clearButton: {fileID: 2059888446}
-  blue: {fileID: 1870668963}
+  white: {fileID: 1870668963}
   yellow: {fileID: 634120751}
   green: {fileID: 1024996352}
 --- !u!1 &1652609206
@@ -1848,7 +1850,7 @@ GameObject:
   - component: {fileID: 1870668964}
   - component: {fileID: 1870668963}
   m_Layer: 5
-  m_Name: Blue
+  m_Name: White
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

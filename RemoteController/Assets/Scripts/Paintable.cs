@@ -16,16 +16,19 @@ public class Paintable : MonoBehaviour
     private float height;
 
     // cursor pos
-    public float cursor_pos_x;
-    public float cursor_pos_y;
+    public float cursor_pos_x = 0;
+    public float cursor_pos_y = 0;
+
+    public float previous_pos_x = 0;
+    public float previous_pos_y = 0;
 
     // cursor click
     public int brush_state = 0; // -1: outside, 0: hover, 1: draw (clicked), 2: clear
-    public string brush_info = "0,1,1,0";
+    public string brush_info = "0,1,1,1";
 
     //color control
     public Button clearButton;
-    public Button blue;
+    public Button white;
     public Button yellow;
     public Button green;
 
@@ -47,11 +50,11 @@ public class Paintable : MonoBehaviour
         height = 9.0f;
 
         clearButton.onClick.AddListener(ClearAll);
-        blue.onClick.AddListener(() => SetColor("blue"));
+        white.onClick.AddListener(() => SetColor("white"));
         yellow.onClick.AddListener(() => SetColor("yellow"));
         green.onClick.AddListener(() => SetColor("green"));
 
-        this.BrushColor = new Color(1, 1, 0);
+        this.BrushColor = new Color(1, 1, 1);
     }
 
     // Update is called once per frame
@@ -65,10 +68,22 @@ public class Paintable : MonoBehaviour
             this.cursor_pos_y = Mathf.Abs(hit.point.y - this.origin_y) / this.height;
             if (Input.GetMouseButton(0))
             {
-                GameObject newBrush = Instantiate(Brush, hit.point - Vector3.forward * 0.1f, hit.collider.gameObject.transform.rotation, transform);
-                newBrush.GetComponent<MeshRenderer>().material.color = this.BrushColor;
-                this.brush_state = 1;
-                //newBrush.transform.localScale = Vector3.one * BrushSize;
+                // leave gaps
+                Vector2 new_pos = new Vector2(this.cursor_pos_x, this.cursor_pos_y);
+                Vector2 old_pos = new Vector2(this.previous_pos_x, this.previous_pos_y);
+
+                if ((old_pos - new_pos).magnitude > 0.02)
+                {
+                    GameObject newBrush = Instantiate(Brush, hit.point - Vector3.forward * 0.1f, hit.collider.gameObject.transform.rotation, transform);
+                    newBrush.GetComponent<MeshRenderer>().material.color = this.BrushColor;
+                    this.previous_pos_x = this.cursor_pos_x;
+                    this.previous_pos_y = this.cursor_pos_y;
+                    this.brush_state = 1;
+                }
+                else
+                {
+                    this.brush_state = 0;
+                }
             }
             else
             {
@@ -105,8 +120,8 @@ public class Paintable : MonoBehaviour
     {
         switch (color)
         {
-            case "blue":
-                this.BrushColor = new Color(0, 0, 1);
+            case "white":
+                this.BrushColor = new Color(1, 1, 1);
                 break;
             case "yellow":
                 this.BrushColor = new Color(1, 1, 0);

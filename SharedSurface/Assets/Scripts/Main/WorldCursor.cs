@@ -91,14 +91,6 @@ public class WorldCursor : MonoBehaviour
         {
             this.remoteCursorMesh.enabled = true;
 
-            // parse buffer
-            //WorldCursor.remote_cursor_x = float.Parse(message_parsed[0]);
-            //WorldCursor.remote_cursor_y = float.Parse(message_parsed[1]);
-            //WorldCursor.remote_cursor_state = int.Parse(message_parsed[2]);
-            //WorldCursor.remote_cursor_color_r = float.Parse(message_parsed[3]);
-            //WorldCursor.remote_cursor_color_g = float.Parse(message_parsed[4]);
-            //WorldCursor.remote_cursor_color_b = float.Parse(message_parsed[5]);
-
             lock (myLock)
             {
                 while (buffer.Count > 0)
@@ -186,24 +178,4 @@ public class WorldCursor : MonoBehaviour
         newLineRenderer.SetPosition(1, end);
         return newLineRenderer;
     }
-
-    //GameObject lineStart;
-    //GameObject lineEnd;
-    //public GameObject lineSample;
-    //GameObject newLine;
-    //// Start is called before the first frame update
-    //void Start()
-    //{
-    //    lineStart = this.gameObject;
-    //    lineEnd = GameObject.Find("End");
-    //    newLine = Object.Instantiate(lineSample);
-    //    newLine.name = "newLine";
-    //    newLine.GetComponent<LineRenderer>().enabled = true;
-    //    newLine.GetComponent<LineRenderer>().useWorldSpace = true;
-    //    newLine.GetComponent<LineRenderer>().positionCount = 3;
-    //    newLine.GetComponent<LineRenderer>().SetPosition(0, lineStart.transform.position);
-    //    newLine.GetComponent<LineRenderer>().SetPosition(1, lineEnd.transform.position);
-    //    newLine.GetComponent<LineRenderer>().SetPosition(2, lineEnd.transform.position + Vector3.right * 5);
-    //    newLine.GetComponent<LineRenderer>().SetWidth(0.5f, 0.5f);
-    //}
 }
