@@ -5,7 +5,9 @@ using UnityEngine.UI;
 
 public class Paintable : MonoBehaviour
 {
-    public GameObject Brush;
+    //public GameObject Brush;
+    public GameObject LinePrefab;
+    private GameObject line;
     //public float BrushSize = 0.1f;
 
     // panel stats (set corner as bottom left)
@@ -23,7 +25,7 @@ public class Paintable : MonoBehaviour
     public float previous_pos_y = 0;
 
     // cursor click
-    public int brush_state = 0; // -1: outside, 0: hover, 1: draw (clicked), 2: clear
+    public int brush_state = 0; // -1: outside, 0: hover, 1: draw (clicked), 2: clear, 3: gap
     public string brush_info = "0,1,1,1";
 
     //color control
@@ -62,32 +64,46 @@ public class Paintable : MonoBehaviour
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
+
         if (Physics.Raycast(ray, out hit)) // only the panel has collider
         {
             this.cursor_pos_x = Mathf.Abs(hit.point.x - this.origin_x) / this.width;
             this.cursor_pos_y = Mathf.Abs(hit.point.y - this.origin_y) / this.height;
             if (Input.GetMouseButton(0))
             {
+                // if new line
+                
+
                 // leave gaps
                 Vector2 new_pos = new Vector2(this.cursor_pos_x, this.cursor_pos_y);
                 Vector2 old_pos = new Vector2(this.previous_pos_x, this.previous_pos_y);
 
-                if ((old_pos - new_pos).magnitude > 0.02)
+                if ((new_pos - old_pos).magnitude > 0.02)
                 {
-                    GameObject newBrush = Instantiate(Brush, hit.point - Vector3.forward * 0.1f, hit.collider.gameObject.transform.rotation, transform);
-                    newBrush.GetComponent<MeshRenderer>().material.color = this.BrushColor;
+                    //GameObject newBrush = Instantiate(Brush, hit.point - Vector3.forward * 0.1f, hit.collider.gameObject.transform.rotation, transform);
+                    //newBrush.GetComponent<MeshRenderer>().material.color = this.BrushColor;
+                    if (line == null) // initialize line
+                    {
+                        line = Instantiate(this.LinePrefab, transform);
+                        line.GetComponent<LineRenderer>().material.color = this.BrushColor;
+                    }
+                    int pos_index = line.GetComponent<LineRenderer>().positionCount;
+                    line.GetComponent<LineRenderer>().positionCount += 1;
+                    line.GetComponent<LineRenderer>().SetPosition(pos_index, hit.point - Vector3.forward * 0.1f);
+                    
                     this.previous_pos_x = this.cursor_pos_x;
                     this.previous_pos_y = this.cursor_pos_y;
                     this.brush_state = 1;
                 }
                 else
                 {
-                    this.brush_state = 0;
+                    this.brush_state = 3; // leave gap
                 }
             }
             else
             {
                 this.brush_state = 0;
+                this.line = null; // reset line when not drawing
             }
         }
         else
@@ -96,6 +112,7 @@ public class Paintable : MonoBehaviour
             {
                 this.brush_state = -1;
             }
+            this.line = null; // reset line when outside panel
         }
         brush_info = this.brush_state.ToString() + "," + this.BrushColor.r.ToString() + "," + this.BrushColor.g.ToString() + "," + this.BrushColor.b.ToString();
 
