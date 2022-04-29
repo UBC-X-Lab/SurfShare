@@ -1,0 +1,214 @@
+Using pre-set license
+Built from '2020.3/staging' branch; Version is '2020.3.33f1 (915a7af8b0d5) revision 9525882'; Using compiler version '192528614'; Build Type 'Release'
+OS: 'Windows 10  (10.0.19042) 64bit Professional' Language: 'en' Physical Memory: 65257 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1, IsPro: 0
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\2020.3.33f1\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker0
+-projectPath
+D:/Projects/HololensSharedSurface/SharedSurface
+-logFile
+Logs/AssetImportWorker0.log
+-srvPort
+63770
+Successfully changed project path to: D:/Projects/HololensSharedSurface/SharedSurface
+D:/Projects/HololensSharedSurface/SharedSurface
+Using Asset Import Pipeline V2.
+Refreshing native plugins compatible for Editor in 25.32 ms, found 3 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 2020.3.33f1 (915a7af8b0d5)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/2020.3.33f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path D:/Projects/HololensSharedSurface/SharedSurface/Assets
+GfxDevice: creating device client; threaded=0
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce RTX 3090 (ID=0x2204)
+    Vendor:   
+    VRAM:     24348 MB
+    Driver:   30.0.15.1213
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/2020.3.33f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/2020.3.33f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/2020.3.33f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56012
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/2020.3.33f1/Editor/Data/PlaybackEngines/MacStandaloneSupport/UnityEditor.OSXStandalone.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/2020.3.33f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001748 seconds.
+Native extension for WindowsStandalone target not found
+Native extension for OSXStandalone target not found
+Refreshing native plugins compatible for Editor in 25.54 ms, found 3 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.432 seconds
+Domain Reload Profiling:
+	ReloadAssembly (432ms)
+		BeginReloadAssembly (47ms)
+			ExecutionOrderSort (0ms)
+			DisableScriptedObjects (0ms)
+			BackupInstance (0ms)
+			ReleaseScriptingObjects (0ms)
+			CreateAndSetChildDomain (1ms)
+		EndReloadAssembly (330ms)
+			LoadAssemblies (46ms)
+			RebuildTransferFunctionScriptingTraits (0ms)
+			SetupTypeCache (104ms)
+			ReleaseScriptCaches (0ms)
+			RebuildScriptCaches (21ms)
+			SetupLoadedEditorAssemblies (125ms)
+				LogAssemblyErrors (0ms)
+				InitializePlatformSupportModulesInManaged (5ms)
+				SetLoadedEditorAssemblies (0ms)
+				RefreshPlugins (26ms)
+				BeforeProcessingInitializeOnLoad (13ms)
+				ProcessInitializeOnLoadAttributes (61ms)
+				ProcessInitializeOnLoadMethodAttributes (21ms)
+				AfterProcessingInitializeOnLoad (0ms)
+				EditorAssembliesLoaded (0ms)
+			ExecutionOrderSort2 (0ms)
+			AwakeInstancesAfterBackupRestoration (0ms)
+Platform modules already initialized, skipping
+Registering precompiled user dll's ...
+Registered in 0.001967 seconds.
+Begin MonoManager ReloadAssembly
+Symbol file LoadedFromMemory doesn't match image D:\Projects\HololensSharedSurface\SharedSurface\Library\PackageCache\com.unity.collab-proxy@1.15.15\Lib\Editor\PlasticSCM\unityplastic.dll
+Native extension for WindowsStandalone target not found
+Native extension for OSXStandalone target not found
+Refreshing native plugins compatible for Editor in 0.30 ms, found 3 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.698 seconds
+Domain Reload Profiling:
+	ReloadAssembly (699ms)
+		BeginReloadAssembly (105ms)
+			ExecutionOrderSort (0ms)
+			DisableScriptedObjects (3ms)
+			BackupInstance (0ms)
+			ReleaseScriptingObjects (0ms)
+			CreateAndSetChildDomain (14ms)
+		EndReloadAssembly (548ms)
+			LoadAssemblies (69ms)
+			RebuildTransferFunctionScriptingTraits (0ms)
+			SetupTypeCache (185ms)
+			ReleaseScriptCaches (0ms)
+			RebuildScriptCaches (30ms)
+			SetupLoadedEditorAssemblies (212ms)
+				LogAssemblyErrors (0ms)
+				InitializePlatformSupportModulesInManaged (4ms)
+				SetLoadedEditorAssemblies (0ms)
+				RefreshPlugins (0ms)
+				BeforeProcessingInitializeOnLoad (55ms)
+				ProcessInitializeOnLoadAttributes (141ms)
+				ProcessInitializeOnLoadMethodAttributes (6ms)
+				AfterProcessingInitializeOnLoad (4ms)
+				EditorAssembliesLoaded (0ms)
+			ExecutionOrderSort2 (0ms)
+			AwakeInstancesAfterBackupRestoration (4ms)
+Platform modules already initialized, skipping
+========================================================================
+Worker process is ready to serve import requests
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.03 seconds
+Refreshing native plugins compatible for Editor in 0.54 ms, found 3 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Unloading 1557 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 73.2 MB.
+System memory in use after: 73.3 MB.
+
+Unloading 23 unused Assets to reduce memory usage. Loaded Objects now: 1987.
+Total: 1.992800 ms (FindLiveObjects: 0.091100 ms CreateObjectMapping: 0.033100 ms MarkObjects: 1.777900 ms  DeleteObjects: 0.090000 ms)
+
+AssetImportParameters requested are different than current active one (requested -> active):
+  custom:framework-win-MediaFoundation: 216162199b28c13a410421893ffa2e32 -> 
+  custom:video-decoder-ogg-theora: a1e56fd34408186e4bbccfd4996cb3dc -> 
+  custom:container-muxer-webm: aa71ff27fc2769a1b78a27578f13a17b -> 
+  custom:container-demuxer-webm: 4f35f7cbe854078d1ac9338744f61a02 -> 
+  custom:container-demuxer-ogg: 62fdf1f143b41e24485cea50d1cbac27 -> 
+  custom:video-encoder-webm-vp8: eb34c28f22e8b96e1ab97ce403110664 -> 
+  custom:video-codec-MediaFoundation-h265: 746d11721c4dcdbdad8f713fa42b33f4 -> 
+  custom:video-decoder-webm-vp8: 9c59270c3fd7afecdb556c50c9e8de78 -> 
+  custom:audio-decoder-ogg-vorbis: bf7c407c2cedff20999df2af8eb42d56 -> 
+  custom:audio-encoder-webm-vorbis: bf7c407c2cedff20999df2af8eb42d56 -> 
+========================================================================
+Received Import Request.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/package.json
+  artifactKey: Guid(2ebdb08df602ae847a272241531fd642) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/package.json using Guid(2ebdb08df602ae847a272241531fd642) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '7220140eabfac93e75f7b60f52fdb17b') in 0.058875 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000327 seconds.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Microsoft.MixedReality.WebRTC.Unity.Examples.asmdef
+  artifactKey: Guid(24aaef8a4b2a4f44fa6cbb2ac794da62) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Microsoft.MixedReality.WebRTC.Unity.Examples.asmdef using Guid(24aaef8a4b2a4f44fa6cbb2ac794da62) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '34cd9af66b4376d076c7e1e75784f16d') in 0.007936 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000312 seconds.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/Runtime
+  artifactKey: Guid(a9d626804c37b1b469e77843ae088c59) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/Runtime using Guid(a9d626804c37b1b469e77843ae088c59) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '036d09823ee2d9d96a533fdd21227972') in 0.004797 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 1.013782 seconds.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials
+  artifactKey: Guid(5fc99bd5488a39d4fa81c74cba3b9b3d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials using Guid(5fc99bd5488a39d4fa81c74cba3b9b3d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'be8cc2459f7ee3122a52612a24e24507') in 0.005140 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.095321 seconds.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials/DebugColorBlue.mat
+  artifactKey: Guid(6f9f5356e1e417948b54abd4deb89ebc) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials/DebugColorBlue.mat using Guid(6f9f5356e1e417948b54abd4deb89ebc) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '13193ddf0b651628bbc5aba84bfb3be1') in 0.093531 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000248 seconds.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials/DebugColorRed.mat
+  artifactKey: Guid(f5a1b96206fb43849b35fceb1b9d26e7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials/DebugColorRed.mat using Guid(f5a1b96206fb43849b35fceb1b9d26e7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '50abf73b5522774a5cee74ace7d6cc7e') in 0.012627 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000279 seconds.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials/DebugColorPeer1.mat
+  artifactKey: Guid(9c4f22f211290bc418fa8ff3cff705fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials/DebugColorPeer1.mat using Guid(9c4f22f211290bc418fa8ff3cff705fd) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '8a2e89ad6da0468e085f2016c3aa6eb0') in 0.011346 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000299 seconds.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials/DebugColorGreen.mat
+  artifactKey: Guid(92a265afb8df12e45b890eedc8983485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials/DebugColorGreen.mat using Guid(92a265afb8df12e45b890eedc8983485) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '6f72a69e86279e3e0d879ab2b19cefbe') in 0.010895 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 0.000308 seconds.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials/DebugColorPeer2.mat
+  artifactKey: Guid(d0e4f2771ede3a64c8c4bd4136227ad1) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Materials/DebugColorPeer2.mat using Guid(d0e4f2771ede3a64c8c4bd4136227ad1) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'f3614ea8ea90230b67733b4d6b84a5d1') in 0.011699 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 3.216972 seconds.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Meshes/arrow.fbx
+  artifactKey: Guid(09ee1a0e4315c7d48b74f8d4ecb6f57b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Meshes/arrow.fbx using Guid(09ee1a0e4315c7d48b74f8d4ecb6f57b) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'baa78e19a59f979ea87b1243f7d50697') in 0.207751 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 2.183150 seconds.
+  path: Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Scenes/VideoPlayer.prefab
+  artifactKey: Guid(a5df3c1fbf79c4b4ca9d5e5035d945a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Packages/com.microsoft.mixedreality.webrtc.samples/Runtime/Scenes/VideoPlayer.prefab using Guid(a5df3c1fbf79c4b4ca9d5e5035d945a7) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'ee73c91eafcdd4e442884cbb9f34fda9') in 0.052394 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 5.840938 seconds.
+  path: Assets/Scenes/SampleScene.unity
+  artifactKey: Guid(9fc0d4010bbf28b4594072e72b8655ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/SampleScene.unity using Guid(9fc0d4010bbf28b4594072e72b8655ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '94c55409359c0051422e58de30b0573d') in 0.004810 seconds 
+========================================================================
+Received Import Request.
+  Time since last request: 5.435678 seconds.
+  path: Assets/Scenes/Main.unity
+  artifactKey: Guid(9fc0d4010bbf28b4594072e72b8655ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/Scenes/Main.unity using Guid(9fc0d4010bbf28b4594072e72b8655ab) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '647a383644798d7cb03c1307b95dbecb') in 0.005028 seconds 
+AssetImportWorkerClient::OnTransportError - code=2 error=End of file
