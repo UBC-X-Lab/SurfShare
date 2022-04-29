@@ -17,7 +17,8 @@ public class WorldCursor : MonoBehaviour
     public GameObject remoteCursor;
     private MeshRenderer remoteCursorMesh;
 
-    public GameObject Brush;
+    //public GameObject Brush;
+    private GameObject line;
     public GameObject Annotation;
 
     // data in transmission
@@ -111,8 +112,16 @@ public class WorldCursor : MonoBehaviour
 
                     if (remote_cursor_state == 1) // draw
                     {
-                        GameObject newBrush = Instantiate(Brush, this.remoteCursor.transform.position, this.remoteCursor.transform.rotation, this.Annotation.transform);
-                        newBrush.GetComponent<MeshRenderer>().material.color = new Color(remote_cursor_color_r, remote_cursor_color_g, remote_cursor_color_b);
+                        if (this.line == null)
+                        {
+                            this.line = Instantiate(this.lineSample, this.Annotation.transform);
+                            this.line.GetComponent<LineRenderer>().material.color = new Color(remote_cursor_color_r, remote_cursor_color_g, remote_cursor_color_b);
+                            this.line.GetComponent<LineRenderer>().SetWidth(0.005f, 0.005f);
+                            this.line.tag = "paints";
+                        }
+                        int pos_index = this.line.GetComponent<LineRenderer>().positionCount;
+                        this.line.GetComponent<LineRenderer>().positionCount += 1;
+                        this.line.GetComponent<LineRenderer>().SetPosition(pos_index, this.remoteCursor.transform.position);
                     }
                     else if (remote_cursor_state == 2) // clear
                     {
@@ -121,6 +130,10 @@ public class WorldCursor : MonoBehaviour
                         {
                             Destroy(paint);
                         }
+                    }
+                    else if (remote_cursor_state == 0) // new line
+                    {
+                        this.line = null;
                     }
                 }
             }
@@ -171,7 +184,7 @@ public class WorldCursor : MonoBehaviour
         GameObject newLine = Object.Instantiate(this.lineSample);
         newLine.name = name;
         LineRenderer newLineRenderer = newLine.GetComponent<LineRenderer>();
-        newLineRenderer.enabled = true;
+        //newLineRenderer.enabled = true;
         newLineRenderer.SetWidth(0.01f, 0.01f); 
         newLineRenderer.positionCount = 2;
         newLineRenderer.SetPosition(0, start);

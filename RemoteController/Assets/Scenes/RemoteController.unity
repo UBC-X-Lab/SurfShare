@@ -1748,7 +1748,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 501722d15a504124183eaa3f8fc97514, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Brush: {fileID: 927832387982527519, guid: 365adc602ad81e04eb70acacee492bb9, type: 3}
   LinePrefab: {fileID: 5883985839378281239, guid: acfd57f4f3c83da47ae5928352e22eba,
     type: 3}
   cursor_pos_x: 0
@@ -2093,7 +2092,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2077516124
 MonoBehaviour:
   m_ObjectHideFlags: 0
