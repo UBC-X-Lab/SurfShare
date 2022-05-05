@@ -428,7 +428,7 @@ MonoBehaviour:
   AutoLogErrors: 1
   LocalPeerId: Hololens
   RemotePeerId: RemoteController
-  HttpServerAddress: http://206.87.236.70:3000/
+  HttpServerAddress: http://206.87.238.81:3000/
   PollTimeMs: 500
 --- !u!4 &793049755
 Transform:
@@ -722,7 +722,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 056eaf2c0cb6e4c41a68f9eb4278c9ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverIP: 206.87.236.70
+  serverIP: 206.87.238.81
   serverPort: 8000
 --- !u!1 &1124156829 stripped
 GameObject:
