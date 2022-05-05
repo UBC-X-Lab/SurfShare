@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "com.microsoft.mixedreality.openxr": "file:MixedReality/com.microsoft.mixedreality.openxr-1.4.0.tgz",
+    "com.microsoft.mixedreality.toolkit.foundation": "file:MixedReality/com.microsoft.mixedreality.toolkit.foundation-2.7.3.tgz",
+    "com.microsoft.mixedreality.toolkit.standardassets": "file:MixedReality/com.microsoft.mixedreality.toolkit.standardassets-2.7.3.tgz",
     "com.microsoft.mixedreality.webrtc": "file:../../com.microsoft.mixedreality.webrtc-2.0.2.tgz",
     "com.microsoft.mixedreality.webrtc.samples": "file:../../com.microsoft.mixedreality.webrtc.samples-2.0.2.tgz",
     "com.unity.collab-proxy": "1.15.15",
@@ -10,6 +13,7 @@
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.timeline": "1.4.8",
     "com.unity.ugui": "1.0.0",
+    "com.unity.xr.openxr": "1.4.1",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
