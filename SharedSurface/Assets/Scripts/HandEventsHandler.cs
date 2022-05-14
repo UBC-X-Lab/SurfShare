@@ -52,8 +52,8 @@ public class HandEventsHandler : MonoBehaviour
                         //Debug.Log("BaseCursor:" + pointer.BaseCursor.Position);
                         //Debug.Log("endpoint:" + endpoint);
                         this.handray_cursor_present = true;
-                        handray_cursor_position = endpoint - 0.2f * Vector3.forward; // for testing purpose
-                        //handray_cursor_position = endpoint;
+                        //handray_cursor_position = endpoint - 0.2f * Vector3.forward; // for testing purpose
+                        handray_cursor_position = endpoint;
                         handray_cursor_orientation = pointer.BaseCursor.Rotation;
                         return;
                     }

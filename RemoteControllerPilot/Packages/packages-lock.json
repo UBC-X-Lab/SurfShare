@@ -1,13 +1,13 @@
 {
   "dependencies": {
     "com.microsoft.mixedreality.webrtc": {
-      "version": "file:D:/Projects/HololensSharedSurface/com.microsoft.mixedreality.webrtc-2.0.2.tgz",
+      "version": "file:../../com.microsoft.mixedreality.webrtc-2.0.2.tgz",
       "depth": 0,
       "source": "local-tarball",
       "dependencies": {}
     },
     "com.microsoft.mixedreality.webrtc.samples": {
-      "version": "file:D:/Projects/HololensSharedSurface/com.microsoft.mixedreality.webrtc.samples-2.0.2.tgz",
+      "version": "file:../../com.microsoft.mixedreality.webrtc.samples-2.0.2.tgz",
       "depth": 0,
       "source": "local-tarball",
       "dependencies": {
