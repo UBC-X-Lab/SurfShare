@@ -137,7 +137,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &232211828
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -418,7 +418,7 @@ MonoBehaviour:
   AutoLogErrors: 1
   LocalPeerId: Hololens
   RemotePeerId: RemoteController
-  HttpServerAddress: http://127.0.0.1:3000/
+  HttpServerAddress: http://128.189.239.167:3000/
   PollTimeMs: 500
 --- !u!4 &675028750
 Transform:
@@ -840,7 +840,7 @@ MonoBehaviour:
     _receiver: {fileID: 2047271282}
     _senderTrackName: 
   - _mediaKind: 1
-    _source: {fileID: 0}
+    _source: {fileID: 2044513590}
     _receiver: {fileID: 0}
     _senderTrackName: 
 --- !u!4 &1641159554
