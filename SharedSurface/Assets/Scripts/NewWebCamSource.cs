@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Microsoft.MixedReality.WebRTC;
+using Microsoft.MixedReality.WebRTC.Unity;
+
 
 #if ENABLE_WINMD_SUPPORT
 using global::Windows.Graphics.Holographic;
@@ -22,7 +25,7 @@ using global::Windows.ApplicationModel.Core;
 using UnityEngine.Android;
 #endif
 
-namespace Microsoft.MixedReality.WebRTC.Unity
+namespace CustomVideoSources
 {
     /// <summary>
     /// Video capture format selection mode for a local video source.
@@ -73,7 +76,7 @@ namespace Microsoft.MixedReality.WebRTC.Unity
     /// video capture device (webcam).
     /// </summary>
     [AddComponentMenu("MixedReality-WebRTC/Webcam Source")]
-    public class NewWebCamSource : VideoTrackSource
+    public class NewWebCamSource : Microsoft.MixedReality.WebRTC.Unity.VideoTrackSource
     {
         /// <summary>
         /// Optional identifier of the webcam to use. Setting this value forces using the given
@@ -251,7 +254,7 @@ namespace Microsoft.MixedReality.WebRTC.Unity
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Failed to create device track source for {nameof(WebcamSource)} component '{name}'.");
+                Debug.LogError($"Failed to create device track source for {nameof(NewWebCamSource)} component '{name}'.");
                 Debug.LogException(ex, this);
                 return;
             }

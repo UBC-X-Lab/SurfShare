@@ -8,14 +8,16 @@ using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.XR;
+using Microsoft.MixedReality.WebRTC;
+using Microsoft.MixedReality.WebRTC.Unity;
 
-namespace Microsoft.MixedReality.WebRTC.Unity
+namespace CustomVideoSources
 {
     /// <summary>
     /// Custom video source capturing the Unity scene content as rendered by a given camera,
     /// and sending it as a video track through the selected peer connection.
     /// </summary>
-    public class NewSceneVideoSource : NewCustomVideoSource<Argb32VideoFrameStorage>
+    public class WebCamWithFrameSource : CustomVideoSource<Argb32VideoFrameStorage>
     {
         /// <summary>
         /// Camera used to capture the scene content, whose rendering is used as
