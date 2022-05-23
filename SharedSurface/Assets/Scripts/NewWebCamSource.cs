@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using Microsoft.MixedReality.WebRTC;
 using Microsoft.MixedReality.WebRTC.Unity;
@@ -13,16 +14,11 @@ using global::Windows.Graphics.Holographic;
 #endif
 
 #if UNITY_WSA && !UNITY_EDITOR
-using System.Threading.Tasks;
 using global::Windows.UI.Core;
 using global::Windows.Foundation;
 using global::Windows.Media.Core;
 using global::Windows.Media.Capture;
 using global::Windows.ApplicationModel.Core;
-#endif
-
-#if !UNITY_EDITOR && UNITY_ANDROID
-using UnityEngine.Android;
 #endif
 
 namespace CustomVideoSources
