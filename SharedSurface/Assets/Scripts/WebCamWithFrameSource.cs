@@ -2,9 +2,10 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Diagnostics;
+//using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -44,7 +45,7 @@ namespace CustomVideoSources
     {
 
         /// <summary>
-        /// Temporary storage for frames requested from MediaFrameRenderer until consumed by WebRTC.
+        /// Temporary storage for frames requested from MediaFrameReader until consumed by WebRTC.
         /// </summary>
         private VideoFrameQueue<Argb32VideoFrameStorage> _frameQueue = new VideoFrameQueue<Argb32VideoFrameStorage>(3);
 
@@ -52,14 +53,15 @@ namespace CustomVideoSources
         private MediaCapture mediaCapture;
         private MediaFrameSourceGroup selectedGroup = null;
         private MediaFrameSourceInfo colorSourceInfo = null;
-        private var colorFrameSource;
-        private MediaFrameRenderer mediaFrameRenderer;
+        //private var colorFrameSource;
+        private MediaFrameReader mediaFrameReader;
         private SoftwareBitmap backBuffer;
-        private bool taskRunning = false;z
+        private bool taskRunning = false;
 #endif
 
-        protected override void OnEnable()
+        protected override async void OnEnable() // potentially callable as an async function
         {
+            Debug.Log("Enabled");
             // request and enable camera access
 #if UNITY_WSA && !UNITY_EDITOR
             // Request UWP access to video capture. The OS may show some popup dialog to the
@@ -78,8 +80,9 @@ namespace CustomVideoSources
                 }
                 else
                 {
+                    Debug.Log("Try requesting media access");
                     UnityEngine.WSA.Application.InvokeOnUIThread(() => RequestAccessAsync(), waitUntilDone: true);
-                    UnityEngine.WSA.Application.InvokeOnUIThread(() => SetPreferredFrameSourceFormatAsync(), waitUntilDone: true);
+                    Debug.Log("Try Creating Media Frame Reader");
                     UnityEngine.WSA.Application.InvokeOnUIThread(() => CreateMediaFrameReader(), waitUntilDone: true);
                 }
             }
@@ -110,8 +113,9 @@ namespace CustomVideoSources
         /// <remarks>
         /// This must be called from the main UWP UI thread (not the main Unity app thread).
         /// </remarks>
-        private Task RequestAccessAsync()
+        private async Task RequestAccessAsync()
         {
+            Debug.Log("Try requesting media access (In Task)");
             // On UWP the app must have the "webcam" capability, and the user must allow webcam
             // access. So check that access before trying to initialize the WebRTC library, as this
             // may result in a popup window being displayed the first time, which needs to be accepted
@@ -148,37 +152,37 @@ namespace CustomVideoSources
                 StreamingCaptureMode = StreamingCaptureMode.Video,
                 PhotoCaptureSource = PhotoCaptureSource.VideoPreview
             };
-            return mediaCapture.InitializeAsync(settings).AsTask();
+            await mediaCapture.InitializeAsync(settings);
+            Debug.Log("Request Access Success");
         }
 
         /// <summary>
-        /// Set the preferred format for the frame source
+        /// Initialize the MediaFrameReader
         /// </summary>
-        private Task SetPreferredFrameSourceFormatAsync()
+        private async Task CreateMediaFrameReader()
         {
-            colorFrameSource = mediaCapture.FrameSources[colorSourceInfo.Id];
+            Debug.Log("Try Creating Media Frame Reader (In Task)");
+            //Set the preferred format for the frame source
+            var colorFrameSource = mediaCapture.FrameSources[colorSourceInfo.Id];
             var preferredFormat = colorFrameSource.SupportedFormats.Where(format =>
             {
-                return format.VideoFormat.Width >= 1080
+                return format.VideoFormat.Width >= 960
                 && format.Subtype == MediaEncodingSubtypes.Argb32;
             }).FirstOrDefault();
 
             if (preferredFormat == null)
             {
                 // Our desired format is not supported
+                Debug.Log("Our desired format is not supported");
                 return;
             }
+            await colorFrameSource.SetFormatAsync(preferredFormat);
 
-            return colorFrameSource.SetFormatAsync(preferredFormat).AsTask();
-        }
-
-        /// <summary>
-        /// Initialize the MediaFrameReader
-        /// </summary>
-        private Task CreateMediaFrameReader(){
+            // creating the media Frame Reader
             mediaFrameReader = await mediaCapture.CreateFrameReaderAsync(colorFrameSource, MediaEncodingSubtypes.Argb32);
             mediaFrameReader.FrameArrived += ColorFrameReader_FrameArrived;
-            return mediaFrameReader.StartAsync().AsTask();
+            await mediaFrameReader.StartAsync();
+            Debug.Log("Create Media Frame Reader Success");
         }
 
         /// <summary>
@@ -186,6 +190,8 @@ namespace CustomVideoSources
         /// </summary>
         private void ColorFrameReader_FrameArrived(MediaFrameReader sender, MediaFrameArrivedEventArgs args)
         {
+            Debug.Log("FrameArrived");
+
             var mediaFrameReference = sender.TryAcquireLatestFrame();
             var videoMediaFrame = mediaFrameReference?.VideoMediaFrame;
             var softwareBitmap = videoMediaFrame?.SoftwareBitmap;
@@ -199,60 +205,64 @@ namespace CustomVideoSources
                 }
 
                 // Swap the processed frame to _backBuffer and dispose of the unused image.
-                softwareBitmap = Interlocked.Exchange(ref backBuffer, softwareBitmap);
-                softwareBitmap?.Dispose();
+                //softwareBitmap = Interlocked.Exchange(ref backBuffer, softwareBitmap);
+                //softwareBitmap?.Dispose();
 
-                // In documentation this is invoked in the UI thread. Am I doing this correctly?
-                if (taskRunning)
-                {
-                    return;
-                }
-                taskRunning = true;
+                //// In documentation this is invoked in the UI thread. Am I doing this correctly?
+                //if (taskRunning)
+                //{
+                //    return;
+                //}
+                //taskRunning = true;
 
                 // Keep draining frames from the backbuffer until the backbuffer is empty. (why would this hold multiple bitmaps?)
-                SoftwareBitmap latestBitmap;
-                while ((latestBitmap = Interlocked.Exchange(ref backBuffer, null)) != null)
+                //SoftwareBitmap latestBitmap;
+                // converting the bitmap to a byte buffer
+                using (BitmapBuffer buffer = softwareBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
                 {
-                    using (BitmapBuffer buffer = latestBitmap.LockBuffer(BitmapBufferAccessMode.Write))
+                    using (var reference = buffer.CreateReference())
                     {
-                        using (var reference = buffer.CreateReference())
+                        unsafe
                         {
                             byte* dataInBytes;
                             uint capacity;
                             ((IMemoryBufferByteAccess)reference).GetBuffer(out dataInBytes, out capacity);
+                             
+                            BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
 
                             // Enqueue a frame in the internal frame queue. This will make a copy
                             // of the frame into a pooled buffer owned by the frame queue.
                             var frame = new Argb32VideoFrame
                             {
                                 data = (IntPtr)dataInBytes,
-                                stride = lastestBitmap.PixelWidth * 4,
-                                width = (uint)lastestBitmap.PixelWidth,
-                                height = (uint)lastestBitmap.PixelHeight
+                                stride = softwareBitmap.PixelWidth * 4,
+                                width = (uint)softwareBitmap.PixelWidth,
+                                height = (uint)softwareBitmap.PixelHeight
                             };
                             _frameQueue.Enqueue(frame); 
-
-                            // Fill-in the BGRA plane
-                            //BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0); // use this as a backup?
-                            //for (int i = 0; i < bufferLayout.Height; i++)
-                            //{
-                            //    for (int j = 0; j < bufferLayout.Width; j++)
-                            //    {
-
-                            //        byte value = (byte)((float)j / bufferLayout.Width * 255);
-                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = value;
-                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = value;
-                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = value;
-                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
-                            //    }
-                            //}
                         }
+
+                        // Fill-in the BGRA plane
+                        //BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0); // use this as a backup?
+                        //for (int i = 0; i < bufferLayout.Height; i++)
+                        //{
+                        //    for (int j = 0; j < bufferLayout.Width; j++)
+                        //    {
+
+                        //        byte value = (byte)((float)j / bufferLayout.Width * 255);
+                        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = value;
+                        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = value;
+                        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = value;
+                        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
+                        //    }
+                        //}
                     }
                 }
-                taskRunning = false;
+                softwareBitmap.Dispose();
             }
 
             mediaFrameReference.Dispose();
+            Debug.Log("FrameProcessed");
         }
 #endif
         [ComImport]
@@ -265,6 +275,7 @@ namespace CustomVideoSources
 
         protected override void OnFrameRequested(in FrameRequest request)
         {
+            // Debug.Log("On Frame Requested");
             // Try to dequeue a frame from the internal frame queue
             if (_frameQueue.TryDequeue(out Argb32VideoFrameStorage storage))
             {
@@ -288,6 +299,10 @@ namespace CustomVideoSources
 
                 // Put the allocated buffer back in the pool for reuse
                 _frameQueue.RecycleStorage(storage);
+            }
+            else
+            {
+                //Debug.Log("Queue was empty");
             }
         }
 

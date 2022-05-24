@@ -140,6 +140,7 @@ namespace CustomVideoSources
 
         protected async void OnEnable()
         {
+            Debug.Log("Enabled");
             if (Source != null)
             {
                 return;
@@ -158,10 +159,12 @@ namespace CustomVideoSources
                 // branch is never taken.
                 if (UnityEngine.WSA.Application.RunningOnUIThread())
                 {
+                    Debug.Log("Try access request 1");
                     await RequestAccessAsync();
                 }
                 else
                 {
+                    Debug.Log("Try access request 2");
                     UnityEngine.WSA.Application.InvokeOnUIThread(() => RequestAccessAsync(), waitUntilDone: true);
                 }
             }
@@ -200,13 +203,13 @@ namespace CustomVideoSources
                         if (global::Windows.ApplicationModel.Package.Current.Id.Architecture == global::Windows.System.ProcessorArchitecture.X86)
                         {
                             // Holographic AR (transparent) x86 platform - Assume HoloLens 1
-                            videoProfileKind = WebRTC.VideoProfileKind.VideoRecording; // No profile in VideoConferencing
+                            videoProfileKind = Microsoft.MixedReality.WebRTC.VideoProfileKind.VideoRecording; // No profile in VideoConferencing
                             width = 896; // Target 896 x 504
                         }
                         else
                         {
                             // Holographic AR (transparent) non-x86 platform - Assume HoloLens 2
-                            videoProfileKind = WebRTC.VideoProfileKind.VideoConferencing;
+                            videoProfileKind = Microsoft.MixedReality.WebRTC.VideoProfileKind.VideoConferencing;
                             width = 960; // Target 960 x 540
                         }
                     }
