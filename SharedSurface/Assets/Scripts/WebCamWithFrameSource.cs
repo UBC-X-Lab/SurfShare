@@ -3,6 +3,7 @@
 
 using System;
 //using System.Diagnostics;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
@@ -53,15 +54,12 @@ namespace CustomVideoSources
         private MediaCapture mediaCapture;
         private MediaFrameSourceGroup selectedGroup = null;
         private MediaFrameSourceInfo colorSourceInfo = null;
-        //private var colorFrameSource;
         private MediaFrameReader mediaFrameReader;
-        private SoftwareBitmap backBuffer;
-        private bool taskRunning = false;
 #endif
 
         protected override async void OnEnable() // potentially callable as an async function
         {
-            Debug.Log("Enabled");
+            Debug.Log("WebCamWithFrameSourceEnabled");
             // request and enable camera access
 #if UNITY_WSA && !UNITY_EDITOR
             // Request UWP access to video capture. The OS may show some popup dialog to the
@@ -80,10 +78,7 @@ namespace CustomVideoSources
                 }
                 else
                 {
-                    Debug.Log("Try requesting media access");
                     UnityEngine.WSA.Application.InvokeOnUIThread(() => RequestAccessAsync(), waitUntilDone: true);
-                    Debug.Log("Try Creating Media Frame Reader");
-                    UnityEngine.WSA.Application.InvokeOnUIThread(() => CreateMediaFrameReader(), waitUntilDone: true);
                 }
             }
             catch (Exception ex)
@@ -99,11 +94,15 @@ namespace CustomVideoSources
             base.OnEnable();
         }
 
-        protected override void OnDisable()
+        protected override async void OnDisable()
         {
+#if UNITY_WSA && !UNITY_EDITOR
+            await mediaFrameReader.StopAsync();
+            mediaFrameReader.FrameArrived -= ColorFrameReader_FrameArrived;
+            mediaCapture.Dispose();
+            mediaCapture = null;
+#endif
             base.OnDisable();
-
-            // dispose of the frame queue?
         }
 
 #if UNITY_WSA && !UNITY_EDITOR
@@ -115,7 +114,7 @@ namespace CustomVideoSources
         /// </remarks>
         private async Task RequestAccessAsync()
         {
-            Debug.Log("Try requesting media access (In Task)");
+            Debug.Log("Try requesting media access");
             // On UWP the app must have the "webcam" capability, and the user must allow webcam
             // access. So check that access before trying to initialize the WebRTC library, as this
             // may result in a popup window being displayed the first time, which needs to be accepted
@@ -124,51 +123,104 @@ namespace CustomVideoSources
             // select frame sources and frame source groups
             var frameSourceGroups = await MediaFrameSourceGroup.FindAllAsync();
 
-            foreach (var sourceGroup in frameSourceGroups)
-            {
-                foreach (var sourceInfo in sourceGroup.SourceInfos)
-                {
-                    // this identifies a webcam: videoPreview (VideoRecording?) + color suggests a webcam that provides colored frames
-                    if (sourceInfo.MediaStreamType == MediaStreamType.VideoPreview
-                        && sourceInfo.SourceKind == MediaFrameSourceKind.Color)
-                    {
-                        colorSourceInfo = sourceInfo;
-                        break;
-                    }
-                }
-                if (colorSourceInfo != null)
-                {
-                    selectedGroup = sourceGroup;
-                    break;
-                }
-            }
+            // // Basic way to select source group. Now using video profile instead
+            //foreach (var sourceGroup in frameSourceGroups)
+            //{
+            //    foreach (var sourceInfo in sourceGroup.SourceInfos)
+            //    {
+            //        // this identifies a webcam: videoPreview (VideoRecording?) + color suggests a webcam that provides colored frames
+            //        // 
+            //        if (sourceInfo.MediaStreamType == MediaStreamType.VideoRecord && sourceInfo.SourceKind == MediaFrameSourceKind.Color)
+            //        {
+            //            colorSourceInfo = sourceInfo;
+            //            break;
+            //        }
+            //    }
+            //    if (colorSourceInfo != null)
+            //    {
+            //        selectedGroup = sourceGroup;
+            //        break;
+            //    }
+            //}
 
-            mediaCapture = new MediaCapture();
             var settings = new MediaCaptureInitializationSettings()
             {
-                SourceGroup = selectedGroup,
                 SharingMode = MediaCaptureSharingMode.ExclusiveControl,
                 MemoryPreference = MediaCaptureMemoryPreference.Cpu,
                 StreamingCaptureMode = StreamingCaptureMode.Video,
-                PhotoCaptureSource = PhotoCaptureSource.VideoPreview
+                // PhotoCaptureSource = PhotoCaptureSource.VideoPreview
             };
+
+            bool profile_found = false;
+
+            Debug.Log("Number of frame source groups:" + frameSourceGroups.Count);
+            int possibleSourceGroups = 0;
+            foreach (var sourceGroup in frameSourceGroups)
+            {
+                // Find a device that support AdvancedColorPhoto
+                IReadOnlyList<MediaCaptureVideoProfile> profileList = MediaCapture.FindKnownVideoProfiles(sourceGroup.Id, KnownVideoProfile.VideoConferencing);
+
+                if (profileList.Count > 0)
+                {
+                    // Debug.Log("Profile list length:" + profileList.Count); // 1
+                    // Debug.Log(sourceGroup.SourceInfos.Count); // 3
+                    List<MediaFrameSourceInfo> sourceInfoList = new List<MediaFrameSourceInfo>();
+                    foreach (var sourceInfo in sourceGroup.SourceInfos){
+                        if (sourceInfo.SourceKind == MediaFrameSourceKind.Color){
+                            //colorSourceInfo = sourceInfo;
+                            sourceInfoList.Add(sourceInfo);
+                        }
+                    }
+                    colorSourceInfo = sourceInfoList[1];
+                    
+                    // Debug.Log(sourceInfoList.Count); // 2, the one with lower resolution is in the second
+                    
+                    if (colorSourceInfo != null)
+                    {
+                        possibleSourceGroups += 1;
+                        if (possibleSourceGroups == 1){
+                            selectedGroup = sourceGroup;
+                            settings.VideoProfile = profileList[0];
+                            settings.VideoDeviceId = sourceGroup.Id;
+                            profile_found = true;
+                        }
+                    }
+                }
+            }
+
+            Debug.Log("Number of possible source groups:" + possibleSourceGroups);
+
+            if (!profile_found){
+                Debug.Log("Specified Profiles were not found!");
+                return;
+            }
+
+            //Debug.Log(colorSourceInfo);
+            //Debug.Log(selectedGroup);
+
+            mediaCapture = new MediaCapture();
             await mediaCapture.InitializeAsync(settings);
             Debug.Log("Request Access Success");
-        }
 
-        /// <summary>
-        /// Initialize the MediaFrameReader
-        /// </summary>
-        private async Task CreateMediaFrameReader()
-        {
+            // Initialize the MediaFrameReader
             Debug.Log("Try Creating Media Frame Reader (In Task)");
-            //Set the preferred format for the frame source
+            // Set the preferred format for the frame source
             var colorFrameSource = mediaCapture.FrameSources[colorSourceInfo.Id];
+            
+            // Log all the available formats
+            //foreach (var format in colorFrameSource.SupportedFormats)
+            //{
+            //    Debug.Log(format.VideoFormat.Width);
+            //    Debug.Log(format.Subtype);
+            //}
+
             var preferredFormat = colorFrameSource.SupportedFormats.Where(format =>
             {
-                return format.VideoFormat.Width >= 960
-                && format.Subtype == MediaEncodingSubtypes.Argb32;
+                return format.VideoFormat.Width == 960;
+                //&& format.Subtype == MediaEncodingSubtypes.Argb32;
             }).FirstOrDefault();
+
+            Debug.Log("Video width set to:" + preferredFormat.VideoFormat.Width);
 
             if (preferredFormat == null)
             {
@@ -180,17 +232,21 @@ namespace CustomVideoSources
 
             // creating the media Frame Reader
             mediaFrameReader = await mediaCapture.CreateFrameReaderAsync(colorFrameSource, MediaEncodingSubtypes.Argb32);
+            Debug.Log("Create Media Frame Reader Success");
+            // return;
+
             mediaFrameReader.FrameArrived += ColorFrameReader_FrameArrived;
             await mediaFrameReader.StartAsync();
-            Debug.Log("Create Media Frame Reader Success");
+            Debug.Log("StartAsync");
         }
+
 
         /// <summary>
         /// Frame Handler at frame arrival
         /// </summary>
         private void ColorFrameReader_FrameArrived(MediaFrameReader sender, MediaFrameArrivedEventArgs args)
         {
-            Debug.Log("FrameArrived");
+            // Debug.Log("FrameArrived");
 
             var mediaFrameReference = sender.TryAcquireLatestFrame();
             var videoMediaFrame = mediaFrameReference?.VideoMediaFrame;
@@ -202,18 +258,12 @@ namespace CustomVideoSources
                     softwareBitmap.BitmapAlphaMode != Windows.Graphics.Imaging.BitmapAlphaMode.Premultiplied)
                 {
                     softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+                    //Debug.Log("Convertion Success");
                 }
 
                 // Swap the processed frame to _backBuffer and dispose of the unused image.
                 //softwareBitmap = Interlocked.Exchange(ref backBuffer, softwareBitmap);
                 //softwareBitmap?.Dispose();
-
-                //// In documentation this is invoked in the UI thread. Am I doing this correctly?
-                //if (taskRunning)
-                //{
-                //    return;
-                //}
-                //taskRunning = true;
 
                 // Keep draining frames from the backbuffer until the backbuffer is empty. (why would this hold multiple bitmaps?)
                 //SoftwareBitmap latestBitmap;
@@ -262,7 +312,7 @@ namespace CustomVideoSources
             }
 
             mediaFrameReference.Dispose();
-            Debug.Log("FrameProcessed");
+            //Debug.Log("FrameProcessed");
         }
 #endif
         [ComImport]

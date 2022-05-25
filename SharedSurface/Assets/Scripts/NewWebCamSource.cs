@@ -140,7 +140,7 @@ namespace CustomVideoSources
 
         protected async void OnEnable()
         {
-            Debug.Log("Enabled");
+            //Debug.Log("Enabled");
             if (Source != null)
             {
                 return;

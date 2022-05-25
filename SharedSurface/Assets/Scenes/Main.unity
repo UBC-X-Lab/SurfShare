@@ -274,7 +274,7 @@ RectTransform:
   m_Children:
   - {fileID: 430691096}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -292,7 +292,6 @@ GameObject:
   - component: {fileID: 430691096}
   - component: {fileID: 430691098}
   - component: {fileID: 430691097}
-  - component: {fileID: 430691099}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -308,7 +307,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 430691095}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 358077487}
@@ -316,7 +315,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 13.3, y: 94}
+  m_AnchoredPosition: {x: 13.3, y: 93}
   m_SizeDelta: {x: 988.6301, y: 50.733276}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &430691097
@@ -338,7 +337,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Debug Messages
+  m_text: Debug Messages Start
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -401,7 +400,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 121.59247, y: 0, z: 105.018524, w: -211.9531}
+  m_margin: {x: 212.78796, y: 0, z: 214.17911, w: -211.9531}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -415,19 +414,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 430691095}
   m_CullTransparentMesh: 0
---- !u!114 &430691099
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 430691095}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4074ba0ea18eca4469b218258b16904c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DebugMessageComp: {fileID: 430691097}
 --- !u!1 &515433805
 GameObject:
   m_ObjectHideFlags: 0
@@ -441,6 +427,7 @@ GameObject:
   - component: {fileID: 515433808}
   - component: {fileID: 515433807}
   - component: {fileID: 515433806}
+  - component: {fileID: 515433811}
   m_Layer: 0
   m_Name: Main
   m_TagString: Untagged
@@ -536,8 +523,21 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &515433811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 515433805}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4074ba0ea18eca4469b218258b16904c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DebugMessageComp: {fileID: 430691097}
 --- !u!1 &675028748
 GameObject:
   m_ObjectHideFlags: 0
