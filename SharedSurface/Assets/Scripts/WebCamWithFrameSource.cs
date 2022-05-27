@@ -51,6 +51,7 @@ namespace CustomVideoSources
         private VideoFrameQueue<Argb32VideoFrameStorage> _frameQueue = new VideoFrameQueue<Argb32VideoFrameStorage>(3);
 
 #if UNITY_WSA && !UNITY_EDITOR
+        private SoftwareBitmap backBuffer;
         private MediaCapture mediaCapture;
         private MediaFrameSourceGroup selectedGroup = null;
         private MediaFrameSourceInfo colorSourceInfo = null;
@@ -262,53 +263,56 @@ namespace CustomVideoSources
                 }
 
                 // Swap the processed frame to _backBuffer and dispose of the unused image.
-                //softwareBitmap = Interlocked.Exchange(ref backBuffer, softwareBitmap);
-                //softwareBitmap?.Dispose();
+                softwareBitmap = Interlocked.Exchange(ref backBuffer, softwareBitmap);
+                softwareBitmap?.Dispose();
 
                 // Keep draining frames from the backbuffer until the backbuffer is empty. (why would this hold multiple bitmaps?)
-                //SoftwareBitmap latestBitmap;
-                // converting the bitmap to a byte buffer
-                using (BitmapBuffer buffer = softwareBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
+                SoftwareBitmap latestBitmap;
+                while ((latestBitmap = Interlocked.Exchange(ref backBuffer, null)) != null)
                 {
-                    using (var reference = buffer.CreateReference())
+                    // converting the bitmap to a byte buffer
+                    using (BitmapBuffer buffer = latestBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
                     {
-                        unsafe
+                        using (var reference = buffer.CreateReference())
                         {
-                            byte* dataInBytes;
-                            uint capacity;
-                            ((IMemoryBufferByteAccess)reference).GetBuffer(out dataInBytes, out capacity);
-                             
-                            BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
-
-                            // Enqueue a frame in the internal frame queue. This will make a copy
-                            // of the frame into a pooled buffer owned by the frame queue.
-                            var frame = new Argb32VideoFrame
+                            unsafe
                             {
-                                data = (IntPtr)dataInBytes,
-                                stride = softwareBitmap.PixelWidth * 4,
-                                width = (uint)softwareBitmap.PixelWidth,
-                                height = (uint)softwareBitmap.PixelHeight
-                            };
-                            _frameQueue.Enqueue(frame); 
+                                byte* dataInBytes;
+                                uint capacity;
+                                ((IMemoryBufferByteAccess)reference).GetBuffer(out dataInBytes, out capacity);
+                             
+                                BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
+
+                                // Enqueue a frame in the internal frame queue. This will make a copy
+                                // of the frame into a pooled buffer owned by the frame queue.
+                                var frame = new Argb32VideoFrame
+                                {
+                                    data = (IntPtr)dataInBytes,
+                                    stride = latestBitmap.PixelWidth * 4,
+                                    width = (uint)latestBitmap.PixelWidth,
+                                    height = (uint)latestBitmap.PixelHeight
+                                };
+                                _frameQueue.Enqueue(frame); 
+                            }
+
+                            // Fill-in the BGRA plane
+                            //BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0); // use this as a backup?
+                            //for (int i = 0; i < bufferLayout.Height; i++)
+                            //{
+                            //    for (int j = 0; j < bufferLayout.Width; j++)
+                            //    {
+
+                            //        byte value = (byte)((float)j / bufferLayout.Width * 255);
+                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = value;
+                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = value;
+                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = value;
+                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
+                            //    }
+                            //}
                         }
-
-                        // Fill-in the BGRA plane
-                        //BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0); // use this as a backup?
-                        //for (int i = 0; i < bufferLayout.Height; i++)
-                        //{
-                        //    for (int j = 0; j < bufferLayout.Width; j++)
-                        //    {
-
-                        //        byte value = (byte)((float)j / bufferLayout.Width * 255);
-                        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = value;
-                        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = value;
-                        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = value;
-                        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
-                        //    }
-                        //}
                     }
+                    latestBitmap.Dispose();
                 }
-                softwareBitmap.Dispose();
             }
 
             mediaFrameReference.Dispose();
