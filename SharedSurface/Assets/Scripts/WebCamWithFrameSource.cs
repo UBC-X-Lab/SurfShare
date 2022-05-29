@@ -51,11 +51,12 @@ namespace CustomVideoSources
         private VideoFrameQueue<Argb32VideoFrameStorage> _frameQueue = new VideoFrameQueue<Argb32VideoFrameStorage>(3);
 
 #if UNITY_WSA && !UNITY_EDITOR
-        private SoftwareBitmap backBuffer;
+        // private SoftwareBitmap backBuffer;
         private MediaCapture mediaCapture;
         private MediaFrameSourceGroup selectedGroup = null;
         private MediaFrameSourceInfo colorSourceInfo = null;
         private MediaFrameReader mediaFrameReader;
+        private bool taskRunning = false;
 #endif
 
         protected override async void OnEnable() // potentially callable as an async function
@@ -209,11 +210,11 @@ namespace CustomVideoSources
             var colorFrameSource = mediaCapture.FrameSources[colorSourceInfo.Id];
             
             // Log all the available formats
-            //foreach (var format in colorFrameSource.SupportedFormats)
-            //{
-            //    Debug.Log(format.VideoFormat.Width);
-            //    Debug.Log(format.Subtype);
-            //}
+            foreach (var format in colorFrameSource.SupportedFormats)
+            {
+                Debug.Log(format.VideoFormat.Width);
+                Debug.Log(format.Subtype);
+            }
 
             var preferredFormat = colorFrameSource.SupportedFormats.Where(format =>
             {
@@ -221,7 +222,8 @@ namespace CustomVideoSources
                 //&& format.Subtype == MediaEncodingSubtypes.Argb32;
             }).FirstOrDefault();
 
-            Debug.Log("Video width set to:" + preferredFormat.VideoFormat.Width);
+            Debug.Log("Video width and height set to:" + preferredFormat.VideoFormat.Width + "," + preferredFormat.VideoFormat.Height);
+            Debug.Log("MediaEncodingSubtypes set to:" + preferredFormat.Subtype);
 
             if (preferredFormat == null)
             {
@@ -232,11 +234,16 @@ namespace CustomVideoSources
             await colorFrameSource.SetFormatAsync(preferredFormat);
 
             // creating the media Frame Reader
-            mediaFrameReader = await mediaCapture.CreateFrameReaderAsync(colorFrameSource, MediaEncodingSubtypes.Argb32);
-            Debug.Log("Create Media Frame Reader Success");
-            // return;
+            BitmapSize bitmapSize = new BitmapSize()
+            {
+                Height = 540,
+                Width = 960
+            };
 
-            mediaFrameReader.FrameArrived += ColorFrameReader_FrameArrived;
+            mediaFrameReader = await mediaCapture.CreateFrameReaderAsync(colorFrameSource, MediaEncodingSubtypes.Nv12, bitmapSize);  // only Nv12 not working. Maybe look more into the sizes of the frames?
+            Debug.Log("Create Media Frame Reader Success");
+
+            mediaFrameReader.FrameArrived += ColorFrameReader_FrameArrived; // invoked in its own thread?
             await mediaFrameReader.StartAsync();
             Debug.Log("StartAsync");
         }
@@ -247,7 +254,7 @@ namespace CustomVideoSources
         /// </summary>
         private void ColorFrameReader_FrameArrived(MediaFrameReader sender, MediaFrameArrivedEventArgs args)
         {
-            // Debug.Log("FrameArrived");
+            Debug.Log("FrameArrived");
 
             var mediaFrameReference = sender.TryAcquireLatestFrame();
             var videoMediaFrame = mediaFrameReference?.VideoMediaFrame;
@@ -259,19 +266,56 @@ namespace CustomVideoSources
                     softwareBitmap.BitmapAlphaMode != Windows.Graphics.Imaging.BitmapAlphaMode.Premultiplied)
                 {
                     softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-                    //Debug.Log("Convertion Success");
+                    // Debug.Log("Convert Success");
                 }
 
-                // Swap the processed frame to _backBuffer and dispose of the unused image.
-                softwareBitmap = Interlocked.Exchange(ref backBuffer, softwareBitmap);
-                softwareBitmap?.Dispose();
+                // Swap the processed frame to backBuffer and dispose of the unused image.
+                // softwareBitmap = Interlocked.Exchange(ref backBuffer, softwareBitmap);
+                // softwareBitmap?.Dispose();
 
-                // Keep draining frames from the backbuffer until the backbuffer is empty. (why would this hold multiple bitmaps?)
-                SoftwareBitmap latestBitmap;
-                while ((latestBitmap = Interlocked.Exchange(ref backBuffer, null)) != null)
+                //if (!taskRunning)
+                //{
+                //    taskRunning = true;
+                //    // Keep draining frames from the backbuffer until the backbuffer is empty. (why would this hold multiple bitmaps?)
+                //    SoftwareBitmap latestBitmap;
+                //    while ((latestBitmap = Interlocked.Exchange(ref backBuffer, null)) != null)
+                //    {
+                //        // converting the bitmap to a byte buffer
+                //        using (BitmapBuffer buffer = latestBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
+                //        {
+                //            using (var reference = buffer.CreateReference())
+                //            {
+                //                unsafe
+                //                {
+                //                    byte* dataInBytes;
+                //                    uint capacity;
+                //                    ((IMemoryBufferByteAccess)reference).GetBuffer(out dataInBytes, out capacity);
+                             
+                //                    BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
+
+                //                    // Enqueue a frame in the internal frame queue. This will make a copy
+                //                    // of the frame into a pooled buffer owned by the frame queue.
+                //                    var frame = new Argb32VideoFrame
+                //                    {
+                //                        data = (IntPtr)dataInBytes,
+                //                        stride = latestBitmap.PixelWidth * 4,
+                //                        width = (uint)latestBitmap.PixelWidth,
+                //                        height = (uint)latestBitmap.PixelHeight
+                //                    };
+                //                    _frameQueue.Enqueue(frame); 
+                //                }
+                //            }
+                //        }
+                //        latestBitmap.Dispose();
+                //    }
+                //    taskRunning = false;
+                //}
+
+                if (!taskRunning)
                 {
+                    taskRunning = true;
                     // converting the bitmap to a byte buffer
-                    using (BitmapBuffer buffer = latestBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
+                    using (BitmapBuffer buffer = softwareBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
                     {
                         using (var reference = buffer.CreateReference())
                         {
@@ -288,36 +332,37 @@ namespace CustomVideoSources
                                 var frame = new Argb32VideoFrame
                                 {
                                     data = (IntPtr)dataInBytes,
-                                    stride = latestBitmap.PixelWidth * 4,
-                                    width = (uint)latestBitmap.PixelWidth,
-                                    height = (uint)latestBitmap.PixelHeight
+                                    stride = softwareBitmap.PixelWidth * 4,
+                                    width = (uint)softwareBitmap.PixelWidth,
+                                    height = (uint)softwareBitmap.PixelHeight
                                 };
                                 _frameQueue.Enqueue(frame); 
                             }
-
-                            // Fill-in the BGRA plane
-                            //BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0); // use this as a backup?
-                            //for (int i = 0; i < bufferLayout.Height; i++)
-                            //{
-                            //    for (int j = 0; j < bufferLayout.Width; j++)
-                            //    {
-
-                            //        byte value = (byte)((float)j / bufferLayout.Width * 255);
-                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = value;
-                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = value;
-                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = value;
-                            //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
-                            //    }
-                            //}
                         }
                     }
-                    latestBitmap.Dispose();
+                    taskRunning = false;
                 }
+                softwareBitmap?.Dispose();
             }
 
             mediaFrameReference.Dispose();
             //Debug.Log("FrameProcessed");
         }
+
+        // Fill-in the BGRA plane
+        //BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0); // use this as a backup?
+        //for (int i = 0; i < bufferLayout.Height; i++)
+        //{
+        //    for (int j = 0; j < bufferLayout.Width; j++)
+        //    {
+
+        //        byte value = (byte)((float)j / bufferLayout.Width * 255);
+        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = value;
+        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = value;
+        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = value;
+        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
+        //    }
+        //}
 #endif
         [ComImport]
         [Guid("5B0D3235-4DBA-4D44-865E-8F1D0E4FD04D")]
@@ -333,6 +378,7 @@ namespace CustomVideoSources
             // Try to dequeue a frame from the internal frame queue
             if (_frameQueue.TryDequeue(out Argb32VideoFrameStorage storage))
             {
+                Debug.Log("Got a Frame");
                 var frame = new Argb32VideoFrame
                 {
                     width = storage.Width,
@@ -356,7 +402,7 @@ namespace CustomVideoSources
             }
             else
             {
-                //Debug.Log("Queue was empty");
+                Debug.Log("Queue was empty");
             }
         }
 
