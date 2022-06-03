@@ -16,6 +16,10 @@ using UnityEngine.XR;
 using Microsoft.MixedReality.WebRTC;
 using Microsoft.MixedReality.WebRTC.Unity;
 
+// my name spaces
+using CoordinateConversion;
+
+// native name spaces
 #if ENABLE_WINMD_SUPPORT
 using global::Windows.Graphics.Holographic;
 #endif
