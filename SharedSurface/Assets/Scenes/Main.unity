@@ -571,7 +571,7 @@ MonoBehaviour:
   AutoLogErrors: 1
   LocalPeerId: Hololens
   RemotePeerId: RemoteController
-  HttpServerAddress: http://128.189.237.183:3000/
+  HttpServerAddress: http://192.168.0.137:3000/
   PollTimeMs: 500
 --- !u!4 &675028750
 Transform:
@@ -792,7 +792,7 @@ Camera:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 2
   m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2

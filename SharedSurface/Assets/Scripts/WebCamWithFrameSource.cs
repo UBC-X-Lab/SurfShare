@@ -283,6 +283,26 @@ namespace CustomVideoSources
 
                 if (!taskRunning)
                 {
+
+                    // for testing purpose: try to convert the corners to Frame coordinates
+                    // only print once: when corners are determined and conversion has not
+                    if (mediaFrameReference.CoordinateSystem != null){
+                        if (!this.conversion_complete && FrameHandler.corners.Count == 4)
+                        {
+                            Debug.Log("Conversion Starts!");
+                            foreach (Vector3 corner in FrameHandler.corners)
+                            {
+                                System.Numerics.Vector3? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, corner);
+                            }
+                            Debug.Log("Conversion Completed!");
+                            this.conversion_complete = true;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("mediaFrameReference Coordinate System returned null!");
+                    }
+
                     taskRunning = true;
                     // converting the bitmap to a byte buffer
                     using (BitmapBuffer buffer = converted_softwareBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
