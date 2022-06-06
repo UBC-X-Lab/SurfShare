@@ -57,12 +57,12 @@ namespace CustomVideoSources
         private bool conversion_complete = false; // for test purpose: what do the converted corners look like?
 
 #if UNITY_WSA && !UNITY_EDITOR
-        // private SoftwareBitmap backBuffer;
         private MediaCapture mediaCapture;
         private MediaFrameSourceGroup selectedGroup = null;
         private MediaFrameSourceInfo colorSourceInfo = null;
         private MediaFrameReader mediaFrameReader;
         private bool taskRunning = false;
+        //private SoftwareBitmap backBuffer;
 #endif
 
         protected override async void OnEnable() // potentially callable as an async function
@@ -243,11 +243,11 @@ namespace CustomVideoSources
             // creating the media Frame Reader
             BitmapSize bitmapSize = new BitmapSize()
             {
-                Height = 540,
-                Width = 960
+                Height = preferredFormat.VideoFormat.Height,
+                Width = preferredFormat.VideoFormat.Width
             };
 
-            mediaFrameReader = await mediaCapture.CreateFrameReaderAsync(colorFrameSource, MediaEncodingSubtypes.Nv12, bitmapSize);  // only Nv12 not working. Maybe look more into the sizes of the frames?
+            mediaFrameReader = await mediaCapture.CreateFrameReaderAsync(colorFrameSource, MediaEncodingSubtypes.Nv12, bitmapSize);
             Debug.Log("Create Media Frame Reader Success");
 
             mediaFrameReader.FrameArrived += ColorFrameReader_FrameArrived; // invoked in its own thread?
@@ -269,18 +269,23 @@ namespace CustomVideoSources
 
             if (softwareBitmap != null)
             {
+                SoftwareBitmap converted_softwareBitmap;
                 if (softwareBitmap.BitmapPixelFormat != Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8 ||
                     softwareBitmap.BitmapAlphaMode != Windows.Graphics.Imaging.BitmapAlphaMode.Premultiplied)
                 {
-                    softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+                    converted_softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+                    softwareBitmap?.Dispose();
                     // Debug.Log("Convert Success");
+                }else
+                {
+                    converted_softwareBitmap = softwareBitmap;
                 }
 
                 if (!taskRunning)
                 {
                     taskRunning = true;
                     // converting the bitmap to a byte buffer
-                    using (BitmapBuffer buffer = softwareBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
+                    using (BitmapBuffer buffer = converted_softwareBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
                     {
                         using (var reference = buffer.CreateReference())
                         {
@@ -297,9 +302,9 @@ namespace CustomVideoSources
                                 var frame = new Argb32VideoFrame
                                 {
                                     data = (IntPtr)dataInBytes,
-                                    stride = softwareBitmap.PixelWidth * 4,
-                                    width = (uint)softwareBitmap.PixelWidth,
-                                    height = (uint)softwareBitmap.PixelHeight
+                                    stride = converted_softwareBitmap.PixelWidth * 4,
+                                    width = (uint)converted_softwareBitmap.PixelWidth,
+                                    height = (uint)converted_softwareBitmap.PixelHeight
                                 };
                                 _frameQueue.Enqueue(frame); 
                             }
@@ -307,7 +312,7 @@ namespace CustomVideoSources
                     }
                     taskRunning = false;
                 }
-                softwareBitmap?.Dispose();
+                converted_softwareBitmap?.Dispose();
             }
 
             mediaFrameReference.Dispose();
