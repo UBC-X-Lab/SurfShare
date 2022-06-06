@@ -17,7 +17,7 @@ using Microsoft.MixedReality.WebRTC;
 using Microsoft.MixedReality.WebRTC.Unity;
 
 // my name spaces
-using CoordinateConversion;
+using CameraFrameUtilities;
 
 // native name spaces
 #if ENABLE_WINMD_SUPPORT
@@ -54,6 +54,8 @@ namespace CustomVideoSources
         /// </summary>
         private VideoFrameQueue<Argb32VideoFrameStorage> _frameQueue = new VideoFrameQueue<Argb32VideoFrameStorage>(3);
 
+        private bool conversion_complete = false; // for test purpose: what do the converted corners look like?
+
 #if UNITY_WSA && !UNITY_EDITOR
         // private SoftwareBitmap backBuffer;
         private MediaCapture mediaCapture;
@@ -65,7 +67,7 @@ namespace CustomVideoSources
 
         protected override async void OnEnable() // potentially callable as an async function
         {
-            Debug.Log("WebCamWithFrameSourceEnabled");
+            // Debug.Log("WebCamWithFrameSourceEnabled");
             // request and enable camera access
 #if UNITY_WSA && !UNITY_EDITOR
             // Request UWP access to video capture. The OS may show some popup dialog to the
@@ -96,6 +98,7 @@ namespace CustomVideoSources
             }
 #endif
 
+            // Create the track source
             // Create the track source
             base.OnEnable();
         }
@@ -159,7 +162,7 @@ namespace CustomVideoSources
 
             bool profile_found = false;
 
-            Debug.Log("Number of frame source groups:" + frameSourceGroups.Count);
+            // Debug.Log("Number of frame source groups:" + frameSourceGroups.Count);
             int possibleSourceGroups = 0;
             foreach (var sourceGroup in frameSourceGroups)
             {
@@ -194,7 +197,7 @@ namespace CustomVideoSources
                 }
             }
 
-            Debug.Log("Number of possible source groups:" + possibleSourceGroups);
+            // Debug.Log("Number of possible source groups:" + possibleSourceGroups);
 
             if (!profile_found){
                 Debug.Log("Specified Profiles were not found!");
@@ -209,16 +212,16 @@ namespace CustomVideoSources
             Debug.Log("Request Access Success");
 
             // Initialize the MediaFrameReader
-            Debug.Log("Try Creating Media Frame Reader (In Task)");
+            Debug.Log("Try Creating Media Frame Reader");
             // Set the preferred format for the frame source
             var colorFrameSource = mediaCapture.FrameSources[colorSourceInfo.Id];
             
             // Log all the available formats
-            foreach (var format in colorFrameSource.SupportedFormats)
-            {
-                Debug.Log(format.VideoFormat.Width);
-                Debug.Log(format.Subtype);
-            }
+            //foreach (var format in colorFrameSource.SupportedFormats)
+            //{
+            //    Debug.Log(format.VideoFormat.Width);
+            //    Debug.Log(format.Subtype);
+            //}
 
             var preferredFormat = colorFrameSource.SupportedFormats.Where(format =>
             {
@@ -258,7 +261,7 @@ namespace CustomVideoSources
         /// </summary>
         private void ColorFrameReader_FrameArrived(MediaFrameReader sender, MediaFrameArrivedEventArgs args)
         {
-            Debug.Log("FrameArrived");
+            // Debug.Log("FrameArrived");
 
             var mediaFrameReference = sender.TryAcquireLatestFrame();
             var videoMediaFrame = mediaFrameReference?.VideoMediaFrame;
@@ -272,48 +275,6 @@ namespace CustomVideoSources
                     softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
                     // Debug.Log("Convert Success");
                 }
-
-                // Swap the processed frame to backBuffer and dispose of the unused image.
-                // softwareBitmap = Interlocked.Exchange(ref backBuffer, softwareBitmap);
-                // softwareBitmap?.Dispose();
-
-                //if (!taskRunning)
-                //{
-                //    taskRunning = true;
-                //    // Keep draining frames from the backbuffer until the backbuffer is empty. (why would this hold multiple bitmaps?)
-                //    SoftwareBitmap latestBitmap;
-                //    while ((latestBitmap = Interlocked.Exchange(ref backBuffer, null)) != null)
-                //    {
-                //        // converting the bitmap to a byte buffer
-                //        using (BitmapBuffer buffer = latestBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
-                //        {
-                //            using (var reference = buffer.CreateReference())
-                //            {
-                //                unsafe
-                //                {
-                //                    byte* dataInBytes;
-                //                    uint capacity;
-                //                    ((IMemoryBufferByteAccess)reference).GetBuffer(out dataInBytes, out capacity);
-                             
-                //                    BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
-
-                //                    // Enqueue a frame in the internal frame queue. This will make a copy
-                //                    // of the frame into a pooled buffer owned by the frame queue.
-                //                    var frame = new Argb32VideoFrame
-                //                    {
-                //                        data = (IntPtr)dataInBytes,
-                //                        stride = latestBitmap.PixelWidth * 4,
-                //                        width = (uint)latestBitmap.PixelWidth,
-                //                        height = (uint)latestBitmap.PixelHeight
-                //                    };
-                //                    _frameQueue.Enqueue(frame); 
-                //                }
-                //            }
-                //        }
-                //        latestBitmap.Dispose();
-                //    }
-                //    taskRunning = false;
-                //}
 
                 if (!taskRunning)
                 {
@@ -382,7 +343,7 @@ namespace CustomVideoSources
             // Try to dequeue a frame from the internal frame queue
             if (_frameQueue.TryDequeue(out Argb32VideoFrameStorage storage))
             {
-                Debug.Log("Got a Frame");
+                // Debug.Log("Got a Frame");
                 var frame = new Argb32VideoFrame
                 {
                     width = storage.Width,
@@ -406,7 +367,7 @@ namespace CustomVideoSources
             }
             else
             {
-                Debug.Log("Queue was empty");
+                // Debug.Log("Queue was empty");
             }
         }
 

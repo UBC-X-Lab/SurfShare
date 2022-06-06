@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CoordinateConversion
+namespace CameraFrameUtilities
 {
     public static class NumericsConversionExtensions
     {

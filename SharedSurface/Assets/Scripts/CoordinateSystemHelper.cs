@@ -5,7 +5,7 @@ using Microsoft.Windows.Perception.Spatial;
 using Microsoft.MixedReality.Toolkit.WindowsMixedReality;
 using UnityEngine.XR.WindowsMR;
 
-namespace CoordinateConversion
+namespace CameraFrameUtilities
 {
     public static class CoordinateSystemHelper
     {

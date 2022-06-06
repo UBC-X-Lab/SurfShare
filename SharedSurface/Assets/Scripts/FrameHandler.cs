@@ -6,10 +6,11 @@ public class FrameHandler : MonoBehaviour
 {
     // use below to draw lines
     public GameObject lineSample;
-    private List<LineRenderer> lineRenderers;
+    private List<LineRenderer> lineRenderers; 
     
     // Corners of the frame, make them adjustable this time
-    private List<Vector3> corners;
+    public static List<Vector3> corners; // left top, right top, left bottom, right bottom
+                                  // (maybe we should just forbid users from starting with bottom borders...)
 
     // surface stats
     private Vector3 sf_origin;
@@ -33,8 +34,8 @@ public class FrameHandler : MonoBehaviour
         }
         else if (corners.Count == 2)
         {
-            Vector3 firstBorderVec = this.corners[1] - this.corners[0]; // AB
-            Vector3 cursorVec = HandEventsHandler.handray_cursor_position - this.corners[0]; // AC
+            Vector3 firstBorderVec = corners[1] - corners[0]; // AB
+            Vector3 cursorVec = HandEventsHandler.handray_cursor_position - corners[0]; // AC
             float cos_alpha = Vector3.Dot(firstBorderVec, cursorVec) / (firstBorderVec.magnitude * cursorVec.magnitude);
             Vector3 middle_point = firstBorderVec * ((cursorVec.magnitude * cos_alpha) / firstBorderVec.magnitude); // AM
             Vector3 target_vec = cursorVec - middle_point; // MC
@@ -46,32 +47,32 @@ public class FrameHandler : MonoBehaviour
     public void OnHandRayPinched()
     {
         Debug.Log("Pinched");
-        int cornersDetermined = this.corners.Count;
+        int cornersDetermined = corners.Count;
         if (cornersDetermined == 0) // first corner
         {
-            this.corners.Add(HandEventsHandler.handray_cursor_position);
-            LineRenderer firstBorder = this.CreateNewLine(this.corners[0], this.corners[0], "firstBorder");
+            corners.Add(HandEventsHandler.handray_cursor_position);
+            LineRenderer firstBorder = this.CreateNewLine(corners[0], corners[0], "firstBorder");
             this.lineRenderers.Add(firstBorder);
         }
         else if (cornersDetermined == 1)
         {
-            this.corners.Add(HandEventsHandler.handray_cursor_position);
-            LineRenderer secondBorder = this.CreateNewLine(this.corners[0], this.corners[0], "secondBorder"); // second border is the left border
-            LineRenderer thirdBorder = this.CreateNewLine(this.corners[1], this.corners[1], "thirdBorder"); // rightborder
+            corners.Add(HandEventsHandler.handray_cursor_position);
+            LineRenderer secondBorder = this.CreateNewLine(corners[0], corners[0], "secondBorder"); // second border is the left border
+            LineRenderer thirdBorder = this.CreateNewLine(corners[1], corners[1], "thirdBorder"); // rightborder
             this.lineRenderers.Add(secondBorder);
             this.lineRenderers.Add(thirdBorder);
         }
         else if (cornersDetermined == 2) // Done!
         {
-            this.corners.Add(this.lineRenderers[1].GetPosition(1)); // left bottom corner - second border
-            this.corners.Add(this.lineRenderers[2].GetPosition(1)); // right bottom corner - third border
-            LineRenderer fourthBorder = CreateNewLine(this.corners[2], this.corners[3], "fourthBorder");
+            corners.Add(this.lineRenderers[1].GetPosition(1)); // left bottom corner - second border
+            corners.Add(this.lineRenderers[2].GetPosition(1)); // right bottom corner - third border
+            LineRenderer fourthBorder = CreateNewLine(corners[2], corners[3], "fourthBorder");
             this.lineRenderers.Add(fourthBorder);
 
             // set surface stats (used for cursor remoting)
-            this.sf_origin = this.corners[2];
-            this.sf_xAxis = this.corners[3] - this.sf_origin;
-            this.sf_yAxis = this.corners[0] - this.sf_origin;
+            this.sf_origin = corners[2];
+            this.sf_xAxis = corners[3] - this.sf_origin;
+            this.sf_yAxis = corners[0] - this.sf_origin;
         }
     }
 
