@@ -20,24 +20,23 @@ using Microsoft.MixedReality.WebRTC.Unity;
 using CameraFrameUtilities;
 
 // native name spaces
-#if ENABLE_WINMD_SUPPORT
-using global::Windows.Graphics.Holographic;
-#endif
+//#if ENABLE_WINMD_SUPPORT
+//using global::Windows.Graphics.Holographic;
+//#endif
 
 #if UNITY_WSA && !UNITY_EDITOR
-using global::Windows.Devices.Enumeration;
-using global::Windows.UI.Xaml.Media.Imaging;
 using global::Windows.Media.MediaProperties;
 using global::Windows.Graphics.Imaging;
-using global::Windows.UI.Core;
 using global::Windows.Foundation;
 using global::Windows.Media.Capture.Frames;
 using global::Windows.Media.Capture;
-using global::Windows.Media.Core;
-using global::Windows.Media;
-using global::Windows.Media.Devices;
-using global::Windows.Media.Audio;
-using global::Windows.ApplicationModel.Core;
+//using global::Windows.Devices.Enumeration;
+//using global::Windows.UI.Core;
+//using global::Windows.Media.Core;
+//using global::Windows.Media;
+//using global::Windows.Media.Devices;
+//using global::Windows.Media.Audio;
+//using global::Windows.ApplicationModel.Core;
 #endif
 
 namespace CustomVideoSources
@@ -270,8 +269,8 @@ namespace CustomVideoSources
             if (softwareBitmap != null)
             {
                 SoftwareBitmap converted_softwareBitmap;
-                if (softwareBitmap.BitmapPixelFormat != Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8 ||
-                    softwareBitmap.BitmapAlphaMode != Windows.Graphics.Imaging.BitmapAlphaMode.Premultiplied)
+                if (softwareBitmap.BitmapPixelFormat != BitmapPixelFormat.Bgra8 ||
+                    softwareBitmap.BitmapAlphaMode != BitmapAlphaMode.Premultiplied)
                 {
                     converted_softwareBitmap = SoftwareBitmap.Convert(softwareBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
                     softwareBitmap?.Dispose();
@@ -289,10 +288,10 @@ namespace CustomVideoSources
                     if (mediaFrameReference.CoordinateSystem != null){
                         if (!this.conversion_complete && FrameHandler.corners.Count == 4)
                         {
-                            Debug.Log("Conversion Starts!");
+                            Debug.Log("Trail conversion Starts!");
                             foreach (Vector3 corner in FrameHandler.corners)
                             {
-                                System.Numerics.Vector3? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, corner);
+                                Point? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, videoMediaFrame, corner);
                             }
                             Debug.Log("Conversion Completed!");
                             this.conversion_complete = true;
@@ -317,6 +316,22 @@ namespace CustomVideoSources
                              
                                 BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
 
+                                // add a 50 * 50 red dot in the middle
+                                FrameProcessor.addPoints(dataInBytes, converted_softwareBitmap.PixelWidth / 2, converted_softwareBitmap.PixelHeight / 2, bufferLayout);
+
+                                // add a 50 * 50 red dot on each of the rectangle corners
+                                if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
+                                {
+                                    foreach (Vector3 corner in FrameHandler.corners)
+                                    {
+                                        Point? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, videoMediaFrame, corner);
+                                        if (corner_on_frame.HasValue)
+                                        {
+                                            FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout);
+                                        }
+                                    }
+                                }
+
                                 // Enqueue a frame in the internal frame queue. This will make a copy
                                 // of the frame into a pooled buffer owned by the frame queue.
                                 var frame = new Argb32VideoFrame
@@ -338,21 +353,6 @@ namespace CustomVideoSources
             mediaFrameReference.Dispose();
             //Debug.Log("FrameProcessed");
         }
-
-        // Fill-in the BGRA plane
-        //BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0); // use this as a backup?
-        //for (int i = 0; i < bufferLayout.Height; i++)
-        //{
-        //    for (int j = 0; j < bufferLayout.Width; j++)
-        //    {
-
-        //        byte value = (byte)((float)j / bufferLayout.Width * 255);
-        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = value;
-        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = value;
-        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = value;
-        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
-        //    }
-        //}
 #endif
         [ComImport]
         [Guid("5B0D3235-4DBA-4D44-865E-8F1D0E4FD04D")]
