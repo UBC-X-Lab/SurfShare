@@ -53,8 +53,6 @@ namespace CustomVideoSources
         /// </summary>
         private VideoFrameQueue<Argb32VideoFrameStorage> _frameQueue = new VideoFrameQueue<Argb32VideoFrameStorage>(3);
 
-        private bool conversion_complete = false; // for test purpose: what do the converted corners look like?
-
 #if UNITY_WSA && !UNITY_EDITOR
         private MediaCapture mediaCapture;
         private MediaFrameSourceGroup selectedGroup = null;
@@ -282,26 +280,6 @@ namespace CustomVideoSources
 
                 if (!taskRunning)
                 {
-
-                    // for testing purpose: try to convert the corners to Frame coordinates
-                    // only print once: when corners are determined and conversion has not
-                    if (mediaFrameReference.CoordinateSystem != null){
-                        if (!this.conversion_complete && FrameHandler.corners.Count == 4)
-                        {
-                            Debug.Log("Trail conversion Starts!");
-                            foreach (Vector3 corner in FrameHandler.corners)
-                            {
-                                Point? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, videoMediaFrame, corner);
-                            }
-                            Debug.Log("Conversion Completed!");
-                            this.conversion_complete = true;
-                        }
-                    }
-                    else
-                    {
-                        Debug.Log("mediaFrameReference Coordinate System returned null!");
-                    }
-
                     taskRunning = true;
                     // converting the bitmap to a byte buffer
                     using (BitmapBuffer buffer = converted_softwareBitmap.LockBuffer(BitmapBufferAccessMode.Write)) // Read Mode?
@@ -316,18 +294,18 @@ namespace CustomVideoSources
                              
                                 BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
 
-                                // add a 50 * 50 red dot in the middle
-                                FrameProcessor.addPoints(dataInBytes, converted_softwareBitmap.PixelWidth / 2, converted_softwareBitmap.PixelHeight / 2, bufferLayout);
+                                // add a 20 * 20 red dot in the middle
+                                // FrameProcessor.addPoints(dataInBytes, converted_softwareBitmap.PixelWidth / 2, converted_softwareBitmap.PixelHeight / 2, bufferLayout);
 
-                                // add a 50 * 50 red dot on each of the rectangle corners
+                                // add a 20 * 20 red dot on each of the rectangle corners
                                 if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
                                 {
                                     foreach (Vector3 corner in FrameHandler.corners)
                                     {
-                                        Point? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, videoMediaFrame, corner);
+                                        Point? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, videoMediaFrame, corner, bufferLayout);
                                         if (corner_on_frame.HasValue)
                                         {
-                                            FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout);
+                                            FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout); // flip the x and y!
                                         }
                                     }
                                 }

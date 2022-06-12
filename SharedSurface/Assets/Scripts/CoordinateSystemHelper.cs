@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR.WindowsMR;
+using System.Runtime.InteropServices;
 // using Microsoft.Windows.Perception.Spatial;
-using Microsoft.MixedReality.Toolkit.WindowsMixedReality;
+// using Microsoft.MixedReality.Toolkit.WindowsMixedReality;
 
 #if UNITY_WSA && !UNITY_EDITOR
 using global::Windows.Perception.Spatial;
@@ -16,20 +18,36 @@ namespace CameraFrameUtilities
 #if UNITY_WSA && !UNITY_EDITOR
     public static class CoordinateSystemHelper
     {
+        private static int count = 0;
 
         // from unity coordinates to frame coordinate. Note the taken argument is WinRT's definition for SpatialCoordinateSystem
-        public static Point? GetFramePosition(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, Vector3 unityPosition)
+        public static Point? GetFramePosition(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, Vector3 unityPosition, BitmapPlaneDescription bufferLayout)
         {
             // convert Unity Coordinates to Hololens Coordinates (left-handed to right handed)
-            Debug.Log("Unity Position - " + "X:" + unityPosition.x + ", Y:" + unityPosition.y + ", Z:" + unityPosition.z);
+            // Debug.Log("Unity Position - " + "X:" + unityPosition.x + ", Y:" + unityPosition.y + ", Z:" + unityPosition.z);
             System.Numerics.Vector3 HLCoordinate = NumericsConversionExtensions.ToSystem(unityPosition); // Is the hololens world origin the same as unity origin? For now we don't need rotation
-            System.Numerics.Matrix4x4? transformToFrame = WindowsMixedRealityUtilities.SpatialCoordinateSystem.TryGetTransformTo(frameCoordinateSystem);
+#if ENABLE_WINMD_SUPPORT
+            var HLWorldOrigin = Marshal.GetObjectForIUnknown(WindowsMREnvironment.OriginSpatialCoordinateSystem) as SpatialCoordinateSystem;
+#endif
+            System.Numerics.Matrix4x4? transformToFrame = HLWorldOrigin.TryGetTransformTo(frameCoordinateSystem);
             if (transformToFrame.HasValue){
                 System.Numerics.Vector3 frameCoordinate = System.Numerics.Vector3.Transform(HLCoordinate, transformToFrame.Value);
-                Debug.Log("Frame Coordinates: X:" + frameCoordinate.X + ", Y:" + frameCoordinate.Y + ", Z:" + frameCoordinate.Z);
                 Point point = videoMediaFrame.CameraIntrinsics.ProjectOntoFrame(frameCoordinate);
-                Debug.Log("Pixel Coordinates: X:" + point.X + ", Y:" + point.Y);
+
+                // the hole camera results in flipped image, so flip back!
+                point.X = bufferLayout.Width - point.X;
+                point.Y = bufferLayout.Height - point.Y;
                 return point;
+
+                // log results
+                //count += 1;
+                //if (count % 40 == 0)
+                //{
+                //    Debug.Log("HLCoordinate: X:" + HLCoordinate.X + ", Y:" + HLCoordinate.Y + ", Z:" + HLCoordinate.Z); // this always stay the same
+                //    Debug.Log("Frame Coordinates: X:" + frameCoordinate.X + ", Y:" + frameCoordinate.Y + ", Z:" + frameCoordinate.Z); // this moves according to the head position and direction
+                //    Debug.Log("Pixel Coordinates: X:" + point.X + ", Y:" + point.Y);
+                //    count = 0;
+                //}
             }
             else
             {
@@ -41,15 +59,15 @@ namespace CameraFrameUtilities
 
     public static class FrameProcessor
     {
-        public static unsafe void addPoints(byte* FrameData, int X, int Y, BitmapPlaneDescription bufferLayout)
+        public static unsafe void addPoints(byte* FrameData, int X, int Y, BitmapPlaneDescription bufferLayout) // bgra8
         {
-            for (int i = (0 > Y - 25 ? 0 : Y - 25); i < (bufferLayout.Height < Y + 25 ? bufferLayout.Height : Y + 25); i++)
+            for (int i = (0 > Y - 10 ? 0 : Y - 10); i < (bufferLayout.Height < Y + 10 ? bufferLayout.Height : Y + 10); i++)
             {
-                for (int j = (0 > X - 25 ? 0 : X - 25); j < (bufferLayout.Width < X + 25 ? bufferLayout.Width : X + 25); j++)
+                for (int j = (0 > X - 10 ? 0 : X - 10); j < (bufferLayout.Width < X + 10 ? bufferLayout.Width : X + 10); j++)
                 {
-                    FrameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = 255;
+                    FrameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = 0;
                     FrameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = 0;
-                    FrameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = 0;
+                    FrameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = 255;
                     FrameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = 255;
                 }
             }
