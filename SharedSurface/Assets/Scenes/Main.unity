@@ -571,7 +571,7 @@ MonoBehaviour:
   AutoLogErrors: 1
   LocalPeerId: Hololens
   RemotePeerId: RemoteController
-  HttpServerAddress: http://192.168.0.137:3000/
+  HttpServerAddress: http://128.189.236.22:3000/
   PollTimeMs: 500
 --- !u!4 &675028750
 Transform:

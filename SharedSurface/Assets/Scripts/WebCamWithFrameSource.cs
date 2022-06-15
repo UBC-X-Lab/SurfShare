@@ -294,8 +294,8 @@ namespace CustomVideoSources
                              
                                 BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
 
-                                // add a 20 * 20 red dot in the middle
-                                // FrameProcessor.addPoints(dataInBytes, converted_softwareBitmap.PixelWidth / 2, converted_softwareBitmap.PixelHeight / 2, bufferLayout);
+                                // add a 20 * 20 red dot on the corner
+                                // FrameProcessor.addPoints(dataInBytes, 0, 0, bufferLayout);
 
                                 // add a 20 * 20 red dot on each of the rectangle corners
                                 if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
@@ -305,7 +305,7 @@ namespace CustomVideoSources
                                         Point? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, videoMediaFrame, corner, bufferLayout);
                                         if (corner_on_frame.HasValue)
                                         {
-                                            FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout); // flip the x and y!
+                                            FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout);
                                         }
                                     }
                                 }

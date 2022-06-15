@@ -37,7 +37,6 @@ namespace CameraFrameUtilities
                 // the hole camera results in flipped image, so flip back!
                 point.X = bufferLayout.Width - point.X;
                 point.Y = bufferLayout.Height - point.Y;
-                return point;
 
                 // log results
                 //count += 1;
@@ -48,6 +47,7 @@ namespace CameraFrameUtilities
                 //    Debug.Log("Pixel Coordinates: X:" + point.X + ", Y:" + point.Y);
                 //    count = 0;
                 //}
+                return point;
             }
             else
             {
@@ -57,8 +57,9 @@ namespace CameraFrameUtilities
         }
     }
 
-    public static class FrameProcessor
+    public static unsafe class FrameProcessor
     {
+        private static byte* prev_frame; // unsafe byte array storing the previous frame
         public static unsafe void addPoints(byte* FrameData, int X, int Y, BitmapPlaneDescription bufferLayout) // bgra8
         {
             for (int i = (0 > Y - 10 ? 0 : Y - 10); i < (bufferLayout.Height < Y + 10 ? bufferLayout.Height : Y + 10); i++)
@@ -73,20 +74,17 @@ namespace CameraFrameUtilities
             }
         }
 
-        // Fill-in the BGRA plane
-        //BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0); // use this as a backup?
-        //for (int i = 0; i < bufferLayout.Height; i++)
-        //{
-        //    for (int j = 0; j < bufferLayout.Width; j++)
-        //    {
+        // camera image masking without considering the camera projection
+        public static unsafe void naiveMasking()
+        {
+            // to do
+        }
 
-        //        byte value = (byte)((float)j / bufferLayout.Width * 255);
-        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = value;
-        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = value;
-        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = value;
-        //        dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)255;
-        //    }
-        //}
+        // camera image masking considering the camera projection
+        public static unsafe void projectionMasking()
+        {
+            // to do
+        }
     }
 #endif
 }
