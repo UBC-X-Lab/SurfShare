@@ -294,21 +294,23 @@ namespace CustomVideoSources
                              
                                 BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
 
-                                // add a 20 * 20 red dot on the corner
-                                // FrameProcessor.addPoints(dataInBytes, 0, 0, bufferLayout);
-
                                 // add a 20 * 20 red dot on each of the rectangle corners
                                 if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
                                 {
-                                    foreach (Vector3 corner in FrameHandler.corners)
+                                    Point?[] corners = { null, null, null, null };
+                                    for (int corner_index = 0; corner_index < FrameHandler.corners.Count; corner_index++)
                                     {
+                                        Vector3 corner = FrameHandler.corners[corner_index];
                                         Point? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, videoMediaFrame, corner, bufferLayout);
                                         if (corner_on_frame.HasValue)
                                         {
-                                            FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout);
+                                            // FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout);
+                                            corners[corner_index] = corner_on_frame;
                                         }
                                     }
+                                    FrameProcessor.naiveMasking(dataInBytes, corners, bufferLayout);
                                 }
+                                // 
 
                                 // Enqueue a frame in the internal frame queue. This will make a copy
                                 // of the frame into a pooled buffer owned by the frame queue.

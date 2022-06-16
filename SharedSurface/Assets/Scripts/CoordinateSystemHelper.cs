@@ -57,9 +57,9 @@ namespace CameraFrameUtilities
         }
     }
 
-    public static unsafe class FrameProcessor
+    public static class FrameProcessor
     {
-        private static byte* prev_frame; // unsafe byte array storing the previous frame
+        private static byte[] prev_frame; // unsafe byte array storing the previous frame
         public static unsafe void addPoints(byte* FrameData, int X, int Y, BitmapPlaneDescription bufferLayout) // bgra8
         {
             for (int i = (0 > Y - 10 ? 0 : Y - 10); i < (bufferLayout.Height < Y + 10 ? bufferLayout.Height : Y + 10); i++)
@@ -74,8 +74,14 @@ namespace CameraFrameUtilities
             }
         }
 
+        // copy current frame data to previous (after it is rectified)
+        private static void CopyToPrev()
+        {
+
+        }
+
         // camera image masking without considering the camera projection
-        public static unsafe void naiveMasking()
+        public static unsafe void naiveMasking(byte* cameraFrame, Point?[] corners, BitmapPlaneDescription bufferLayout)
         {
             // to do
         }
