@@ -294,7 +294,12 @@ namespace CustomVideoSources
                              
                                 BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
 
-                                // add a 20 * 20 red dot on each of the rectangle corners
+                                // set the target height and width for the target frame (may want to use a lower height / width later)
+                                int targetWidth = bufferLayout.Width;
+                                int targetHeight = bufferLayout.Height;
+                                int targetStride = targetWidth * 4;
+
+                                // corners are set, ready to transmit masked frames
                                 if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
                                 {
                                     Point?[] corners = { null, null, null, null };
@@ -308,20 +313,37 @@ namespace CustomVideoSources
                                             corners[corner_index] = corner_on_frame;
                                         }
                                     }
-                                    FrameProcessor.naiveMasking(dataInBytes, corners, bufferLayout);
-                                }
-                                // 
+                                    IntPtr target_frame = Marshal.AllocHGlobal(targetStride * targetHeight);
+                                    FrameProcessor.naiveMasking(dataInBytes, (byte*) target_frame, corners, bufferLayout, targetWidth, targetHeight);
 
-                                // Enqueue a frame in the internal frame queue. This will make a copy
-                                // of the frame into a pooled buffer owned by the frame queue.
-                                var frame = new Argb32VideoFrame
+                                    // Enqueue a frame in the internal frame queue. This will make a copy
+                                    // of the frame into a pooled buffer owned by the frame queue.
+                                    var frame = new Argb32VideoFrame
+                                    {
+                                        data = target_frame,
+                                        stride = targetStride,
+                                        width = (uint)targetWidth,
+                                        height = (uint)targetHeight
+                                    };
+                                    _frameQueue.Enqueue(frame);
+
+                                    // free the target_frame from memory
+                                    Marshal.FreeHGlobal(target_frame);
+                                }
+                                else // corners are not set yet, transmit original frames
                                 {
-                                    data = (IntPtr)dataInBytes,
-                                    stride = converted_softwareBitmap.PixelWidth * 4,
-                                    width = (uint)converted_softwareBitmap.PixelWidth,
-                                    height = (uint)converted_softwareBitmap.PixelHeight
-                                };
-                                _frameQueue.Enqueue(frame); 
+                                    var frame = new Argb32VideoFrame
+                                    {
+                                        data = (IntPtr)dataInBytes,
+                                        //stride = converted_softwareBitmap.PixelWidth * 4,
+                                        //width = (uint)converted_softwareBitmap.PixelWidth,
+                                        //height = (uint)converted_softwareBitmap.PixelHeight
+                                        stride = bufferLayout.Stride,
+                                        width = (uint)bufferLayout.Width,
+                                        height = (uint)bufferLayout.Height
+                                    };
+                                    _frameQueue.Enqueue(frame);
+                                }
                             }
                         }
                     }
