@@ -66,7 +66,7 @@ namespace CameraFrameUtilities
             {
                 for (int j = (0 > X - 10 ? 0 : X - 10); j < (bufferLayout.Width < X + 10 ? bufferLayout.Width : X + 10); j++)
                 {
-                    Color color = new Color(1, 0, 0, 1);
+                    byte[] color = new byte[] { 0, 0, 255, 255 }; // bgra
                     setPixel(frameData, i, j, color, bufferLayout);
                 }
             }
@@ -91,17 +91,34 @@ namespace CameraFrameUtilities
                     if (camera_coor.x < 0 || camera_coor.x > bufferLayout.Width || camera_coor.y < 0 || camera_coor.y > bufferLayout.Height) // if outside the original camera frame
                     {
                         int i = Y; int j = X;
-                        setPixel(target_frame, i, j, new Color(0, 0, 0, 0), targetWidth * 4); // for now, set to no color
+                        byte[] prev_pixel = getPixel(prev_target_frame, i, j, targetWidth * 4);
+                        setPixel(target_frame, i, j, prev_pixel, targetWidth * 4);
                     }
                     else // inside the original camera frame
                     {
-                        Color target_color; // get the target color from color_bililerp, TODO
-
-                        int i = Y; int j = X;
+                        Vector2[] neighbors = new Vector2[] { new Vector2(Mathf.Floor(camera_coor.x), Mathf.Floor(camera_coor.y)),
+                                                              new Vector2(Mathf.Ceil(camera_coor.x), Mathf.Floor(camera_coor.y)),
+                                                              new Vector2(Mathf.Floor(camera_coor.x), Mathf.Ceil(camera_coor.y)),
+                                                              new Vector2(Mathf.Ceil(camera_coor.x), Mathf.Ceil(camera_coor.y))};
+                        List<byte[]> neighbor_colors = new List<byte[]>();
+                        for (int color_index = 0; color_index < 4; color_index++)
+                        {
+                            byte[] pixel_color = getPixel(camera_frame, (int) neighbors[color_index].y, (int) neighbors[color_index].x, bufferLayout);
+                            neighbor_colors.Add(pixel_color);
+                        }
+                        Vector2 scale = new Vector2(camera_coor.x - Mathf.Floor(camera_coor.x), camera_coor.y - Mathf.Floor(camera_coor.y));
+                        byte[] target_color = color_bililerp(neighbor_colors[0], neighbor_colors[1], neighbor_colors[2], neighbor_colors[3], scale); // get the target color from color_bililerp, TODO
                         
+                        // set the pixel onto the target frame
+                        int i = Y; int j = X;
+                        setPixel(target_frame, i, j, target_color, targetWidth * 4);
                     }
                 }
             }
+
+            // copy the target frame to the previous frame
+            prev_target_frame = new byte[targetWidth * targetHeight * 4];
+            Marshal.Copy((System.IntPtr)target_frame, prev_target_frame, 0, prev_target_frame.Length);
         }
 
         // camera image masking considering the camera projection
@@ -112,22 +129,22 @@ namespace CameraFrameUtilities
 
         // bililerp color
         // scale is the original vector subtracted by the integer part
-        private static Color color_bililerp(Color C_LT, Color C_RT, Color C_LB, Color C_RB, Vector2 scale)
+        private static byte[] color_bililerp(byte[] C_LT, byte[] C_RT, byte[] C_LB, byte[] C_RB, Vector2 scale)
         {
-            Color result_color = new Color(0, 0, 0, 1); // don't care about the alpha channel
+            byte[] result_color = new byte[] { 0, 0, 0, 255 }; // don't care about the alpha channel
             int channel = 0;
             while (channel < 3)
             {
                 switch (channel)
                 {
                     case 0:
-                        result_color.r = bililerp(C_LT.r, C_RT.r, C_LB.r, C_RB.r, scale);
+                        result_color[0] = bililerp(C_LT[0], C_RT[0], C_LB[0], C_RB[0], scale);
                         break;
                     case 1:
-                        result_color.g = bililerp(C_LT.g, C_RT.g, C_LB.g, C_RB.g, scale);
+                        result_color[1] = bililerp(C_LT[1], C_RT[1], C_LB[1], C_RB[1], scale);
                         break;
                     case 2:
-                        result_color.b = bililerp(C_LT.b, C_RT.b, C_LB.b, C_RB.b, scale);
+                        result_color[2] = bililerp(C_LT[2], C_RT[2], C_LB[2], C_RB[2], scale);
                         break;
                     default:
                         Debug.Log("Misterious channel, how did you wind up here?");
@@ -139,10 +156,15 @@ namespace CameraFrameUtilities
         }
 
         // handles the bililerp for each color channel
-        private static float bililerp(float LT, float RT, float LB, float RB, Vector2 scale)
+        private static byte bililerp(byte LT, byte RT, byte LB, byte RB, Vector2 scale)
         {
-            //TODO
-            return 0;
+            // lerp horizontally
+            float top_row = LT * (1 - scale.x) + RT * scale.x;
+            float bottom_row = LB * (1 - scale.x) + RB * scale.x;
+
+            // lerp vertically
+            float result = top_row * (1 - scale.y) + bottom_row * scale.y;
+            return (byte) result;
         }
 
         // Get a bgra8 pixel from an unsafe frame array
@@ -164,30 +186,30 @@ namespace CameraFrameUtilities
         }
 
         // Set a bgra8 pixel on an unsafe frame array with bufferlayout (may just zero?)
-        private unsafe static void setPixel(byte* frameData, int i, int j, Color color, BitmapPlaneDescription bufferLayout)
+        private unsafe static void setPixel(byte* frameData, int i, int j, byte[] color, BitmapPlaneDescription bufferLayout)
         {
-            frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j] = (byte)((int)color.b * 255);
-            frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = (byte)((int)color.g * 255);
-            frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = (byte)((int)color.r * 255);
-            frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = (byte)((int)color.a * 255);
+            frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j] = color[0];
+            frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = color[1];
+            frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = color[2];
+            frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = color[3];
         }
 
         // Set a bgra8 pixel on an unsafe frame array without bufferlayout
-        private unsafe static void setPixel(byte* frameData, int i, int j, Color color, int stride)
+        private unsafe static void setPixel(byte* frameData, int i, int j, byte[] color, int stride)
         {
-            frameData[stride * i + 4 * j] = (byte)((int)color.b * 255);
-            frameData[stride * i + 4 * j + 1] = (byte)((int)color.g * 255);
-            frameData[stride * i + 4 * j + 2] = (byte)((int)color.r * 255);
-            frameData[stride * i + 4 * j + 3] = (byte)((int)color.a * 255);
+            frameData[stride * i + 4 * j] = color[0];
+            frameData[stride * i + 4 * j + 1] = color[1];
+            frameData[stride * i + 4 * j + 2] = color[2];
+            frameData[stride * i + 4 * j + 3] = color[3];
         }
 
         // Set a bgra8 pixel on a managed frame array
-        private static void setPixel(byte[] framedata, int i, int j, int stride, Color color)
+        private static void setPixel(byte[] framedata, int i, int j, int stride, byte[] color)
         {
-            framedata[stride * i + 4 * j] = (byte)((int)color.b * 255);
-            framedata[stride * i + 4 * j + 1] = (byte)((int)color.g * 255);
-            framedata[stride * i + 4 * j + 2] = (byte)((int)color.r * 255);
-            framedata[stride * i + 4 * j + 3] = (byte)((int)color.a * 255);
+            framedata[stride * i + 4 * j] = color[0];
+            framedata[stride * i + 4 * j + 1] = color[1];
+            framedata[stride * i + 4 * j + 2] = color[2];
+            framedata[stride * i + 4 * j + 3] = color[3];
         }
     }
 #endif
