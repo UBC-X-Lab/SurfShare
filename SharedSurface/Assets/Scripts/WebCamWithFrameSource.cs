@@ -302,19 +302,20 @@ namespace CustomVideoSources
                                 // corners are set, ready to transmit masked frames
                                 if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
                                 {
-                                    Point?[] corners = { null, null, null, null };
-                                    for (int corner_index = 0; corner_index < FrameHandler.corners.Count; corner_index++)
-                                    {
-                                        Vector3 corner = FrameHandler.corners[corner_index];
-                                        Point? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, videoMediaFrame, corner, bufferLayout);
-                                        if (corner_on_frame.HasValue)
-                                        {
-                                            // FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout);
-                                            corners[corner_index] = corner_on_frame;
-                                        }
-                                    }
+                                    //Point?[] corners = { null, null, null, null };
+                                    //for (int corner_index = 0; corner_index < FrameHandler.corners.Count; corner_index++)
+                                    //{
+                                    //    Vector3 corner = FrameHandler.corners[corner_index];
+                                    //    Point? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, videoMediaFrame, corner, bufferLayout.Width, bufferLayout.Height);
+                                    //    if (corner_on_frame.HasValue)
+                                    //    {
+                                    //        FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout);
+                                    //    }
+                                    //}
+
                                     IntPtr target_frame = Marshal.AllocHGlobal(targetStride * targetHeight);
-                                    FrameProcessor.naiveMasking(dataInBytes, (byte*) target_frame, corners, bufferLayout, targetWidth, targetHeight);
+                                    FrameProcessor.naiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, (byte*) target_frame, bufferLayout, targetWidth, targetHeight);
+                                    // FrameProcessor.projectionMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, (byte*)target_frame, bufferLayout, targetWidth, targetHeight);
 
                                     // Enqueue a frame in the internal frame queue. This will make a copy
                                     // of the frame into a pooled buffer owned by the frame queue.
