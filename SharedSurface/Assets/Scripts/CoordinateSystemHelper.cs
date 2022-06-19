@@ -62,7 +62,7 @@ namespace CameraFrameUtilities
             System.Numerics.Vector3[] HLCoordinates = new System.Numerics.Vector3[unityPositions.Length];
             for (int i = 0; i < unityPositions.Length; i++)
             {
-                HLCoordinates[i] = NumericsConversionExtensions.ToSystem(unityPositions[i]);
+                HLCoordinates[i] = NumericsConversionExtensions.ToSystem(unityPositions[i]); // use matrix? (need some kind of broadcast operation)
             }
 #if ENABLE_WINMD_SUPPORT
             var HLWorldOrigin = Marshal.GetObjectForIUnknown(WindowsMREnvironment.OriginSpatialCoordinateSystem) as SpatialCoordinateSystem;
@@ -73,7 +73,7 @@ namespace CameraFrameUtilities
                 System.Numerics.Vector3[] frameCoordinates = new System.Numerics.Vector3[HLCoordinates.Length];
                 for (int i = 0; i < HLCoordinates.Length; i++)
                 {
-                    frameCoordinates[i] = System.Numerics.Vector3.Transform(HLCoordinates[i], transformToFrame.Value);
+                    frameCoordinates[i] = System.Numerics.Vector3.Transform(HLCoordinates[i], transformToFrame.Value); // again, use matrix?
                 }
                 Point[] points = new Point[HLCoordinates.Length];
                 videoMediaFrame.CameraIntrinsics.ProjectManyOntoFrame(frameCoordinates, points);
@@ -94,9 +94,12 @@ namespace CameraFrameUtilities
         }
     }
 
-    public static class FrameProcessor
+    public unsafe static class FrameProcessor
     {
-        private static byte[] prev_target_frame; // managed byte array storing the previous frame
+        public static byte* target_frame;
+        private static byte[] first_frame;
+        private static bool is_first_frame;
+
         public static unsafe void addPoints(byte* frameData, int X, int Y, BitmapPlaneDescription bufferLayout) // bgra8
         {
             for (int i = (0 > Y - 10 ? 0 : Y - 10); i < (bufferLayout.Height < Y + 10 ? bufferLayout.Height : Y + 10); i++)
@@ -110,12 +113,18 @@ namespace CameraFrameUtilities
         }
 
         // camera image masking without considering the camera projection (operate on originaly frameData)
-        public static unsafe void naiveMasking(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, byte* camera_frame, byte* target_frame, BitmapPlaneDescription bufferLayout, int targetWidth, int targetHeight)
+        public static void naiveMasking(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, byte* camera_frame, BitmapPlaneDescription bufferLayout, int targetWidth, int targetHeight)
         {
             if (FrameHandler.corners.Count < 4)
             {
                 Debug.Log("This function should only be called after the frame corners are defined!");
                 return;
+            }
+
+            // save the first frame as the background
+            if (is_first_frame)
+            {
+
             }
 
             // get the corner coordinates on the camera frame
@@ -129,6 +138,10 @@ namespace CameraFrameUtilities
                     // FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout);
                     corners[corner_index] = corner_on_frame;
                 }
+                else
+                {
+                    Debug.Log("Frame corner projection failed!");
+                }
             }
 
             // get the X_Axis and Y_Axis of the region to crop
@@ -136,20 +149,18 @@ namespace CameraFrameUtilities
             Vector2 camera_X_Axis = Point2Vector2(corners[1]) - Point2Vector2(corners[0]);
             Vector2 camera_Y_Axis = Point2Vector2(corners[2]) - Point2Vector2(corners[0]);
 
-            //byte[] camera_frame = new byte[bufferLayout.Stride * bufferLayout.Height];
-            //Marshal.Copy((System.IntPtr) frameData, camera_frame, bufferLayout.StartIndex, bufferLayout.Stride * bufferLayout.Height); // will this work?
 
             // iterate through and set the pixels in the target frame (note: Y is i, X is j)
             for (int Y = 0; Y < targetHeight; Y++)
             {
                 for (int X = 0; X < targetWidth; X++)
                 {
-                    Vector2 camera_coor = camera_X_Axis * (X / targetWidth) + camera_Y_Axis * (Y / targetHeight) + camera_origin;
-                    if (camera_coor.x < 0 || camera_coor.x > bufferLayout.Width || camera_coor.y < 0 || camera_coor.y > bufferLayout.Height) // if outside the original camera frame
+                    Vector2 camera_coor = camera_X_Axis * (X / (float)targetWidth) + camera_Y_Axis * (Y / (float)targetHeight) + camera_origin;
+
+                    if (camera_coor.x < 0 || camera_coor.x > bufferLayout.Width - 1 || camera_coor.y < 0 || camera_coor.y > bufferLayout.Height - 1) // if outside the original camera frame
                     {
-                        int i = Y; int j = X;
-                        byte[] prev_pixel = getPixel(prev_target_frame, i, j, targetWidth * 4);
-                        setPixel(target_frame, i, j, prev_pixel, targetWidth * 4);
+                        // since we are overwriting the same frame, just skip
+                        continue;
                     }
                     else // inside the original camera frame
                     {
@@ -172,14 +183,10 @@ namespace CameraFrameUtilities
                     }
                 }
             }
-
-            // copy the target frame to the previous frame
-            prev_target_frame = new byte[targetWidth * targetHeight * 4];
-            Marshal.Copy((System.IntPtr)target_frame, prev_target_frame, 0, prev_target_frame.Length);
         }
 
         // camera image masking considering the camera projection
-        public static unsafe void projectionMasking(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, byte* camera_frame, byte* target_frame, BitmapPlaneDescription bufferLayout, int targetWidth, int targetHeight)
+        public static void projectionMasking(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, byte* camera_frame, BitmapPlaneDescription bufferLayout, int targetWidth, int targetHeight)
         {
             if (FrameHandler.corners.Count < 4)
             {
@@ -199,7 +206,7 @@ namespace CameraFrameUtilities
                 Vector3[] current_world_row = new Vector3[targetWidth]; // the current row of world coordinates
                 for (int X = 0; X < targetWidth; X++)
                 {
-                    current_world_row[X] = world_X_Axis * (X / targetWidth) + world_Y_Axis * (Y / targetHeight) + world_origin;
+                    current_world_row[X] = world_X_Axis * (X / (float)targetWidth) + world_Y_Axis * (Y / (float)targetHeight) + world_origin;
                 }
 
                 // get the current row of projected camera coordinates
@@ -213,11 +220,10 @@ namespace CameraFrameUtilities
                 for (int X = 0; X < targetWidth; X++)
                 {
                     Vector2 camera_coor = Point2Vector2(camera_coors[Y][X]);
-                    if (camera_coor.x < 0 || camera_coor.x > bufferLayout.Width || camera_coor.y < 0 || camera_coor.y > bufferLayout.Height) // if outside the original camera frame
+                    if (camera_coor.x < 0 || camera_coor.x > bufferLayout.Width - 1 || camera_coor.y < 0 || camera_coor.y > bufferLayout.Height - 1) // if outside the original camera frame
                     {
-                        int i = Y; int j = X;
-                        byte[] prev_pixel = getPixel(prev_target_frame, i, j, targetWidth * 4);
-                        setPixel(target_frame, i, j, prev_pixel, targetWidth * 4);
+                        // since we are overwriting the same frame, just skip
+                        continue;
                     }
                     else // inside the original camera frame
                     {
@@ -240,10 +246,6 @@ namespace CameraFrameUtilities
                     }
                 }
             }
-
-            // copy the target frame to the previous frame
-            prev_target_frame = new byte[targetWidth * targetHeight * 4];
-            Marshal.Copy((System.IntPtr)target_frame, prev_target_frame, 0, prev_target_frame.Length);
         }
 
         // bililerp color
@@ -254,21 +256,7 @@ namespace CameraFrameUtilities
             int channel = 0;
             while (channel < 3)
             {
-                switch (channel)
-                {
-                    case 0:
-                        result_color[0] = bililerp(C_LT[0], C_RT[0], C_LB[0], C_RB[0], scale);
-                        break;
-                    case 1:
-                        result_color[1] = bililerp(C_LT[1], C_RT[1], C_LB[1], C_RB[1], scale);
-                        break;
-                    case 2:
-                        result_color[2] = bililerp(C_LT[2], C_RT[2], C_LB[2], C_RB[2], scale);
-                        break;
-                    default:
-                        Debug.Log("Misterious channel, how did you wind up here?");
-                        break;
-                }
+                result_color[channel] = bililerp(C_LT[channel], C_RT[channel], C_LB[channel], C_RB[channel], scale);
                 channel++;
             }
             return result_color;
@@ -287,7 +275,7 @@ namespace CameraFrameUtilities
         }
 
         // Get a bgra8 pixel from an unsafe frame array
-        private unsafe static byte[] getPixel(byte* frameData, int i, int j, BitmapPlaneDescription bufferLayout) // returns a byte storing bgra
+        private static byte[] getPixel(byte* frameData, int i, int j, BitmapPlaneDescription bufferLayout) // returns a byte storing bgra
         {
             return new byte[]{frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j],
                               frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1],
@@ -305,7 +293,7 @@ namespace CameraFrameUtilities
         }
 
         // Set a bgra8 pixel on an unsafe frame array with bufferlayout (may just zero?)
-        private unsafe static void setPixel(byte* frameData, int i, int j, byte[] color, BitmapPlaneDescription bufferLayout)
+        private static void setPixel(byte* frameData, int i, int j, byte[] color, BitmapPlaneDescription bufferLayout)
         {
             frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j] = color[0];
             frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = color[1];
@@ -314,7 +302,7 @@ namespace CameraFrameUtilities
         }
 
         // Set a bgra8 pixel on an unsafe frame array without bufferlayout
-        private unsafe static void setPixel(byte* frameData, int i, int j, byte[] color, int stride)
+        private static void setPixel(byte* frameData, int i, int j, byte[] color, int stride)
         {
             frameData[stride * i + 4 * j] = color[0];
             frameData[stride * i + 4 * j + 1] = color[1];

@@ -60,10 +60,25 @@ namespace CustomVideoSources
         private MediaFrameReader mediaFrameReader;
         private bool taskRunning = false;
         //private SoftwareBitmap backBuffer;
+
+        private int targetWidth = 480;
+        private int targetHeight = 270;
 #endif
 
         protected override async void OnEnable() // potentially callable as an async function
         {
+            unsafe 
+            {
+#if ENABLE_WINMD_SUPPORT
+                // initialize target_frame
+                FrameProcessor.target_frame = (byte*)Marshal.AllocHGlobal(targetWidth * targetHeight * 4);
+                for (int i = 0; i < targetWidth * targetHeight * 4; i++)
+                {
+                    FrameProcessor.target_frame[i] = 255;
+                }
+#endif
+            }
+
             // Debug.Log("WebCamWithFrameSourceEnabled");
             // request and enable camera access
 #if UNITY_WSA && !UNITY_EDITOR
@@ -107,6 +122,14 @@ namespace CustomVideoSources
             mediaFrameReader.FrameArrived -= ColorFrameReader_FrameArrived;
             mediaCapture.Dispose();
             mediaCapture = null;
+#endif
+
+#if ENABLE_WINMD_SUPPORT
+            unsafe
+            {
+                Marshal.FreeHGlobal((IntPtr)FrameProcessor.target_frame);
+            }
+
 #endif
             base.OnDisable();
         }
@@ -294,42 +317,22 @@ namespace CustomVideoSources
                              
                                 BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
 
-                                // set the target height and width for the target frame (may want to use a lower height / width later)
-                                int targetWidth = bufferLayout.Width;
-                                int targetHeight = bufferLayout.Height;
-                                int targetStride = targetWidth * 4;
-
                                 // corners are set, ready to transmit masked frames
                                 if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
                                 {
-                                    //Point?[] corners = { null, null, null, null };
-                                    //for (int corner_index = 0; corner_index < FrameHandler.corners.Count; corner_index++)
-                                    //{
-                                    //    Vector3 corner = FrameHandler.corners[corner_index];
-                                    //    Point? corner_on_frame = CoordinateSystemHelper.GetFramePosition(mediaFrameReference.CoordinateSystem, videoMediaFrame, corner, bufferLayout.Width, bufferLayout.Height);
-                                    //    if (corner_on_frame.HasValue)
-                                    //    {
-                                    //        FrameProcessor.addPoints(dataInBytes, (int) corner_on_frame.Value.X, (int) corner_on_frame.Value.Y, bufferLayout);
-                                    //    }
-                                    //}
-
-                                    IntPtr target_frame = Marshal.AllocHGlobal(targetStride * targetHeight);
-                                    FrameProcessor.naiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, (byte*) target_frame, bufferLayout, targetWidth, targetHeight);
-                                    // FrameProcessor.projectionMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, (byte*)target_frame, bufferLayout, targetWidth, targetHeight);
+                                    // FrameProcessor.naiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout, targetWidth, targetHeight);
+                                    FrameProcessor.projectionMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout, targetWidth, targetHeight);
 
                                     // Enqueue a frame in the internal frame queue. This will make a copy
                                     // of the frame into a pooled buffer owned by the frame queue.
                                     var frame = new Argb32VideoFrame
                                     {
-                                        data = target_frame,
-                                        stride = targetStride,
+                                        data = (IntPtr)FrameProcessor.target_frame,
+                                        stride = targetWidth * 4,
                                         width = (uint)targetWidth,
                                         height = (uint)targetHeight
                                     };
                                     _frameQueue.Enqueue(frame);
-
-                                    // free the target_frame from memory
-                                    Marshal.FreeHGlobal(target_frame);
                                 }
                                 else // corners are not set yet, transmit original frames
                                 {
