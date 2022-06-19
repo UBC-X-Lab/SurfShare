@@ -98,7 +98,8 @@ namespace CameraFrameUtilities
     {
         public static byte* target_frame;
         private static byte[] first_frame;
-        private static bool is_first_frame;
+        private static bool is_first_frame = true;
+        private static bool enable_bg_subtraction = false;
 
         public static unsafe void addPoints(byte* frameData, int X, int Y, BitmapPlaneDescription bufferLayout) // bgra8
         {
@@ -119,12 +120,6 @@ namespace CameraFrameUtilities
             {
                 Debug.Log("This function should only be called after the frame corners are defined!");
                 return;
-            }
-
-            // save the first frame as the background
-            if (is_first_frame)
-            {
-
             }
 
             // get the corner coordinates on the camera frame
@@ -176,11 +171,30 @@ namespace CameraFrameUtilities
                         }
                         Vector2 scale = new Vector2(camera_coor.x - Mathf.Floor(camera_coor.x), camera_coor.y - Mathf.Floor(camera_coor.y));
                         byte[] target_color = color_bililerp(neighbor_colors[0], neighbor_colors[1], neighbor_colors[2], neighbor_colors[3], scale); // get the target color from color_bililerp, TODO
-                        
+
                         // set the pixel onto the target frame
                         int i = Y; int j = X;
                         setPixel(target_frame, i, j, target_color, targetWidth * 4);
                     }
+                }
+            }
+
+            // naive background subtraction
+            if (enable_bg_subtraction)
+            {
+                if (is_first_frame)
+                {
+                    // save the first frame as the background
+                    first_frame = new byte[targetWidth * targetHeight * 4];
+#if ENABLE_WINMD_SUPPORT
+                    Marshal.Copy((System.IntPtr)target_frame, first_frame, 0, first_frame.Length);
+#endif
+                    Debug.Log("first frame saved as background!");
+                    is_first_frame = false;
+                }
+                else
+                {
+                    bg_subtraction(targetWidth, targetHeight);
                 }
             }
         }
@@ -246,6 +260,53 @@ namespace CameraFrameUtilities
                     }
                 }
             }
+
+            // naive background subtraction
+            if (enable_bg_subtraction)
+            {
+                if (is_first_frame)
+                {
+                    // save the first frame as the background
+                    first_frame = new byte[targetWidth * targetHeight * 4];
+#if ENABLE_WINMD_SUPPORT
+                    Marshal.Copy((System.IntPtr)target_frame, first_frame, 0, first_frame.Length);
+#endif
+                    Debug.Log("first frame saved as background!");
+                    is_first_frame = false;
+                }
+                else
+                {
+                    bg_subtraction(targetWidth, targetHeight);
+                }
+            }
+        }
+
+        private static void bg_subtraction(int targetWidth, int targetHeight)
+        {
+            for (int i = 0; i < targetHeight; i++)
+            {
+                for (int j = 0; j < targetWidth; j++)
+                {
+                    byte[] current_color = getPixel(target_frame, i, j, targetWidth * 4);
+                    byte[] bg_color = getPixel(first_frame, i, j, targetWidth * 4);
+
+                    bool close_enough = true;
+                    for (int k = 0; k < 3; k++)
+                    {
+                        if (Mathf.Abs((int)current_color[k] - (int)bg_color[k]) > 10)
+                        {
+                            close_enough = false;
+                            break;
+                        }
+                    }
+
+                    if (close_enough)
+                    {
+                        byte[] result_color = new byte[] { 0, 0, 0, 255 }; // nah, just set to black
+                        setPixel(target_frame, i, j, result_color, targetWidth * 4);
+                    }
+                }
+            }
         }
 
         // bililerp color
@@ -285,6 +346,15 @@ namespace CameraFrameUtilities
 
         // Get a bgra8 pixel from a managed frame array
         private static byte[] getPixel(byte[] frameData, int i, int j, int stride)
+        {
+            return new byte[]{frameData[stride * i + 4 * j],
+                              frameData[stride * i + 4 * j + 1],
+                              frameData[stride * i + 4 * j + 2],
+                              frameData[stride * i + 4 * j + 3]};
+        }
+
+        // Get a bgra8 pixel from an unsafe frame array without bufferlayout
+        private static byte[] getPixel(byte* frameData, int i, int j, int stride)
         {
             return new byte[]{frameData[stride * i + 4 * j],
                               frameData[stride * i + 4 * j + 1],
