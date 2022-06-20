@@ -145,11 +145,16 @@ namespace CameraFrameUtilities
             Vector2 camera_Y_Axis = Point2Vector2(corners[2]) - Point2Vector2(corners[0]);
 
 
+            // Avoid heal allocation and function calls
+            // Use native functions instead of Unity functions as much as possible
+
             // iterate through and set the pixels in the target frame (note: Y is i, X is j)
             for (int Y = 0; Y < targetHeight; Y++)
             {
                 for (int X = 0; X < targetWidth; X++)
                 {
+                    // multiplier = camera_X_Axis / (float) targetWidth, hoist this out of this loop
+                    // X * multiplier
                     Vector2 camera_coor = camera_X_Axis * (X / (float)targetWidth) + camera_Y_Axis * (Y / (float)targetHeight) + camera_origin;
 
                     if (camera_coor.x < 0 || camera_coor.x > bufferLayout.Width - 1 || camera_coor.y < 0 || camera_coor.y > bufferLayout.Height - 1) // if outside the original camera frame
@@ -159,11 +164,11 @@ namespace CameraFrameUtilities
                     }
                     else // inside the original camera frame
                     {
-                        Vector2[] neighbors = new Vector2[] { new Vector2(Mathf.Floor(camera_coor.x), Mathf.Floor(camera_coor.y)),
+                        Vector2[] neighbors = new Vector2[] { new Vector2(Mathf.Floor(camera_coor.x), Mathf.Floor(camera_coor.y)), // probably use C# native math floor
                                                               new Vector2(Mathf.Ceil(camera_coor.x), Mathf.Floor(camera_coor.y)),
                                                               new Vector2(Mathf.Floor(camera_coor.x), Mathf.Ceil(camera_coor.y)),
-                                                              new Vector2(Mathf.Ceil(camera_coor.x), Mathf.Ceil(camera_coor.y))};
-                        List<byte[]> neighbor_colors = new List<byte[]>();
+                                                              new Vector2(Mathf.Ceil(camera_coor.x), Mathf.Ceil(camera_coor.y))}; // change managed arrays to unsafe pointers to arrays (stackalloc)
+                        List<byte[]> neighbor_colors = new List<byte[]>(); // take out the allocation
                         for (int color_index = 0; color_index < 4; color_index++)
                         {
                             byte[] pixel_color = getPixel(camera_frame, (int) neighbors[color_index].y, (int) neighbors[color_index].x, bufferLayout);
