@@ -50,41 +50,33 @@ namespace CameraFrameUtilities
         }
 
         // project many to frame
-        public static Point[] GetManyFramePosition(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, Vector3[] unityPositions, int cameraFrameWidth, int cameraFrameHeight)
-        {
-            System.Numerics.Vector3[] HLCoordinates = new System.Numerics.Vector3[unityPositions.Length];
-            for (int i = 0; i < unityPositions.Length; i++)
-            {
-                HLCoordinates[i] = NumericsConversionExtensions.ToSystem(unityPositions[i]); // use matrix? (need some kind of broadcast operation)
-            }
-#if ENABLE_WINMD_SUPPORT
-            var HLWorldOrigin = Marshal.GetObjectForIUnknown(WindowsMREnvironment.OriginSpatialCoordinateSystem) as SpatialCoordinateSystem;
-#endif
-            System.Numerics.Matrix4x4? transformToFrame = HLWorldOrigin.TryGetTransformTo(frameCoordinateSystem);
-            if (transformToFrame.HasValue)
-            {
-                System.Numerics.Vector3[] frameCoordinates = new System.Numerics.Vector3[HLCoordinates.Length];
-                for (int i = 0; i < HLCoordinates.Length; i++)
-                {
-                    frameCoordinates[i] = System.Numerics.Vector3.Transform(HLCoordinates[i], transformToFrame.Value); // again, use matrix?
-                }
-                Point[] points = new Point[HLCoordinates.Length];
-                videoMediaFrame.CameraIntrinsics.ProjectManyOntoFrame(frameCoordinates, points);
+//        public static void GetManyFramePosition(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, System.Numerics.Vector3[] HLCoordinates, 
+//            System.Numerics.Vector3[] frameCoordinates, Point[] target_points, int cameraFrameWidth, int cameraFrameHeight)
+//        {
+//#if ENABLE_WINMD_SUPPORT
+//            var HLWorldOrigin = Marshal.GetObjectForIUnknown(WindowsMREnvironment.OriginSpatialCoordinateSystem) as SpatialCoordinateSystem;
+//#endif
+//            System.Numerics.Matrix4x4? transformToFrame = HLWorldOrigin.TryGetTransformTo(frameCoordinateSystem);
+//            if (transformToFrame.HasValue)
+//            {
+//                for (int i = 0; i < HLCoordinates.Length; i++)
+//                {
+//                    frameCoordinates[i] = System.Numerics.Vector3.Transform(HLCoordinates[i], transformToFrame.Value);
+//                }
+//                videoMediaFrame.CameraIntrinsics.ProjectManyOntoFrame(frameCoordinates, target_points);
 
-                // flip back
-                for (int i = 0; i < points.Length; i++)
-                {
-                    points[i].X = cameraFrameWidth - points[i].X;
-                    points[i].Y = cameraFrameHeight - points[i].Y;
-                }
-                return points;
-            }
-            else
-            {
-                Debug.Log("Transformation Matrix returned null!");
-                return null;
-            }
-        }
+//                // flip back
+//                for (int i = 0; i < target_points.Length; i++)
+//                {
+//                    target_points[i].X = cameraFrameWidth - target_points[i].X;
+//                    target_points[i].Y = cameraFrameHeight - target_points[i].Y;
+//                }
+//            }
+//            else
+//            {
+//                Debug.Log("Transformation Matrix returned null!");
+//            }
+//        }
     }
 
     public unsafe static class FrameProcessor
@@ -96,7 +88,18 @@ namespace CameraFrameUtilities
         private static bool is_first_frame = true;
         private static bool enable_bg_subtraction = false;
 
-        public static unsafe void addPoints(byte* frameData, int X, int Y, BitmapPlaneDescription bufferLayout) // bgra8
+        // masking with projection utlities
+        public static List<System.Numerics.Vector3[]> world_coors = new List<System.Numerics.Vector3[]>();
+        public static List<Point[]> camera_coors = new List<Point[]>();
+        public static List<System.Numerics.Vector3[]> frame_coors = new List<System.Numerics.Vector3[]>();
+        public static List<Point[]> target_points = new List<Point[]>();
+
+        private static bool world_system_defined = false;
+        private static System.Numerics.Vector3 world_origin; // those are constants once defined;
+        private static System.Numerics.Vector3 world_X_Axis;
+        private static System.Numerics.Vector3 world_Y_Axis;
+
+        public static unsafe void AddPoints(byte* frameData, int X, int Y, BitmapPlaneDescription bufferLayout) // bgra8
         {
             for (int i = (0 > Y - 10 ? 0 : Y - 10); i < (bufferLayout.Height < Y + 10 ? bufferLayout.Height : Y + 10); i++)
             {
@@ -109,7 +112,7 @@ namespace CameraFrameUtilities
         }
 
         // camera image masking without considering the camera projection (operate on originaly frameData)
-        public static void naiveMasking(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, byte* camera_frame, int camera_start_index, int camera_width, int camera_height)
+        public static void NaiveMasking(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, byte* camera_frame, int camera_start_index, int camera_width, int camera_height)
         {
             if (FrameHandler.corners.Count < 4)
             {
@@ -174,11 +177,8 @@ namespace CameraFrameUtilities
                         neighbors[2].X = Math.Floor(camera_coor.X); neighbors[2].Y = Math.Ceiling(camera_coor.Y);
                         neighbors[3].X = Math.Ceiling(camera_coor.X); neighbors[3].Y = Math.Ceiling(camera_coor.Y);
 
-                        // List<byte[]> neighbor_colors = new List<byte[]>(); // take out the allocation
                         for (int color_index = 0; color_index < 4; color_index++)
                         {
-                            //byte[] pixel_color = getPixel(camera_frame, (int) neighbors[color_index].Y, (int) neighbors[color_index].X, bufferLayout); // probably identify a pointer and then pointer, pointer[1], ...
-
                             byte* pixel_color = camera_frame + (camera_start_index + camera_width * 4 * (int)neighbors[color_index].Y + 4 * (int)neighbors[color_index].X);
                             neighbor_colors[color_index * 4] = pixel_color[0];
                             neighbor_colors[color_index * 4 + 1] = pixel_color[1];
@@ -186,7 +186,7 @@ namespace CameraFrameUtilities
                             neighbor_colors[color_index * 4 + 3] = pixel_color[3];
                         }
                         double x_scale = camera_coor.X - neighbors[0].X; double y_scale = camera_coor.Y - neighbors[0].Y;
-                        byte* target_color = color_bililerp(neighbor_colors, (float)x_scale, (float)y_scale); // get the target color from color_bililerp, TODO
+                        byte* target_color = Color_bililerp(neighbor_colors, (float)x_scale, (float)y_scale); // get the target color from color_bililerp, TODO
 
                         // set the pixel onto the target frame
                         int i = Y; int j = X;
@@ -214,101 +214,139 @@ namespace CameraFrameUtilities
                 }
                 else
                 {
-                    bg_subtraction(targetWidth, targetHeight);
+                    Bg_subtraction(targetWidth, targetHeight);
                 }
             }
         }
 
         // camera image masking considering the camera projection
-//        public static void projectionMasking(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, byte* camera_frame, BitmapPlaneDescription bufferLayout, int targetWidth, int targetHeight)
-//        {
-//            if (FrameHandler.corners.Count < 4)
-//            {
-//                Debug.Log("This function should only be called after the frame corners are defined!");
-//                return;
-//            }
+        public static void ProjectionMasking(SpatialCoordinateSystem frameCoordinateSystem, VideoMediaFrame videoMediaFrame, byte* camera_frame, int camera_start_index, int camera_width, int camera_height)
+        {
+            if (FrameHandler.corners.Count < 4)
+            {
+                Debug.Log("This function should only be called after the frame corners are defined!");
+                return;
+            }
 
-//            // get the X_Axis and Y_Axis of the region to crop in the world
-//            Vector3 world_origin = FrameHandler.corners[0];
-//            Vector3 world_X_Axis = FrameHandler.corners[1] - FrameHandler.corners[0];
-//            Vector3 world_Y_Axis = FrameHandler.corners[2] - FrameHandler.corners[0];
+            // get the X_Axis and Y_Axis of the region to crop in the world (constant, only initialize once)
+            if (!world_system_defined)
+            {
+                // we directly use the HL system
+                world_origin = NumericsConversionExtensions.ToSystem(FrameHandler.corners[0]);
+                world_X_Axis = (NumericsConversionExtensions.ToSystem(FrameHandler.corners[1]) - world_origin) / targetWidth;
+                world_Y_Axis = (NumericsConversionExtensions.ToSystem(FrameHandler.corners[2]) - world_origin) / targetHeight;
 
-//            // get the projected camera coordinates
-//            List<Point[]> camera_coors = new List<Point[]>();
-//            for (int Y = 0; Y < targetHeight; Y++)
-//            {
-//                Vector3[] current_world_row = new Vector3[targetWidth]; // the current row of world coordinates
-//                for (int X = 0; X < targetWidth; X++)
-//                {
-//                    current_world_row[X] = world_X_Axis * (X / (float)targetWidth) + world_Y_Axis * (Y / (float)targetHeight) + world_origin;
-//                }
+                // all world coordinates are constants, fill in
+                for (int Y = 0; Y < targetHeight; Y++)
+                {
+                    for (int X = 0; X < targetWidth; X++)
+                    {
+                        world_coors[Y][X] = world_X_Axis * X + world_Y_Axis * Y + world_origin;
+                    }
+                }
+                world_system_defined = true;
+            }
 
-//                // get the current row of projected camera coordinates
-//                Point[] current_camera_row = CoordinateSystemHelper.GetManyFramePosition(frameCoordinateSystem, videoMediaFrame, current_world_row, bufferLayout.Width, bufferLayout.Height);
-//                camera_coors.Add(current_camera_row);
-//            }
+#if ENABLE_WINMD_SUPPORT
+            var HLWorldOrigin = Marshal.GetObjectForIUnknown(WindowsMREnvironment.OriginSpatialCoordinateSystem) as SpatialCoordinateSystem;
+#endif
+            System.Numerics.Matrix4x4? transformToFrame = HLWorldOrigin.TryGetTransformTo(frameCoordinateSystem);
+            if (!transformToFrame.HasValue)
+            {
+                Debug.Log("Transformation Matrix returned null!");
+                return;
+            }
 
-//            // iterate through and set the pixels in the target frame (note: Y is i, X is j)
-//            for (int Y = 0; Y < targetHeight; Y++)
-//            {
-//                for (int X = 0; X < targetWidth; X++)
-//                {
-//                    Vector2 camera_coor = Point2Vector2(camera_coors[Y][X]);
-//                    if (camera_coor.x < 0 || camera_coor.x > bufferLayout.Width - 1 || camera_coor.y < 0 || camera_coor.y > bufferLayout.Height - 1) // if outside the original camera frame
-//                    {
-//                        // since we are overwriting the same frame, just skip
-//                        continue;
-//                    }
-//                    else // inside the original camera frame
-//                    {
-//                        Vector2[] neighbors = new Vector2[] { new Vector2(Mathf.Floor(camera_coor.x), Mathf.Floor(camera_coor.y)),
-//                                                              new Vector2(Mathf.Ceil(camera_coor.x), Mathf.Floor(camera_coor.y)),
-//                                                              new Vector2(Mathf.Floor(camera_coor.x), Mathf.Ceil(camera_coor.y)),
-//                                                              new Vector2(Mathf.Ceil(camera_coor.x), Mathf.Ceil(camera_coor.y))};
-//                        List<byte[]> neighbor_colors = new List<byte[]>();
-//                        for (int color_index = 0; color_index < 4; color_index++)
-//                        {
-//                            byte[] pixel_color = getPixel(camera_frame, (int)neighbors[color_index].y, (int)neighbors[color_index].x, bufferLayout);
-//                            neighbor_colors.Add(pixel_color);
-//                        }
-//                        Vector2 scale = new Vector2(camera_coor.x - Mathf.Floor(camera_coor.x), camera_coor.y - Mathf.Floor(camera_coor.y));
-//                        byte[] target_color = color_bililerp(neighbor_colors[0], neighbor_colors[1], neighbor_colors[2], neighbor_colors[3], scale); // get the target color from color_bililerp, TODO
+            // get the projected camera coordinates
+            for (int Y = 0; Y < targetHeight; Y++)
+            {
+                // get the current row of projected camera coordinates, in place modifying target_points[Y]
+                // CoordinateSystemHelper.GetManyFramePosition(frameCoordinateSystem, videoMediaFrame, world_coors[Y], frame_coors[Y], target_points[Y], camera_width, camera_height);
+                for (int X = 0; X < targetWidth; X++)
+                {
+                    frame_coors[Y][X] = System.Numerics.Vector3.Transform(world_coors[Y][X], transformToFrame.Value);
+                }
+                videoMediaFrame.CameraIntrinsics.ProjectManyOntoFrame(frame_coors[Y], target_points[Y]);
 
-//                        // set the pixel onto the target frame
-//                        int i = Y; int j = X;
-//                        setPixel(target_frame, i, j, target_color, targetWidth * 4);
-//                    }
-//                }
-//            }
+                // flip back
+                for (int X = 0; X < targetWidth; X++)
+                {
+                    target_points[Y][X].X = camera_width - target_points[Y][X].X;
+                    target_points[Y][X].Y = camera_height - target_points[Y][X].Y;
+                }
+            }
 
-//            // naive background subtraction
-//            if (enable_bg_subtraction)
-//            {
-//                if (is_first_frame)
-//                {
-//                    // save the first frame as the background
-//                    first_frame = new byte[targetWidth * targetHeight * 4];
-//#if ENABLE_WINMD_SUPPORT
-//                    Marshal.Copy((IntPtr)target_frame, first_frame, 0, first_frame.Length);
-//#endif
-//                    Debug.Log("first frame saved as background!");
-//                    is_first_frame = false;
-//                }
-//                else
-//                {
-//                    bg_subtraction(targetWidth, targetHeight);
-//                }
-//            }
-//        }
+            Point* neighbors = stackalloc Point[4];
+            byte* neighbor_colors = stackalloc byte[16]; // 4 neighbors * 4 channels
 
-        private static void bg_subtraction(int targetWidth, int targetHeight)
+            // iterate through and set the pixels in the target frame (note: Y is i, X is j)
+            for (int Y = 0; Y < targetHeight; Y++)
+            {
+                for (int X = 0; X < targetWidth; X++)
+                {
+                    Point camera_coor = camera_coors[Y][X];
+                    if (camera_coor.X < 0 || camera_coor.X > camera_width - 1 || camera_coor.Y < 0 || camera_coor.Y > camera_height - 1) // if outside the original camera frame
+                    {
+                        // since we are overwriting the same frame, just skip
+                        continue;
+                    }
+                    else // inside the original camera frame
+                    {
+                        neighbors[0].X = Math.Floor(camera_coor.X); neighbors[0].Y = Math.Floor(camera_coor.Y);
+                        neighbors[1].X = Math.Ceiling(camera_coor.X); neighbors[1].Y = Math.Floor(camera_coor.Y);
+                        neighbors[2].X = Math.Floor(camera_coor.X); neighbors[2].Y = Math.Ceiling(camera_coor.Y);
+                        neighbors[3].X = Math.Ceiling(camera_coor.X); neighbors[3].Y = Math.Ceiling(camera_coor.Y);
+
+                        for (int color_index = 0; color_index < 4; color_index++)
+                        {
+                            byte* pixel_color = camera_frame + (camera_start_index + camera_width * 4 * (int)neighbors[color_index].Y + 4 * (int)neighbors[color_index].X);
+                            neighbor_colors[color_index * 4] = pixel_color[0];
+                            neighbor_colors[color_index * 4 + 1] = pixel_color[1];
+                            neighbor_colors[color_index * 4 + 2] = pixel_color[2];
+                            neighbor_colors[color_index * 4 + 3] = pixel_color[3];
+                        }
+
+                        double x_scale = camera_coor.X - neighbors[0].X; double y_scale = camera_coor.Y - neighbors[0].Y;
+                        byte* target_color = Color_bililerp(neighbor_colors, (float)x_scale, (float)y_scale);
+
+                        // set the pixel onto the target frame
+                        int i = Y; int j = X;
+                        target_frame[targetWidth * 4 * i + 4 * j] = target_color[0];
+                        target_frame[targetWidth * 4 * i + 4 * j + 1] = target_color[1];
+                        target_frame[targetWidth * 4 * i + 4 * j + 2] = target_color[2];
+                        target_frame[targetWidth * 4 * i + 4 * j + 3] = target_color[3];
+                    }
+                }
+            }
+
+            // naive background subtraction
+            if (enable_bg_subtraction)
+            {
+                if (is_first_frame)
+                {
+                    // save the first frame as the background
+                    first_frame = new byte[targetWidth * targetHeight * 4];
+#if ENABLE_WINMD_SUPPORT
+                    Marshal.Copy((IntPtr)target_frame, first_frame, 0, first_frame.Length);
+#endif
+                    Debug.Log("first frame saved as background!");
+                    is_first_frame = false;
+                }
+                else
+                {
+                    Bg_subtraction(targetWidth, targetHeight);
+                }
+            }
+        }
+
+        private static void Bg_subtraction(int targetWidth, int targetHeight)
         {
             for (int i = 0; i < targetHeight; i++)
             {
                 for (int j = 0; j < targetWidth; j++)
                 {
-                    byte[] current_color = getPixel(target_frame, i, j, targetWidth * 4);
-                    byte[] bg_color = getPixel(first_frame, i, j, targetWidth * 4);
+                    byte[] current_color = GetPixel(target_frame, i, j, targetWidth * 4);
+                    byte[] bg_color = GetPixel(first_frame, i, j, targetWidth * 4);
 
                     bool close_enough = true;
                     for (int k = 0; k < 3; k++)
@@ -323,7 +361,7 @@ namespace CameraFrameUtilities
                     if (close_enough)
                     {
                         byte* result_color = stackalloc byte[] { 0, 0, 0, 255 }; // nah, just set to black
-                        setPixel(target_frame, i, j, result_color, targetWidth * 4);
+                        SetPixel(target_frame, i, j, result_color, targetWidth * 4);
                     }
                 }
             }
@@ -331,21 +369,21 @@ namespace CameraFrameUtilities
 
         // bililerp color
         // scale is the original vector subtracted by the integer part
-        private static byte* color_bililerp(byte* neighbor_colors, float x_scale, float y_scale)
+        private static byte* Color_bililerp(byte* neighbor_colors, float x_scale, float y_scale)
         {
             byte* result_color = stackalloc byte[4];
             result_color[3] = 255;
             int channel = 0;
             while (channel < 3)
             {
-                result_color[channel] = bililerp(neighbor_colors[channel], neighbor_colors[4 + channel], neighbor_colors[8 + channel], neighbor_colors[12 + channel], x_scale, y_scale);
+                result_color[channel] = Bililerp(neighbor_colors[channel], neighbor_colors[4 + channel], neighbor_colors[8 + channel], neighbor_colors[12 + channel], x_scale, y_scale);
                 channel++;
             }
             return result_color;
         }
 
         // handles the bililerp for each color channel
-        private static byte bililerp(byte LT, byte RT, byte LB, byte RB, float x_scale, float y_scale)
+        private static byte Bililerp(byte LT, byte RT, byte LB, byte RB, float x_scale, float y_scale)
         {
             // lerp horizontally
             float top_row = LT * (1 - x_scale) + RT * x_scale;
@@ -357,7 +395,7 @@ namespace CameraFrameUtilities
         }
 
         // Get a bgra8 pixel from an unsafe frame array
-        private static byte[] getPixel(byte* frameData, int i, int j, BitmapPlaneDescription bufferLayout) // returns a byte storing bgra
+        private static byte[] GetPixel(byte* frameData, int i, int j, BitmapPlaneDescription bufferLayout) // returns a byte storing bgra
         {
             return new byte[]{frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j],
                               frameData[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1],
@@ -366,7 +404,7 @@ namespace CameraFrameUtilities
         }
 
         // Get a bgra8 pixel from a managed frame array
-        private static byte[] getPixel(byte[] frameData, int i, int j, int stride)
+        private static byte[] GetPixel(byte[] frameData, int i, int j, int stride)
         {
             return new byte[]{frameData[stride * i + 4 * j],
                               frameData[stride * i + 4 * j + 1],
@@ -375,7 +413,7 @@ namespace CameraFrameUtilities
         }
 
         // Get a bgra8 pixel from an unsafe frame array without bufferlayout
-        private static byte[] getPixel(byte* frameData, int i, int j, int stride)
+        private static byte[] GetPixel(byte* frameData, int i, int j, int stride)
         {
             return new byte[]{frameData[stride * i + 4 * j],
                               frameData[stride * i + 4 * j + 1],
@@ -393,7 +431,7 @@ namespace CameraFrameUtilities
         }
 
         // Set a bgra8 pixel on an unsafe frame array without bufferlayout
-        private static void setPixel(byte* frameData, int i, int j, byte* color, int stride)
+        private static void SetPixel(byte* frameData, int i, int j, byte* color, int stride)
         {
             frameData[stride * i + 4 * j] = color[0];
             frameData[stride * i + 4 * j + 1] = color[1];
@@ -402,7 +440,7 @@ namespace CameraFrameUtilities
         }
 
         // Set a bgra8 pixel on a managed frame array
-        private static void setPixel(byte[] framedata, int i, int j, byte* color, int stride)
+        private static void SetPixel(byte[] framedata, int i, int j, byte* color, int stride)
         {
             framedata[stride * i + 4 * j] = color[0];
             framedata[stride * i + 4 * j + 1] = color[1];
