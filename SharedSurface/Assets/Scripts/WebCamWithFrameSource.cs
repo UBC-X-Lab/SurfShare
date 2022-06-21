@@ -60,9 +60,6 @@ namespace CustomVideoSources
         private MediaFrameReader mediaFrameReader;
         private bool taskRunning = false;
         //private SoftwareBitmap backBuffer;
-
-        private int targetWidth = 480;
-        private int targetHeight = 270;
 #endif
 
         protected override async void OnEnable() // potentially callable as an async function
@@ -71,8 +68,9 @@ namespace CustomVideoSources
             {
 #if ENABLE_WINMD_SUPPORT
                 // initialize target_frame
-                FrameProcessor.target_frame = (byte*)Marshal.AllocHGlobal(targetWidth * targetHeight * 4);
-                for (int i = 0; i < targetWidth * targetHeight * 4; i++)
+                FrameProcessor.target_frame = (byte*)Marshal.AllocHGlobal(FrameProcessor.targetWidth * FrameProcessor.targetHeight * 4);
+
+                for (int i = 0; i < FrameProcessor.targetWidth * FrameProcessor.targetHeight * 4; i++)
                 {
                     FrameProcessor.target_frame[i] = 255;
                 }
@@ -320,7 +318,7 @@ namespace CustomVideoSources
                                 // corners are set, ready to transmit masked frames
                                 if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
                                 {
-                                    FrameProcessor.naiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout, targetWidth, targetHeight);
+                                    FrameProcessor.naiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
                                     //FrameProcessor.projectionMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout, targetWidth, targetHeight);
 
                                     // Enqueue a frame in the internal frame queue. This will make a copy
@@ -328,9 +326,9 @@ namespace CustomVideoSources
                                     var frame = new Argb32VideoFrame
                                     {
                                         data = (IntPtr)FrameProcessor.target_frame,
-                                        stride = targetWidth * 4,
-                                        width = (uint)targetWidth,
-                                        height = (uint)targetHeight
+                                        stride = FrameProcessor.targetWidth * 4,
+                                        width = (uint)FrameProcessor.targetWidth,
+                                        height = (uint)FrameProcessor.targetHeight
                                     };
                                     _frameQueue.Enqueue(frame);
                                 }
@@ -398,7 +396,7 @@ namespace CustomVideoSources
             }
             else
             {
-                // Debug.Log("Queue was empty");
+                //Debug.Log("Queue was empty");
             }
         }
 
