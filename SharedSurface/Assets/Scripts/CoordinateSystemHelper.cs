@@ -248,6 +248,7 @@ namespace CameraFrameUtilities
             }
 
 #if ENABLE_WINMD_SUPPORT
+            // this could also be hoisted to world system defined
             var HLWorldOrigin = Marshal.GetObjectForIUnknown(WindowsMREnvironment.OriginSpatialCoordinateSystem) as SpatialCoordinateSystem;
 #endif
             System.Numerics.Matrix4x4? transformToFrame = HLWorldOrigin.TryGetTransformTo(frameCoordinateSystem);
