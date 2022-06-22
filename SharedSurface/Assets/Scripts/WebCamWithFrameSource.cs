@@ -68,12 +68,12 @@ namespace CustomVideoSources
             {
 #if ENABLE_WINMD_SUPPORT
                 // initialize projection masking utilities
+                FrameProcessor.world_coors = (System.Numerics.Vector3*)Marshal.AllocHGlobal(FrameProcessor.targetWidth * FrameProcessor.targetHeight * Marshal.SizeOf(new System.Numerics.Vector3()));
+                // FrameProcessor.camera_coors = (Point*)Marshal.AllocHGlobal(FrameProcessor.targetWidth * FrameProcessor.targetHeight * Marshal.SizeOf(new Point()));
                 for (int i = 0; i < FrameProcessor.targetHeight; i++)
                 {
-                    FrameProcessor.world_coors.Add(new System.Numerics.Vector3[FrameProcessor.targetWidth]);
-                    FrameProcessor.camera_coors.Add(new Point[FrameProcessor.targetWidth]);
-                    FrameProcessor.frame_coors.Add(new System.Numerics.Vector3[FrameProcessor.targetWidth]);
-                    FrameProcessor.target_points.Add(new Point[FrameProcessor.targetWidth]);
+                    FrameProcessor.camera_coors[i] = new Point[FrameProcessor.targetWidth];
+                    FrameProcessor.frame_coors[i] = new System.Numerics.Vector3[FrameProcessor.targetWidth];
                 }
                 Debug.Log("Projection masking initialized!");
 
@@ -136,6 +136,8 @@ namespace CustomVideoSources
             unsafe
             {
                 Marshal.FreeHGlobal((IntPtr)FrameProcessor.target_frame);
+                Marshal.FreeHGlobal((IntPtr)FrameProcessor.world_coors);
+                //Marshal.FreeHGlobal((IntPtr)FrameProcessor.camera_coors);
             }
 
 #endif
@@ -328,8 +330,8 @@ namespace CustomVideoSources
                                 // corners are set, ready to transmit masked frames
                                 if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
                                 {
-                                    FrameProcessor.NaiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
-                                    //FrameProcessor.ProjectionMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout, targetWidth, targetHeight);
+                                    //FrameProcessor.NaiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
+                                    FrameProcessor.ProjectionMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
 
                                     // Enqueue a frame in the internal frame queue. This will make a copy
                                     // of the frame into a pooled buffer owned by the frame queue.
