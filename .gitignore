@@ -1,4 +1,8 @@
 .DS_Store
+*.mp4
+*.png
+*.jpeg
+*.avi
 
 SharedSurface/Packages/System.Runtime.WindowsRuntime.4.7.0
 SharedSurface/app.config
