@@ -11,9 +11,16 @@ args = parser.parse_args()
 ## [create]
 #create Background Subtractor objects
 if args.algo == 'MOG2':
-    backSub = cv.createBackgroundSubtractorMOG2()
-else:
+    backSub = cv.createBackgroundSubtractorMOG2(detectShadows=False, history=1)
+elif args.algo == 'KNN':
     backSub = cv.createBackgroundSubtractorKNN()
+elif args.algo == "GMG":
+    backSub = cv.bgsegm.createBackgroundSubtractorGMG()
+elif args.algo == "MOG":
+    backSub = cv.bgsegm.createBackgroundSubtractorMOG()
+else:
+    print("Error: Target BGS algorithm not found!")
+    exit(1)
 ## [create]
 
 ## [capture]
