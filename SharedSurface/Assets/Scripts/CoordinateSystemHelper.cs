@@ -82,22 +82,17 @@ namespace CameraFrameUtilities
     public unsafe static class FrameProcessor
     {
         public static byte* target_frame;
-        public static int targetWidth = 640; // 760, 640
-        public static int targetHeight = 360; // 428, 360
+        public static int targetWidth = 480;
+        public static int targetHeight = 270;
         private static byte[] first_frame;
         private static bool is_first_frame = true;
         private static bool enable_bg_subtraction = false;
-        private static SpatialCoordinateSystem HLWorldOrigin;
 
         // masking with projection utlities
-        // 2-D versions
-        public static System.Numerics.Vector3* world_coors;
-        public static System.Numerics.Vector3[][] frame_coors = new System.Numerics.Vector3[targetHeight][];
-        public static Point[][] camera_coors = new Point[targetHeight][];
-
-        // 1-D versions
-        private static System.Numerics.Vector3[] frame_coors_1d = new System.Numerics.Vector3[targetWidth * targetHeight];
-        private static Point[] camera_coors_1d = new Point[targetWidth * targetHeight];
+        public static List<System.Numerics.Vector3[]> world_coors = new List<System.Numerics.Vector3[]>();
+        public static List<Point[]> camera_coors = new List<Point[]>();
+        public static List<System.Numerics.Vector3[]> frame_coors = new List<System.Numerics.Vector3[]>();
+        public static List<Point[]> target_points = new List<Point[]>();
 
         private static bool world_system_defined = false;
         private static System.Numerics.Vector3 world_origin; // those are constants once defined;
@@ -246,14 +241,16 @@ namespace CameraFrameUtilities
                 {
                     for (int X = 0; X < targetWidth; X++)
                     {
-                        world_coors[targetWidth * Y + X] = world_X_Axis * X + world_Y_Axis * Y + world_origin;
+                        world_coors[Y][X] = world_X_Axis * X + world_Y_Axis * Y + world_origin;
                     }
                 }
-                HLWorldOrigin = Marshal.GetObjectForIUnknown(WindowsMREnvironment.OriginSpatialCoordinateSystem) as SpatialCoordinateSystem;
                 world_system_defined = true;
-                Debug.Log("World defined!");
             }
 
+#if ENABLE_WINMD_SUPPORT
+            // this could also be hoisted to world system defined
+            var HLWorldOrigin = Marshal.GetObjectForIUnknown(WindowsMREnvironment.OriginSpatialCoordinateSystem) as SpatialCoordinateSystem;
+#endif
             System.Numerics.Matrix4x4? transformToFrame = HLWorldOrigin.TryGetTransformTo(frameCoordinateSystem);
             if (!transformToFrame.HasValue)
             {
@@ -261,36 +258,23 @@ namespace CameraFrameUtilities
                 return;
             }
 
-            // // get the projected camera coordinates
-            // 2-d version
-            //for (int Y = 0; Y < targetHeight; Y++)
-            //{
-            //    for (int X = 0; X < targetWidth; X++)
-            //    {
-            //        frame_coors[Y][X] = System.Numerics.Vector3.Transform(world_coors[targetWidth * Y + X], transformToFrame.Value);
-            //    }
-            //    videoMediaFrame.CameraIntrinsics.ProjectManyOntoFrame(frame_coors[Y], camera_coors[Y]);
-            //    // flip back
-            //    for (int X = 0; X < targetWidth; X++)
-            //    {
-            //        camera_coors[Y][X].X = camera_width - camera_coors[Y][X].X;
-            //        camera_coors[Y][X].Y = camera_height - camera_coors[Y][X].Y;
-            //    }
-            //}
-
-            // 1-D version
+            // get the projected camera coordinates
             for (int Y = 0; Y < targetHeight; Y++)
             {
+                // get the current row of projected camera coordinates, in place modifying target_points[Y]
+                // CoordinateSystemHelper.GetManyFramePosition(frameCoordinateSystem, videoMediaFrame, world_coors[Y], frame_coors[Y], target_points[Y], camera_width, camera_height);
                 for (int X = 0; X < targetWidth; X++)
                 {
-                    frame_coors_1d[targetWidth * Y + X] = System.Numerics.Vector3.Transform(world_coors[targetWidth * Y + X], transformToFrame.Value);
+                    frame_coors[Y][X] = System.Numerics.Vector3.Transform(world_coors[Y][X], transformToFrame.Value);
                 }
-            }
-            videoMediaFrame.CameraIntrinsics.ProjectManyOntoFrame(frame_coors_1d, camera_coors_1d);
-            for (int i = 0; i < camera_coors_1d.Length; i++)
-            {
-                camera_coors_1d[i].X = camera_width - camera_coors_1d[i].X;
-                camera_coors_1d[i].Y = camera_height - camera_coors_1d[i].Y;
+                videoMediaFrame.CameraIntrinsics.ProjectManyOntoFrame(frame_coors[Y], target_points[Y]);
+
+                // flip back
+                for (int X = 0; X < targetWidth; X++)
+                {
+                    target_points[Y][X].X = camera_width - target_points[Y][X].X;
+                    target_points[Y][X].Y = camera_height - target_points[Y][X].Y;
+                }
             }
 
             Point* neighbors = stackalloc Point[4];
@@ -301,14 +285,10 @@ namespace CameraFrameUtilities
             {
                 for (int X = 0; X < targetWidth; X++)
                 {
-                    Point camera_coor = camera_coors_1d[targetWidth * Y + X];
+                    Point camera_coor = camera_coors[Y][X];
                     if (camera_coor.X < 0 || camera_coor.X > camera_width - 1 || camera_coor.Y < 0 || camera_coor.Y > camera_height - 1) // if outside the original camera frame
                     {
                         // since we are overwriting the same frame, just skip
-                        //if (X == 0 && Y == 0 || X == targetWidth && Y == 0 || X == 0 && Y == targetHeight || X == targetWidth && Y == targetHeight)
-                        //{
-                        //    Debug.Log("Outside FoV!");
-                        //}
                         continue;
                     }
                     else // inside the original camera frame
