@@ -11,7 +11,7 @@ args = parser.parse_args()
 ## [create]
 #create Background Subtractor objects
 if args.algo == 'MOG2':
-    backSub = cv.createBackgroundSubtractorMOG2(detectShadows=False, history=1)
+    backSub = cv.createBackgroundSubtractorMOG2(detectShadows=False, history=0)
 elif args.algo == 'KNN':
     backSub = cv.createBackgroundSubtractorKNN()
 elif args.algo == "GMG":
