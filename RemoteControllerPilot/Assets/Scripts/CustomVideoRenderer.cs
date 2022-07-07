@@ -259,11 +259,6 @@ namespace Microsoft.MixedReality.WebRTC.Unity
                 {
                     _textureY = new Texture2D(lumaWidth, lumaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_YPlane", _textureY);
-                    if (!backgroundSet)
-                    {
-                        _first_textureY = new Texture2D(lumaWidth, lumaHeight, TextureFormat.R8, mipChain: false);
-                        videoMaterial.SetTexture("_FirstYPlane", _first_textureY);
-                    } 
                 }
                 int chromaWidth = lumaWidth / 2;
                 int chromaHeight = lumaHeight / 2;
@@ -271,21 +266,31 @@ namespace Microsoft.MixedReality.WebRTC.Unity
                 {
                     _textureU = new Texture2D(chromaWidth, chromaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_UPlane", _textureU);
-                    if (!backgroundSet)
-                    {
-                        _first_textureU = new Texture2D(lumaWidth, lumaHeight, TextureFormat.R8, mipChain: false);
-                        videoMaterial.SetTexture("_FirstUPlane", _first_textureU);
-                    }
                 }
                 if (_textureV == null || (_textureV.width != chromaWidth || _textureV.height != chromaHeight))
                 {
                     _textureV = new Texture2D(chromaWidth, chromaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_VPlane", _textureV);
-                    if (!backgroundSet)
-                    {
-                        _first_textureV = new Texture2D(lumaWidth, lumaHeight, TextureFormat.R8, mipChain: false);
-                        videoMaterial.SetTexture("_FirstUPlane", _first_textureV);
-                    }
+                }
+
+                // initialize the first texture (as background)
+                if (_first_textureY == null || _first_textureY.width != lumaWidth || _first_textureY.height != lumaHeight)
+                {
+                    _first_textureY = new Texture2D(lumaWidth, lumaHeight, TextureFormat.R8, mipChain: false);
+                    videoMaterial.SetTexture("_FirstYPlane", _first_textureY);
+                    backgroundSet = false;
+                }
+                if (_first_textureU == null || _first_textureU.width != chromaWidth || _first_textureU.height != chromaHeight)
+                {
+                    _first_textureU = new Texture2D(chromaWidth, chromaHeight, TextureFormat.R8, mipChain: false);
+                    videoMaterial.SetTexture("_FirstUPlane", _first_textureU);
+                    backgroundSet = false;
+                }
+                if (_first_textureV == null || _first_textureV.width != chromaWidth || _first_textureV.height != chromaHeight)
+                {
+                    _first_textureV = new Texture2D(chromaWidth, chromaHeight, TextureFormat.R8, mipChain: false);
+                    videoMaterial.SetTexture("_FirstVPlane", _first_textureV);
+                    backgroundSet = false;
                 }
 
                 // Copy data from C# buffer into system memory managed by Unity.
@@ -304,22 +309,18 @@ namespace Microsoft.MixedReality.WebRTC.Unity
                             int lumaSize = lumaWidth * lumaHeight;
                             _textureY.LoadRawTextureData(src, lumaSize);
                             if (!backgroundSet)
-                            {
                                 _first_textureY.LoadRawTextureData(src, lumaSize);
-                            }
+
                             src += lumaSize;
                             int chromaSize = chromaWidth * chromaHeight;
                             _textureU.LoadRawTextureData(src, chromaSize);
                             if (!backgroundSet)
-                            {
                                 _first_textureU.LoadRawTextureData(src, chromaSize);
-                            }
+
                             src += chromaSize;
                             _textureV.LoadRawTextureData(src, chromaSize);
                             if (!backgroundSet)
-                            {
                                 _first_textureV.LoadRawTextureData(src, chromaSize);
-                            }
                         }
                     }
                 }
@@ -335,6 +336,7 @@ namespace Microsoft.MixedReality.WebRTC.Unity
                         _first_textureY.Apply();
                         _first_textureU.Apply();
                         _first_textureV.Apply();
+                        backgroundSet = true;
                     }
                 }
 

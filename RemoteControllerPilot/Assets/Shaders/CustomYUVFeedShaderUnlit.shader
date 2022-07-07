@@ -123,9 +123,9 @@ Shader "Video/CustomYUVFeedShader (unlit)"
                 return half3(H, S, X_max);
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            fixed3 frag(v2f i) : SV_Target
             {
-                float threshold = 0.04;
+                float threshold = 0.045;
                 half3 yuv;
                 yuv.x = tex2D(_YPlane, i.uv).r;
                 yuv.y = tex2D(_UPlane, i.uv).r;
@@ -147,10 +147,10 @@ Shader "Video/CustomYUVFeedShader (unlit)"
                 // return bg_rgb;
 
                 if (abs(hsv[0] - bg_hsv[0]) > threshold && abs(hsv[1] - bg_hsv[1]) > threshold) { // foreground
-                    return half4(1, 1, 1, 1);
+                    return rgb;
                 }
                 else {
-                    return half4(0, 0, 0, 0);
+                    return half3(0, 0, 0);
                 }
             }
             ENDCG
