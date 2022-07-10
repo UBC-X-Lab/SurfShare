@@ -312,6 +312,7 @@ GameObject:
   - component: {fileID: 151445058}
   - component: {fileID: 151445057}
   - component: {fileID: 151445056}
+  - component: {fileID: 151445060}
   m_Layer: 0
   m_Name: RemoteVideoPlayer
   m_TagString: Untagged
@@ -334,7 +335,7 @@ MonoBehaviour:
   VideoStreamStarted:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 151445056}
+      - m_Target: {fileID: 151445060}
         m_MethodName: StartRendering
         m_Mode: 0
         m_Arguments:
@@ -348,7 +349,7 @@ MonoBehaviour:
   VideoStreamStopped:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 151445056}
+      - m_Target: {fileID: 151445060}
         m_MethodName: StopRendering
         m_Mode: 0
         m_Arguments:
@@ -366,9 +367,9 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 151445054}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e422d75cecee58409ec997eabc00a1e, type: 3}
+  m_Script: {fileID: 11500000, guid: cb6b02c5bb7ab6b4ea6996c956ebdd21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   MaxFramerate: 30
@@ -437,6 +438,23 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &151445060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 151445054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e422d75cecee58409ec997eabc00a1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MaxFramerate: 30
+  EnableStatistics: 1
+  FrameLoadStatHolder: {fileID: 0}
+  FramePresentStatHolder: {fileID: 0}
+  FrameSkipStatHolder: {fileID: 0}
 --- !u!1 &634120749
 GameObject:
   m_ObjectHideFlags: 0
@@ -1011,7 +1029,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.31764707, g: 0.31764707, b: 0.31764707, a: 0}
+  m_BackGroundColor: {r: 0.21698111, g: 0.21698111, b: 0.21698111, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -1624,7 +1642,7 @@ MonoBehaviour:
     _receiver: {fileID: 952040236}
     _senderTrackName: 
   - _mediaKind: 1
-    _source: {fileID: 0}
+    _source: {fileID: 1926524961}
     _receiver: {fileID: 151445055}
     _senderTrackName: 
 --- !u!4 &1575568651
@@ -1997,12 +2015,12 @@ MonoBehaviour:
     name: 
   EnableMixedRealityCapture: 0
   EnableMRCRecordingIndicator: 1
-  FormatMode: 0
+  FormatMode: 1
   VideoProfileId: 
   VideoProfileKind: 0
   Constraints:
-    width: 0
-    height: 0
+    width: 640
+    height: 360
     framerate: 0
 --- !u!4 &1926524962
 Transform:
