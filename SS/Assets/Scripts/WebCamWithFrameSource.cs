@@ -20,9 +20,9 @@ using Microsoft.MixedReality.WebRTC.Unity;
 using CameraFrameUtilities;
 
 // native name spaces
-//#if ENABLE_WINMD_SUPPORT
-//using global::Windows.Graphics.Holographic;
-//#endif
+#if ENABLE_WINMD_SUPPORT
+using global::Windows.Graphics.Holographic;
+#endif
 
 #if UNITY_WSA && !UNITY_EDITOR
 using global::Windows.Media.MediaProperties;
@@ -185,7 +185,7 @@ namespace CustomVideoSources
                 SharingMode = MediaCaptureSharingMode.ExclusiveControl,
                 MemoryPreference = MediaCaptureMemoryPreference.Cpu,
                 StreamingCaptureMode = StreamingCaptureMode.Video,
-                // PhotoCaptureSource = PhotoCaptureSource.VideoPreview
+                PhotoCaptureSource = PhotoCaptureSource.VideoPreview
             };
 
             bool profile_found = false;
@@ -281,6 +281,20 @@ namespace CustomVideoSources
             mediaFrameReader.FrameArrived += ColorFrameReader_FrameArrived; // invoked in its own thread?
             await mediaFrameReader.StartAsync();
             Debug.Log("StartAsync");
+
+            // opt in PV camera
+            Debug.Log("Trying to Opt-in Rendering from PV camera");
+            var display = HolographicDisplay.GetDefault();
+            var view = display.TryGetViewConfiguration(HolographicViewConfigurationKind.PhotoVideoCamera);
+            if (view != null)
+            {
+                Debug.Log("Opt-in Rendering from PV camera Success");
+                view.IsEnabled = true;
+            }
+            else
+            {
+                Debug.Log("Opt-in Rendering from PV camera Failed");
+            }
         }
 
 

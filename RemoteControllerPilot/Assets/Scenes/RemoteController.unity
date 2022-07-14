@@ -1642,7 +1642,7 @@ MonoBehaviour:
     _receiver: {fileID: 952040236}
     _senderTrackName: 
   - _mediaKind: 1
-    _source: {fileID: 1926524961}
+    _source: {fileID: 0}
     _receiver: {fileID: 151445055}
     _senderTrackName: 
 --- !u!4 &1575568651
@@ -2186,8 +2186,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PeerConnection: {fileID: 1575568650}
   AutoLogErrors: 1
-  LocalPeerId: RemoteController
-  RemotePeerId: Hololens
+  LocalPeerId: Hololens2
+  RemotePeerId: Hololens1
   HttpServerAddress: http://127.0.0.1:3000/
   PollTimeMs: 500
 --- !u!4 &2077516125
