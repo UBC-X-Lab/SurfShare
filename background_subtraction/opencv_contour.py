@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 
-im = cv.imread('test1.jpg')
+im = cv.imread('test6.jpg')
 imgray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
 
 ret, thresh = cv.threshold(imgray, 127, 255, 0)
