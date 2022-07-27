@@ -147,7 +147,7 @@ Shader "Video/CustomYUVFeedShader (unlit)"
                 // return bg_rgb;
 
                 if (abs(hsv[0] - bg_hsv[0]) > threshold && abs(hsv[1] - bg_hsv[1]) > threshold) { // foreground
-                    return rgb;
+                    return half3(1, 1, 1);
                 }
                 else {
                     return half3(0, 0, 0);

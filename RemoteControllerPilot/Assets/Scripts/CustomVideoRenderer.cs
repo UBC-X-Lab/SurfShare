@@ -23,6 +23,11 @@ namespace Microsoft.MixedReality.WebRTC.Unity
     {
         private bool backgroundSet = false;
 
+        public RenderTexture binaryMaskRT;
+        public Material binaryMaskMat;
+
+        public bool takeCopy = false;
+
         [Tooltip("Max playback framerate, in frames per second")]
         [Range(0.001f, 120f)]
         public float MaxFramerate = 30f;
@@ -71,6 +76,8 @@ namespace Microsoft.MixedReality.WebRTC.Unity
         private Texture2D _first_textureY = null;
         private Texture2D _first_textureU = null;
         private Texture2D _first_textureV = null;
+
+        private Texture2D _binary_texture = null;
 
         /// <summary>
         /// Internal timing counter
@@ -259,6 +266,7 @@ namespace Microsoft.MixedReality.WebRTC.Unity
                 {
                     _textureY = new Texture2D(lumaWidth, lumaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_YPlane", _textureY);
+                    binaryMaskMat.SetTexture("_YPlane", _textureY);
                 }
                 int chromaWidth = lumaWidth / 2;
                 int chromaHeight = lumaHeight / 2;
@@ -266,11 +274,13 @@ namespace Microsoft.MixedReality.WebRTC.Unity
                 {
                     _textureU = new Texture2D(chromaWidth, chromaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_UPlane", _textureU);
+                    binaryMaskMat.SetTexture("_UPlane", _textureU);
                 }
                 if (_textureV == null || (_textureV.width != chromaWidth || _textureV.height != chromaHeight))
                 {
                     _textureV = new Texture2D(chromaWidth, chromaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_VPlane", _textureV);
+                    binaryMaskMat.SetTexture("_VPlane", _textureV);
                 }
 
                 // initialize the first texture (as background)
@@ -278,18 +288,21 @@ namespace Microsoft.MixedReality.WebRTC.Unity
                 {
                     _first_textureY = new Texture2D(lumaWidth, lumaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_FirstYPlane", _first_textureY);
+                    binaryMaskMat.SetTexture("_FirstYPlane", _first_textureY);
                     backgroundSet = false;
                 }
                 if (_first_textureU == null || _first_textureU.width != chromaWidth || _first_textureU.height != chromaHeight)
                 {
                     _first_textureU = new Texture2D(chromaWidth, chromaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_FirstUPlane", _first_textureU);
+                    binaryMaskMat.SetTexture("_FirstUPlane", _first_textureU);
                     backgroundSet = false;
                 }
                 if (_first_textureV == null || _first_textureV.width != chromaWidth || _first_textureV.height != chromaHeight)
                 {
                     _first_textureV = new Texture2D(chromaWidth, chromaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_FirstVPlane", _first_textureV);
+                    binaryMaskMat.SetTexture("_FirstVPlane", _first_textureV);
                     backgroundSet = false;
                 }
 
@@ -338,6 +351,18 @@ namespace Microsoft.MixedReality.WebRTC.Unity
                         _first_textureV.Apply();
                         backgroundSet = true;
                     }
+                }
+
+                if (takeCopy)
+                {
+                    Debug.Log(RenderTexture.active);
+                    takeCopy = false;
+                    Graphics.Blit(null, binaryMaskRT, binaryMaskMat);
+                    _binary_texture = new Texture2D(binaryMaskRT.width, binaryMaskRT.height, TextureFormat.R8, mipChain: false);
+                    RenderTexture.active = binaryMaskRT;
+                    _binary_texture.ReadPixels(new Rect(0, 0, binaryMaskRT.width, binaryMaskRT.height), 0, 0);
+                    _binary_texture.Apply();
+                    RenderTexture.active = null;
                 }
 
                 // Recycle the video frame packet for a later frame
