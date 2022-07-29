@@ -17,7 +17,7 @@ bgs_test/
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
-[Aa]pp[s]/
+*[Aa]pp[s]/
 Assets/AssetStoreTools*
 
 # Visual Studio cache directory

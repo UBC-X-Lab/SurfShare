@@ -5,6 +5,7 @@ using UnityEngine;
 using Unity.Profiling;
 using System;
 using Microsoft.MixedReality.WebRTC.Unity.Editor;
+using OpenCvSharp;
 
 namespace Microsoft.MixedReality.WebRTC.Unity
 {
@@ -355,12 +356,11 @@ namespace Microsoft.MixedReality.WebRTC.Unity
 
                 if (takeCopy)
                 {
-                    Debug.Log(RenderTexture.active);
                     takeCopy = false;
                     Graphics.Blit(null, binaryMaskRT, binaryMaskMat);
                     _binary_texture = new Texture2D(binaryMaskRT.width, binaryMaskRT.height, TextureFormat.R8, mipChain: false);
                     RenderTexture.active = binaryMaskRT;
-                    _binary_texture.ReadPixels(new Rect(0, 0, binaryMaskRT.width, binaryMaskRT.height), 0, 0);
+                    _binary_texture.ReadPixels(new UnityEngine.Rect(0, 0, binaryMaskRT.width, binaryMaskRT.height), 0, 0);
                     _binary_texture.Apply();
                     RenderTexture.active = null;
                 }
