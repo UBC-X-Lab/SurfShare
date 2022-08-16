@@ -24,15 +24,15 @@ public class OpenCVTest : MonoBehaviour
         
     }
 
-    static void test()
+    void test()
     {
-        
+
         byte[] imageData = originalTex.GetRawTextureData();
 
         Debug.Log(1);
         Mat image = new Mat(originalTex.height, originalTex.width, MatType.CV_8UC3, imageData);
         Debug.Log(2);
-        Mat greyImage = image.CvtColor(ColorConversionCodes.BGR2GRAY).Threshold(127, 255, ThresholdTypes.Binary);
+        Mat greyImage = image.CvtColor(ColorConversionCodes.BGR2GRAY).Threshold(127, 255, ThresholdTypes.Binary); // pay attention to the import setting for the texture
         Debug.Log(3);
         Point[][] contours = greyImage.FindContoursAsArray(RetrievalModes.Tree, ContourApproximationModes.ApproxSimple);
         Debug.Log(4);
