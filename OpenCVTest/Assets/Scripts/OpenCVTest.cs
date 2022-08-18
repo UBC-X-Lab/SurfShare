@@ -79,7 +79,7 @@ public class OpenCVTest : MonoBehaviour
             Vector2[] vertices = new Vector2[con.Length];
             for (int i = 0; i < vertices.Length; i++)
             {
-                vertices[i] = new Vector2(con[i].X / (float) originalTex.width * image_width, con[i].Y / (float) originalTex.height * image_height);
+                vertices[i] = new Vector2(con[i].X / (float)originalTex.width * image_width, con[i].Y / (float)originalTex.height * image_height);
             }
             GameObject obj = Instantiate(GameObject.Find("Object"));
             obj.transform.position = image_origin;
