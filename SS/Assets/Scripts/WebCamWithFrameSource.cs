@@ -342,8 +342,8 @@ namespace CustomVideoSources
                                 // corners are set, ready to transmit masked frames
                                 if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
                                 {
-                                    FrameProcessor.NaiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
-                                    //FrameProcessor.ProjectionMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout, targetWidth, targetHeight);
+                                    //FrameProcessor.NaiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
+                                    FrameProcessor.ProjectionMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
 
                                     // Enqueue a frame in the internal frame queue. This will make a copy
                                     // of the frame into a pooled buffer owned by the frame queue.

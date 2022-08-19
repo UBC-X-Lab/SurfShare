@@ -33,7 +33,7 @@ namespace CameraFrameUtilities
             System.Numerics.Matrix4x4? transformToFrame = HLWorldOrigin.TryGetTransformTo(frameCoordinateSystem);
             if (transformToFrame.HasValue){
                 System.Numerics.Vector3 frameCoordinate = System.Numerics.Vector3.Transform(HLCoordinate, transformToFrame.Value);
-                Point point = videoMediaFrame.CameraIntrinsics.ProjectOntoFrame(frameCoordinate);
+                Point point = videoMediaFrame.CameraIntrinsics.ProjectOntoFrame(frameCoordinate); // add reference here in case of error message
 
                 // the hole camera results in flipped image, so flip back!
                 point.X = cameraFrameWidth - point.X;
@@ -85,7 +85,7 @@ namespace CameraFrameUtilities
         public static int targetHeight = 270;
         private static byte[] first_frame;
         private static bool is_first_frame = true;
-        private static bool enable_bg_subtraction = false;
+        // private static bool enable_bg_subtraction = false;
 
         // masking with projection utlities
         public static List<System.Numerics.Vector3[]> world_coors = new List<System.Numerics.Vector3[]>();
@@ -145,7 +145,7 @@ namespace CameraFrameUtilities
             camera_Y_Axis.X /= targetHeight; camera_Y_Axis.Y /= targetHeight; // pre-compute the multiplier
 
 
-            //---- Avoid heal allocation and function calls
+            //---- Avoid heap allocation and function calls
             //---- Use native functions instead of Unity functions as much as possible
 
             // initialize utilities at a larger scope
@@ -195,25 +195,6 @@ namespace CameraFrameUtilities
                         target_frame[targetWidth * 4 * i + 4 * j + 3] = target_color[3];
                         // setPixel(target_frame, i, j, target_color, targetWidth * 4);
                     }
-                }
-            }
-
-            // naive background subtraction
-            if (enable_bg_subtraction)
-            {
-                if (is_first_frame)
-                {
-                    // save the first frame as the background
-                    first_frame = new byte[targetWidth * targetHeight * 4];
-#if ENABLE_WINMD_SUPPORT
-                    Marshal.Copy((IntPtr)target_frame, first_frame, 0, first_frame.Length);
-#endif
-                    Debug.Log("first frame saved as background!");
-                    is_first_frame = false;
-                }
-                else
-                {
-                    Bg_subtraction(targetWidth, targetHeight);
                 }
             }
         }
@@ -319,23 +300,16 @@ namespace CameraFrameUtilities
                 }
             }
 
-            // naive background subtraction
-            if (enable_bg_subtraction)
+            // take first frame for local background subtraction
+            if (is_first_frame)
             {
-                if (is_first_frame)
-                {
-                    // save the first frame as the background
-                    first_frame = new byte[targetWidth * targetHeight * 4];
+                // save the first frame as the background
+                first_frame = new byte[targetWidth * targetHeight * 4];
 #if ENABLE_WINMD_SUPPORT
-                    Marshal.Copy((IntPtr)target_frame, first_frame, 0, first_frame.Length);
+                Marshal.Copy((IntPtr)target_frame, first_frame, 0, first_frame.Length);
 #endif
-                    Debug.Log("first frame saved as background!");
-                    is_first_frame = false;
-                }
-                else
-                {
-                    Bg_subtraction(targetWidth, targetHeight);
-                }
+                Debug.Log("first frame saved as background!");
+                is_first_frame = false;
             }
         }
 
