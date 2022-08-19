@@ -15,6 +15,8 @@ using UnityEngine.Rendering;
 using UnityEngine.XR;
 using Microsoft.MixedReality.WebRTC;
 using Microsoft.MixedReality.WebRTC.Unity;
+using OpenCvSharp;
+
 
 // my name spaces
 using CameraFrameUtilities;
@@ -68,12 +70,11 @@ namespace CustomVideoSources
             {
 #if ENABLE_WINMD_SUPPORT
                 // initialize projection masking utilities
+                FrameProcessor.world_coors = (System.Numerics.Vector3*)Marshal.AllocHGlobal(FrameProcessor.targetWidth * FrameProcessor.targetHeight * Marshal.SizeOf(new System.Numerics.Vector3()));
                 for (int i = 0; i < FrameProcessor.targetHeight; i++)
                 {
-                    FrameProcessor.world_coors.Add(new System.Numerics.Vector3[FrameProcessor.targetWidth]);
-                    FrameProcessor.camera_coors.Add(new Point[FrameProcessor.targetWidth]);
-                    FrameProcessor.frame_coors.Add(new System.Numerics.Vector3[FrameProcessor.targetWidth]);
-                    FrameProcessor.target_points.Add(new Point[FrameProcessor.targetWidth]);
+                    FrameProcessor.camera_coors[i] = new Windows.Foundation.Point[FrameProcessor.targetWidth];
+                    FrameProcessor.frame_coors[i] = new System.Numerics.Vector3[FrameProcessor.targetWidth];
                 }
                 Debug.Log("Projection masking initialized!");
 
@@ -136,6 +137,7 @@ namespace CustomVideoSources
             unsafe
             {
                 Marshal.FreeHGlobal((IntPtr)FrameProcessor.target_frame);
+                Marshal.FreeHGlobal((IntPtr)FrameProcessor.world_coors);
             }
 
 #endif
@@ -345,6 +347,35 @@ namespace CustomVideoSources
                                     //FrameProcessor.NaiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
                                     FrameProcessor.ProjectionMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
 
+                                    if (Main.meshCreation)
+                                    {
+                                        Debug.Log("Creating Mesh");
+                                        Main.meshCreation = false;
+                                        byte* mask = FrameProcessor.Bg_subtraction();
+                                        Mat greyImage = new Mat(FrameProcessor.targetHeight, FrameProcessor.targetWidth, MatType.CV_8UC1, (IntPtr) mask);
+                                        // Mat greyImage = image.CvtColor(ColorConversionCodes.BGRA2GRAY).Threshold(127, 255, ThresholdTypes.Binary);
+                                        OpenCvSharp.Point[][] contours = greyImage.FindContoursAsArray(RetrievalModes.Tree, ContourApproximationModes.ApproxSimple);
+
+                                        // filter contours that are too small
+                                        lock (Main.res_con_lock)
+                                        {
+                                            for (int i = 0; i < contours.Length; i++)
+                                            {
+                                                if (Cv2.ContourArea(contours[i]) > 2500)
+                                                {
+                                                    // contour approx
+                                                    double eps = 0.01 * Cv2.ArcLength(contours[i], true);
+                                                    Main.res_con.Add(Cv2.ApproxPolyDP(contours[i], eps, true));
+                                                    Debug.Log("Contour size:" + Main.res_con[Main.res_con.Count - 1].Length);
+                                                    //Debug.Log(Cv2.ContourArea(contours[i]));
+                                                }
+                                            }
+                                            Debug.Log("Number of Meshes to create:" + Main.res_con.Count);
+                                        }
+
+                                        // Cv2.DrawContours(image, res_con, -1, new Scalar(0, 255, 0), 3); // the contours points are ordered clock-wise
+                                    }
+
                                     // Enqueue a frame in the internal frame queue. This will make a copy
                                     // of the frame into a pooled buffer owned by the frame queue.
                                     var frame = new Argb32VideoFrame
@@ -396,7 +427,7 @@ namespace CustomVideoSources
             // Try to dequeue a frame from the internal frame queue
             if (_frameQueue.TryDequeue(out Argb32VideoFrameStorage storage))
             {
-                // Debug.Log("Got a Frame");
+                //Debug.Log("Got a Frame");
                 var frame = new Argb32VideoFrame
                 {
                     width = storage.Width,
