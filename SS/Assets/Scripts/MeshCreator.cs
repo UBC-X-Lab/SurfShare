@@ -8,8 +8,7 @@ public static class MeshCreator
     public static Mesh CreateMesh(Vector2[] poly_vertices, float meshHeight = 0.02f)
     {
         IPoint[] points = DelaunatorSharp.Unity.Extensions.DelaunatorExtensions.ToPoints(poly_vertices);
-        Delaunator delaunator = new DelaunatorSharp.Delaunator(points);
-        Debug.Log("Still okay here?");
+        Delaunator delaunator = new Delaunator(points);
 
         Mesh mesh = new Mesh();
 

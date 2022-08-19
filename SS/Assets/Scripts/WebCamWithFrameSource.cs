@@ -352,7 +352,7 @@ namespace CustomVideoSources
                                         Debug.Log("Creating Mesh");
                                         Main.meshCreation = false;
                                         byte* mask = FrameProcessor.Bg_subtraction();
-                                        Mat greyImage = new Mat(FrameProcessor.targetHeight, FrameProcessor.targetWidth, MatType.CV_8UC1, (IntPtr) mask);
+                                        Mat greyImage = new Mat(FrameProcessor.targetHeight, FrameProcessor.targetWidth, MatType.CV_8UC1, (IntPtr)mask);
                                         // Mat greyImage = image.CvtColor(ColorConversionCodes.BGRA2GRAY).Threshold(127, 255, ThresholdTypes.Binary);
                                         OpenCvSharp.Point[][] contours = greyImage.FindContoursAsArray(RetrievalModes.Tree, ContourApproximationModes.ApproxSimple);
 

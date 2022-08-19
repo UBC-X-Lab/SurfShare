@@ -10,8 +10,8 @@ public class Main : MonoBehaviour
     public static readonly object res_con_lock = new object();
     public GameObject BaseMesh;
 
-    private int targetWidth = 640;
-    private int targetHeight = 360;
+    private int frame_width = 640;
+    private int frame_height = 360;
 
     // Start is called before the first frame update
     void Start()
@@ -35,7 +35,7 @@ public class Main : MonoBehaviour
                     Vector2[] vertices = new Vector2[con.Length];
                     for (int i = 0; i < vertices.Length; i++)
                     {
-                        vertices[i] = new Vector2(con[i].X / (float)targetWidth * X_Axis.magnitude, con[i].Y / (float)targetHeight * Y_Axis.magnitude);
+                        vertices[i] = new Vector2(con[i].X / (float)frame_width * X_Axis.magnitude, con[i].Y / (float)frame_height * Y_Axis.magnitude);
                     }
                     GameObject obj = Instantiate(BaseMesh);
                     obj.transform.position = FrameHandler.corners[2];
