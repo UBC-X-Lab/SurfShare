@@ -272,6 +272,7 @@ namespace CameraFrameUtilities
                 }
             }
             videoMediaFrame.CameraIntrinsics.ProjectManyOntoFrame(frame_coors_1d, camera_coors_1d);
+            // flip back
             for (int i = 0; i < camera_coors_1d.Length; i++)
             {
                 camera_coors_1d[i].X = camera_width - camera_coors_1d[i].X;
@@ -385,7 +386,7 @@ namespace CameraFrameUtilities
             return result;
         }
 
-        public static byte* Bg_subtraction()
+        public static byte* Bg_subtraction(bool flip_Y=true)
         {
             if (first_frame == null)
             {
@@ -396,22 +397,29 @@ namespace CameraFrameUtilities
             {
                 byte* mask = stackalloc byte[targetWidth * targetHeight];
                 float[] current_frame = bgra2hsv(target_frame, targetWidth, targetHeight);
-                for (int i = 0; i < targetWidth * targetHeight; i++)
+
+                for (int i = 0; i < targetHeight; i++)
                 {
-                    float bg_h = first_frame[i * 3];
-                    float bg_s = first_frame[i * 3 + 1];
-                    float cur_h = current_frame[i * 3];
-                    float cur_s = current_frame[i * 3 + 1];
-                    
-                    if (Math.Abs(bg_h - cur_h) > 0.045 && Math.Abs(bg_s - cur_s) > 0.045)
+                    for (int j = 0; j < targetWidth; j++)
                     {
-                        mask[i] = 255;
-                    }
-                    else
-                    {
-                        mask[i] = 0;
+                        float bg_h = first_frame[targetWidth * 3 * i + 3 * j];
+                        float bg_s = first_frame[targetWidth * 3 * i + 3 * j + 1];
+                        float cur_h = current_frame[targetWidth * 3 * i + 3 * j];
+                        float cur_s = current_frame[targetWidth * 3 * i + 3 * j + 1];
+
+                        bool is_forground = (Math.Abs(bg_h - cur_h) > 0.045 && Math.Abs(bg_s - cur_s) > 0.045);
+
+                        if (!flip_Y)
+                        {
+                            mask[targetWidth * i + j] = (is_forground ? (byte)255 : (byte)0);
+                        }
+                        else
+                        {
+                            mask[targetWidth * (targetHeight - i - 1) + j] = (is_forground ? (byte)255 : (byte)0);
+                        }
                     }
                 }
+
                 Debug.Log("Backgound Mask Obtained!");
                 return mask;
             }

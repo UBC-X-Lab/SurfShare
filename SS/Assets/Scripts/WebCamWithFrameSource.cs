@@ -367,7 +367,7 @@ namespace CustomVideoSources
                                                     double eps = 0.01 * Cv2.ArcLength(contours[i], true);
                                                     Main.res_con.Add(Cv2.ApproxPolyDP(contours[i], eps, true));
                                                     Debug.Log("Contour size:" + Main.res_con[Main.res_con.Count - 1].Length);
-                                                    //Debug.Log(Cv2.ContourArea(contours[i]));
+                                                    Debug.Log(Cv2.ContourArea(contours[i]));
                                                 }
                                             }
                                             Debug.Log("Number of Meshes to create:" + Main.res_con.Count);

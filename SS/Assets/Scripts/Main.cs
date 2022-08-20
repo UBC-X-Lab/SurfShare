@@ -35,6 +35,7 @@ public class Main : MonoBehaviour
                     Vector2[] vertices = new Vector2[con.Length];
                     for (int i = 0; i < vertices.Length; i++)
                     {
+                        Debug.Log("X:" + con[i].X + ", Y:" + con[i].Y);
                         vertices[i] = new Vector2(con[i].X / (float)frame_width * X_Axis.magnitude, con[i].Y / (float)frame_height * Y_Axis.magnitude);
                     }
                     GameObject obj = Instantiate(BaseMesh);
