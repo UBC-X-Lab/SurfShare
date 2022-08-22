@@ -365,9 +365,22 @@ namespace CustomVideoSources
                                                 {
                                                     // contour approx
                                                     double eps = 0.01 * Cv2.ArcLength(contours[i], true);
-                                                    Main.res_con.Add(Cv2.ApproxPolyDP(contours[i], eps, true));
-                                                    Debug.Log("Contour size:" + Main.res_con[Main.res_con.Count - 1].Length);
-                                                    Debug.Log(Cv2.ContourArea(contours[i]));
+                                                    OpenCvSharp.Point[] approx_contour = Cv2.ApproxPolyDP(contours[i], eps, true);
+                                                    // convert to Windows foundataion
+                                                    Windows.Foundation.Point[] pixel_pos = new Windows.Foundation.Point[approx_contour.Length];
+                                                    for (int j = 0; j < pixel_pos.Length; j++)
+                                                    {
+                                                        // the opencv image is bottom up while the system image is top down
+                                                        pixel_pos[j] = new Windows.Foundation.Point(approx_contour[j].X, FrameProcessor.targetHeight - 1 - approx_contour[j].Y);
+                                                    }
+                                                    Vector3[] contour_world = FrameProcessor.ProjectFrameCoorsToWorld(pixel_pos, mediaFrameReference.CoordinateSystem);
+                                                    if (contour_world != null)
+                                                    {
+                                                        Main.res_con.Add(approx_contour);
+                                                        Main.res_con_world.Add(contour_world);
+                                                        Debug.Log("Contour size:" + Main.res_con[Main.res_con.Count - 1].Length);
+                                                        Debug.Log(Cv2.ContourArea(contours[i]));
+                                                    }
                                                 }
                                             }
                                             Debug.Log("Number of Meshes to create:" + Main.res_con.Count);

@@ -242,7 +242,7 @@ namespace CameraFrameUtilities
             System.Numerics.Matrix4x4? transformToFrame = HLWorldOrigin.TryGetTransformTo(frameCoordinateSystem);
             if (!transformToFrame.HasValue)
             {
-                Debug.Log("Transformation Matrix returned null!");
+                Debug.Log("[Projection Masking] Transformation Matrix returned null!");
                 return;
             }
 
@@ -332,6 +332,27 @@ namespace CameraFrameUtilities
                 Debug.Log("first frame saved as background!");
                 is_first_frame = false;
             }
+        }
+
+        // project a list of frame coordinates back to world coordinates
+        public static Vector3[] ProjectFrameCoorsToWorld(Point[] pixel_pos, SpatialCoordinateSystem frameCoordinateSystem)
+        {
+            Vector3[] world_coors = new Vector3[pixel_pos.Length];
+            int index = 0;
+            foreach (Point p in pixel_pos)
+            {
+                System.Numerics.Vector3 frame_coor = frame_coors_1d[(int)p.Y * targetWidth + (int)p.X];
+                System.Numerics.Matrix4x4? transformToWorld = frameCoordinateSystem.TryGetTransformTo(HLWorldOrigin);
+                if (!transformToWorld.HasValue)
+                {
+                    Debug.Log("[FrameBackToWorld] Transformation Matrix returned null!");
+                    return null;
+                }
+                System.Numerics.Vector3 world_coor = System.Numerics.Vector3.Transform(frame_coor, transformToWorld.Value);
+                world_coors[index] = NumericsConversionExtensions.ToUnity(world_coor);
+                index++;
+            }
+            return world_coors;
         }
 
         private static float[] bgra2hsv(byte* bgra_frame, int frameWidth, int frameHeight)
