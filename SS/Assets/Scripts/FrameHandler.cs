@@ -46,7 +46,7 @@ public class FrameHandler : MonoBehaviour
 
     public void OnHandRayPinched()
     {
-        Debug.Log("Pinched");
+        // Debug.Log("Pinched");
         int cornersDetermined = corners.Count;
         if (cornersDetermined == 0) // first corner
         {
@@ -82,7 +82,7 @@ public class FrameHandler : MonoBehaviour
         newLine.name = name;
         LineRenderer newLineRenderer = newLine.GetComponent<LineRenderer>();
         //newLineRenderer.enabled = true;
-        newLineRenderer.SetWidth(0.01f, 0.01f);
+        newLineRenderer.SetWidth(0.005f, 0.005f);
         newLineRenderer.positionCount = 2;
         newLineRenderer.SetPosition(0, start);
         newLineRenderer.SetPosition(1, end);

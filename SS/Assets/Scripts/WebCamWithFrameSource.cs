@@ -361,7 +361,7 @@ namespace CustomVideoSources
                                         {
                                             for (int i = 0; i < contours.Length; i++)
                                             {
-                                                if (Cv2.ContourArea(contours[i]) > 2500)
+                                                if (Cv2.ContourArea(contours[i]) > 1600)
                                                 {
                                                     // contour approx
                                                     double eps = 0.01 * Cv2.ArcLength(contours[i], true);
