@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using OpenCvSharp;
 using DelaunatorSharp.Unity.Extensions;
+using Microsoft.MixedReality.Toolkit.UI;
+using Microsoft.MixedReality.Toolkit.Input;
 
 public class OpenCVTest : MonoBehaviour
 {
@@ -85,6 +87,9 @@ public class OpenCVTest : MonoBehaviour
             obj.transform.position = image_origin;
             obj.GetComponent<UpdateMesh>().enabled = true;
             obj.GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(vertices);
+            obj.GetComponent<MeshCollider>().sharedMesh = obj.GetComponent<MeshFilter>().mesh;
+            obj.AddComponent<NearInteractionGrabbable>();
+            obj.AddComponent<ObjectManipulator>();
         }
     }
 }

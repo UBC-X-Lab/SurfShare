@@ -15,7 +15,8 @@ public class DelaunatorTest : MonoBehaviour
         poly_vertices[3] = new Vector2(1, 0);
 
         GameObject newObject = Instantiate(baseObject);
-        newObject.GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(poly_vertices);
+        Mesh newMesh = MeshCreator.CreateMesh(poly_vertices);
+        newObject.GetComponent<MeshFilter>().mesh = newMesh;
     }
 
     // Update is called once per frame
