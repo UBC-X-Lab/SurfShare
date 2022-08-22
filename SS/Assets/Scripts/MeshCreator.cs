@@ -5,7 +5,7 @@ using DelaunatorSharp;
 
 public static class MeshCreator
 {
-    public static Mesh CreateMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, float meshHeight = 0.1f)
+    public static Mesh CreateMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, float meshHeight = 0.01f)
     {
         IPoint[] points = DelaunatorSharp.Unity.Extensions.DelaunatorExtensions.ToPoints(poly_vertices);
         Delaunator delaunator = new Delaunator(points);
@@ -116,30 +116,4 @@ public static class MeshCreator
 
     //    return mesh;
     //}
-
-    public static void UpdateMeshHeight(Mesh mesh, float height)
-    {
-        Vector3[] new_vertices = mesh.vertices;
-        for (int i = 0; i < mesh.vertices.Length; i++)
-        {
-            if (new_vertices[i].y != 0)
-            {
-                new_vertices[i].y = height;
-            }
-        }
-        mesh.vertices = new_vertices;
-    }
-
-    public static void SkewMesh(Mesh mesh)
-    {
-        Vector3[] new_vertices = mesh.vertices;
-        for (int i = 0; i < mesh.vertices.Length; i++)
-        {
-            if (new_vertices[i].y != 0)
-            {
-                new_vertices[i] += new Vector3(0.001f, 0, 0);
-            }
-        }
-        mesh.vertices = new_vertices;
-    }
 }

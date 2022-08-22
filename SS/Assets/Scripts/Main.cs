@@ -8,6 +8,8 @@ using Microsoft.MixedReality.Toolkit.Input;
 public class Main : MonoBehaviour
 {
     public static bool meshCreation = false;
+    public static bool toggleExtrusion = true;
+
     public static List<Point[]> res_con = new List<Point[]>(); // contour position on the image
     public static List<Vector3[]> res_con_world = new List<Vector3[]>(); // contour position in the world
     public static readonly object res_con_lock = new object();
@@ -35,7 +37,7 @@ public class Main : MonoBehaviour
                 Vector3 heightNormal = Vector3.Normalize(Vector3.Cross(X_Axis, Y_Axis));
 
                 //create mesh from them
-                for (int i = 0; i <  res_con.Count; i++)
+                for (int i = 0; i < res_con.Count; i++)
                 {
                     Point[] con = res_con[i];
                     Vector2[] vertices = new Vector2[con.Length];
@@ -46,13 +48,48 @@ public class Main : MonoBehaviour
                     }
                     GameObject obj = Instantiate(BaseMesh);
                     //obj.transform.position = FrameHandler.corners[2];
-                    obj.GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(vertices, res_con_world[i], heightNormal);
+                    Mesh newMesh = MeshCreator.CreateMesh(vertices, res_con_world[i], heightNormal);
+                    obj.GetComponent<MeshFilter>().mesh = newMesh;
                     obj.GetComponent<MeshRenderer>().enabled = true;
                     obj.AddComponent<MeshCollider>();
                     obj.GetComponent<MeshCollider>().convex = true;
                     obj.GetComponent<MeshCollider>().sharedMesh = obj.GetComponent<MeshFilter>().mesh;
-                    obj.AddComponent<ObjectManipulator>();
-                    obj.AddComponent<NearInteractionGrabbable>();
+                    obj.AddComponent<ObjectManipulator>().enabled = false;
+                    obj.AddComponent<NearInteractionGrabbable>().enabled = false;
+
+                    // initiate extrude handle
+                    GameObject extrusionHandle = obj.transform.GetChild(0).gameObject;
+                    extrusionHandle.GetComponent<MeshRenderer>().enabled = true;
+                    extrusionHandle.GetComponent<SphereCollider>().enabled = true;
+                    extrusionHandle.GetComponent<ExtrusionController>().enabled = true;
+                    extrusionHandle.AddComponent<ObjectManipulator>();
+                    extrusionHandle.AddComponent<NearInteractionGrabbable>();
+                    extrusionHandle.GetComponent<ExtrusionController>().myMesh = newMesh;
+
+                    // get top vertices indices (after optimization)
+                    for (int j = 0; j < newMesh.vertexCount; j++)
+                    {
+                        Vector3 cur_vertex = newMesh.vertices[j];
+                        bool isTop = true;
+                        for (int k = 0; k < res_con_world[i].Length; k++)
+                        {
+                            if ((res_con_world[i][k] + 0.015f * Vector3.right).Equals(cur_vertex))
+                            {
+                                isTop = false;
+                                break;
+                            }
+                        }
+                        if (isTop)
+                        {
+                            extrusionHandle.GetComponent<ExtrusionController>().topVerticesIndices.Add(j);
+                            extrusionHandle.transform.localPosition += newMesh.vertices[j];
+                        }
+                    }
+                    Debug.Log("Number of top:" + extrusionHandle.GetComponent<ExtrusionController>().topVerticesIndices.Count);
+                    Debug.Log("Number of vertices:" + newMesh.vertexCount);
+                    extrusionHandle.transform.localPosition /= extrusionHandle.GetComponent<ExtrusionController>().topVerticesIndices.Count;
+                    extrusionHandle.transform.localPosition += 0.05f * heightNormal;
+                    extrusionHandle.GetComponent<ExtrusionController>().previousLocalPostion = extrusionHandle.transform.localPosition;
                 }
                 res_con.Clear();
                 res_con_world.Clear();
@@ -64,6 +101,11 @@ public class Main : MonoBehaviour
     public void OnMeshCreation()
     {
         meshCreation = true;
+    }
+
+    public void OnExtrusionToggle()
+    {
+        toggleExtrusion = !toggleExtrusion;
     }
 }
 
