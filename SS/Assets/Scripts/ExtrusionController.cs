@@ -8,7 +8,7 @@ public class ExtrusionController : MonoBehaviour
 {
     public List<int> topVerticesIndices = new List<int>();
     public Mesh myMesh;
-    public Vector3 previousLocalPostion;
+    public Vector3 previousPosition;
 
     // Start is called before the first frame update
     void Start()
@@ -29,32 +29,41 @@ public class ExtrusionController : MonoBehaviour
 
         if (Main.toggleExtrusion)
         {
-            Vector3 delta = this.transform.localPosition - previousLocalPostion;
-            Debug.Log("LocalPosition:" + this.transform.localPosition + ", previous:" + previousLocalPostion);
+            Vector3 delta = this.transform.localPosition - previousPosition;
 
             if (delta.magnitude > 0)
             {
-                Vector3[] new_vertics = myMesh.vertices;
+                Debug.Log("LocalPosition:" + this.transform.localPosition);
+                Vector3[] new_vertices = myMesh.vertices;
                 foreach (int vertex_index in topVerticesIndices)
                 {
-                    new_vertics[vertex_index] += delta;
+                    new_vertices[vertex_index] += delta;
                 }
-                myMesh.vertices = new_vertics;
-                previousLocalPostion = this.transform.localPosition;
+                myMesh.vertices = new_vertices;
+                
             }
+
+            //Vector3[] new_vertices = myMesh.vertices;
+            //foreach (int vertex_index in topVerticesIndices)
+            //{
+            //    Debug.Log(vertex_index);
+            //    new_vertices[vertex_index] += 0.01f * Vector3.up;
+            //}
+            //myMesh.vertices = new_vertices;
         }
+        previousPosition = this.transform.localPosition;
     }
 
-    public static void UpdateMeshHeight(Mesh mesh, float height)
-    {
-        Vector3[] new_vertices = mesh.vertices;
-        for (int i = 0; i < mesh.vertices.Length; i++)
-        {
-            if (new_vertices[i].y != 0)
-            {
-                new_vertices[i].y = height;
-            }
-        }
-        mesh.vertices = new_vertices;
-    }
+    //public static void UpdateMeshHeight(Mesh mesh, float height)
+    //{
+    //    Vector3[] new_vertices = mesh.vertices;
+    //    for (int i = 0; i < mesh.vertices.Length; i++)
+    //    {
+    //        if (new_vertices[i].y != 0)
+    //        {
+    //            new_vertices[i].y = height;
+    //        }
+    //    }
+    //    mesh.vertices = new_vertices;
+    //}
 }

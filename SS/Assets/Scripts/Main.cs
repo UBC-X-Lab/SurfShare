@@ -53,7 +53,7 @@ public class Main : MonoBehaviour
                     obj.GetComponent<MeshRenderer>().enabled = true;
                     obj.AddComponent<MeshCollider>();
                     obj.GetComponent<MeshCollider>().convex = true;
-                    obj.GetComponent<MeshCollider>().sharedMesh = obj.GetComponent<MeshFilter>().mesh;
+                    obj.GetComponent<MeshCollider>().sharedMesh = newMesh;
                     obj.AddComponent<ObjectManipulator>().enabled = false;
                     obj.AddComponent<NearInteractionGrabbable>().enabled = false;
 
@@ -61,10 +61,10 @@ public class Main : MonoBehaviour
                     GameObject extrusionHandle = obj.transform.GetChild(0).gameObject;
                     extrusionHandle.GetComponent<MeshRenderer>().enabled = true;
                     extrusionHandle.GetComponent<SphereCollider>().enabled = true;
-                    extrusionHandle.GetComponent<ExtrusionController>().enabled = true;
                     extrusionHandle.AddComponent<ObjectManipulator>();
                     extrusionHandle.AddComponent<NearInteractionGrabbable>();
                     extrusionHandle.GetComponent<ExtrusionController>().myMesh = newMesh;
+                    extrusionHandle.GetComponent<ExtrusionController>().enabled = true;
 
                     // get top vertices indices (after optimization)
                     for (int j = 0; j < newMesh.vertexCount; j++)
@@ -82,14 +82,14 @@ public class Main : MonoBehaviour
                         if (isTop)
                         {
                             extrusionHandle.GetComponent<ExtrusionController>().topVerticesIndices.Add(j);
-                            extrusionHandle.transform.localPosition += newMesh.vertices[j];
+                            extrusionHandle.transform.localPosition += cur_vertex;
                         }
                     }
                     Debug.Log("Number of top:" + extrusionHandle.GetComponent<ExtrusionController>().topVerticesIndices.Count);
                     Debug.Log("Number of vertices:" + newMesh.vertexCount);
                     extrusionHandle.transform.localPosition /= extrusionHandle.GetComponent<ExtrusionController>().topVerticesIndices.Count;
                     extrusionHandle.transform.localPosition += 0.05f * heightNormal;
-                    extrusionHandle.GetComponent<ExtrusionController>().previousLocalPostion = extrusionHandle.transform.localPosition;
+                    extrusionHandle.GetComponent<ExtrusionController>().previousPosition = extrusionHandle.transform.localPosition;
                 }
                 res_con.Clear();
                 res_con_world.Clear();
@@ -106,6 +106,7 @@ public class Main : MonoBehaviour
     public void OnExtrusionToggle()
     {
         toggleExtrusion = !toggleExtrusion;
+        Debug.Log("Extrusion mode:" + toggleExtrusion);
     }
 }
 

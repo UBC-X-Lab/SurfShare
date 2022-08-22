@@ -229,7 +229,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   topVerticesIndices: 
   myMesh: {fileID: 0}
-  previousLocalPostion: {x: 0, y: 0, z: 0}
+  previousPosition: {x: 0, y: 0, z: 0}
 --- !u!1 &358077483
 GameObject:
   m_ObjectHideFlags: 0
