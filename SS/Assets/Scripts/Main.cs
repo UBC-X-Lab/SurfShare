@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using OpenCvSharp;
+using Microsoft.MixedReality.Toolkit.UI;
+using Microsoft.MixedReality.Toolkit.Input;
 
 public class Main : MonoBehaviour
 {
@@ -46,6 +48,11 @@ public class Main : MonoBehaviour
                     //obj.transform.position = FrameHandler.corners[2];
                     obj.GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(vertices, res_con_world[i], heightNormal);
                     obj.GetComponent<MeshRenderer>().enabled = true;
+                    obj.AddComponent<MeshCollider>();
+                    obj.GetComponent<MeshCollider>().convex = true;
+                    obj.GetComponent<MeshCollider>().sharedMesh = obj.GetComponent<MeshFilter>().mesh;
+                    obj.AddComponent<ObjectManipulator>();
+                    obj.AddComponent<NearInteractionGrabbable>();
                 }
                 res_con.Clear();
                 res_con_world.Clear();

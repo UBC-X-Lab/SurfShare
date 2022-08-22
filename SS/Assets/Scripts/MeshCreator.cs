@@ -5,7 +5,7 @@ using DelaunatorSharp;
 
 public static class MeshCreator
 {
-    public static Mesh CreateMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, float meshHeight = 0.005f)
+    public static Mesh CreateMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, float meshHeight = 0.1f)
     {
         IPoint[] points = DelaunatorSharp.Unity.Extensions.DelaunatorExtensions.ToPoints(poly_vertices);
         Delaunator delaunator = new Delaunator(points);
