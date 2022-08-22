@@ -90,6 +90,12 @@ public class OpenCVTest : MonoBehaviour
             obj.GetComponent<MeshCollider>().sharedMesh = obj.GetComponent<MeshFilter>().mesh;
             obj.AddComponent<NearInteractionGrabbable>();
             obj.AddComponent<ObjectManipulator>();
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                obj.transform.GetChild(0).localPosition += new Vector3(vertices[i].x, 0.2f, vertices[i].y);
+            }
+            obj.transform.GetChild(0).localPosition /= vertices.Length;
+            //obj.transform.GetChild(0).localPosition
         }
     }
 }
