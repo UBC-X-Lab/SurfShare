@@ -54,8 +54,8 @@ public class Main : MonoBehaviour
                     obj.AddComponent<MeshCollider>();
                     obj.GetComponent<MeshCollider>().convex = true;
                     obj.GetComponent<MeshCollider>().sharedMesh = newMesh;
-                    obj.AddComponent<ObjectManipulator>().enabled = false;
-                    obj.AddComponent<NearInteractionGrabbable>().enabled = false;
+                    obj.AddComponent<ObjectManipulator>();
+                    obj.AddComponent<NearInteractionGrabbable>();
 
                     // initiate extrude handle
                     GameObject extrusionHandle = obj.transform.GetChild(0).gameObject;

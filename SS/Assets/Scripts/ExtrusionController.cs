@@ -19,8 +19,8 @@ public class ExtrusionController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        this.transform.parent.gameObject.GetComponent<NearInteractionGrabbable>().enabled = !Main.toggleExtrusion;
-        this.transform.parent.gameObject.GetComponent<ObjectManipulator>().enabled = !Main.toggleExtrusion;
+        //this.transform.parent.gameObject.GetComponent<NearInteractionGrabbable>().enabled = !Main.toggleExtrusion;
+        //this.transform.parent.gameObject.GetComponent<ObjectManipulator>().enabled = !Main.toggleExtrusion;
 
         this.GetComponent<SphereCollider>().enabled = Main.toggleExtrusion;
         this.GetComponent<MeshRenderer>().enabled = Main.toggleExtrusion;
@@ -33,14 +33,14 @@ public class ExtrusionController : MonoBehaviour
 
             if (delta.magnitude > 0)
             {
-                Debug.Log("LocalPosition:" + this.transform.localPosition);
+                // Debug.Log("LocalPosition:" + this.transform.localPosition);
                 Vector3[] new_vertices = myMesh.vertices;
                 foreach (int vertex_index in topVerticesIndices)
                 {
                     new_vertices[vertex_index] += delta;
                 }
                 myMesh.vertices = new_vertices;
-                
+                this.transform.parent.gameObject.GetComponent<MeshCollider>().sharedMesh = myMesh;
             }
 
             //Vector3[] new_vertices = myMesh.vertices;
