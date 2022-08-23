@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class UpdateMesh : MonoBehaviour
 {
-    public float height = 0.5f;
+    public float height;
     public bool skew = false;
+
+    private Vector3 previousHandlePos;
     // Start is called before the first frame update
     void Start()
     {
-        
+        previousHandlePos = transform.GetChild(0).localPosition;
     }
 
     // Update is called once per frame
@@ -17,12 +19,19 @@ public class UpdateMesh : MonoBehaviour
     {
         if (height != 0)
         {
-            MeshCreator.UpdateMeshHeight(GetComponent<MeshFilter>().mesh, height);
-        }
+            Vector3 delta = transform.GetChild(0).localPosition - previousHandlePos;
+            MeshCreator.ExtrudeMesh(GetComponent<MeshFilter>().mesh, delta);
+            previousHandlePos = transform.GetChild(0).localPosition;
 
-        if (skew)
-        {
-            MeshCreator.SkewMesh(GetComponent<MeshFilter>().mesh);
+            if (delta.magnitude > 0)
+            {
+                GetComponent<MeshCollider>().sharedMesh = GetComponent<MeshFilter>().mesh;
+            }
         }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log(collision.transform.name);
     }
 }

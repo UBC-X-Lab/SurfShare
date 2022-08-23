@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using OpenCvSharp;
 using DelaunatorSharp.Unity.Extensions;
+using Microsoft.MixedReality.Toolkit.UI;
+using Microsoft.MixedReality.Toolkit.Input;
 
 public class OpenCVTest : MonoBehaviour
 {
@@ -79,12 +81,21 @@ public class OpenCVTest : MonoBehaviour
             Vector2[] vertices = new Vector2[con.Length];
             for (int i = 0; i < vertices.Length; i++)
             {
-                vertices[i] = new Vector2(con[i].X / (float) originalTex.width * image_width, con[i].Y / (float) originalTex.height * image_height);
+                vertices[i] = new Vector2(con[i].X / (float)originalTex.width * image_width, con[i].Y / (float)originalTex.height * image_height);
             }
             GameObject obj = Instantiate(GameObject.Find("Object"));
             obj.transform.position = image_origin;
             obj.GetComponent<UpdateMesh>().enabled = true;
             obj.GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(vertices);
+            obj.GetComponent<MeshCollider>().sharedMesh = obj.GetComponent<MeshFilter>().mesh;
+            obj.AddComponent<NearInteractionGrabbable>();
+            obj.AddComponent<ObjectManipulator>();
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                obj.transform.GetChild(0).localPosition += new Vector3(vertices[i].x, 0.2f, vertices[i].y);
+            }
+            obj.transform.GetChild(0).localPosition /= vertices.Length;
+            //obj.transform.GetChild(0).localPosition
         }
     }
 }
