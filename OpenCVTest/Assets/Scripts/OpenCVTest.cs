@@ -13,7 +13,7 @@ public class OpenCVTest : MonoBehaviour
     static Texture2D originalTex;
     static Texture2D contouredTex;
 
-    
+    public GameObject BaseMesh;
 
     // Start is called before the first frame update
     void Start()
@@ -83,7 +83,7 @@ public class OpenCVTest : MonoBehaviour
             {
                 vertices[i] = new Vector2(con[i].X / (float)originalTex.width * image_width, con[i].Y / (float)originalTex.height * image_height);
             }
-            GameObject obj = Instantiate(GameObject.Find("Object"));
+            GameObject obj = Instantiate(BaseMesh);
             obj.transform.position = image_origin;
             obj.GetComponent<UpdateMesh>().enabled = true;
             obj.GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(vertices);
