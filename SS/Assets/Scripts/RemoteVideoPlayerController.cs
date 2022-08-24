@@ -36,4 +36,9 @@ public class RemoteVideoPlayerController : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(-lookAt, -y_axis); // quad lookAt is the reversed direction of the texture lol
         }
     }
+
+    public void PositionRemotePlayer()
+    {
+
+    }
 }
