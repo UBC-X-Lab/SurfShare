@@ -63,7 +63,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  MeshPrefab: {fileID: 7249530337987764738, guid: db326658db359d64eb8cf865df370c91,
+  MeshPrefab: {fileID: 5686919285794630133, guid: 3ff6d4a57e266ed44aafbdf947f27b5a,
     type: 3}
   Prefab: {fileID: 8437395710888890699, guid: f532cf77802de9c4aaf8a86b8213d315, type: 3}
   Spawn: 0

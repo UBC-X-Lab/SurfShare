@@ -5,6 +5,10 @@ using Mirror;
 
 public class UpdateMesh : NetworkBehaviour
 {
+    private GameObject BaseMesh;
+
+    
+
     public readonly SyncList<Vector2> vertices = new SyncList<Vector2>();
 
     [SyncVar]
@@ -21,6 +25,7 @@ public class UpdateMesh : NetworkBehaviour
     void Start()
     {
         // vertices.Callback += onVerticesUpdated;
+        BaseMesh = transform.GetChild(0).gameObject;
     }
 
     public void CreateMesh()
@@ -34,14 +39,14 @@ public class UpdateMesh : NetworkBehaviour
         transform.position = image_origin;
         Vector2[] MeshVertices = new Vector2[vertices.Count];
         vertices.CopyTo(MeshVertices, 0);
-        GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(MeshVertices);
-        GetComponent<MeshCollider>().sharedMesh = GetComponent<MeshFilter>().mesh;
+        BaseMesh.GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(MeshVertices);
+        BaseMesh.GetComponent<MeshCollider>().sharedMesh = BaseMesh.GetComponent<MeshFilter>().mesh;
         for (int i = 0; i < MeshVertices.Length; i++)
         {
-            transform.GetChild(0).localPosition += new Vector3(MeshVertices[i].x, 0.2f, MeshVertices[i].y);
+            BaseMesh.transform.GetChild(0).localPosition += new Vector3(MeshVertices[i].x, 0.2f, MeshVertices[i].y);
         }
-        transform.GetChild(0).localPosition /= MeshVertices.Length;
-        previousHandlePos = transform.GetChild(0).localPosition;
+        BaseMesh.transform.GetChild(0).localPosition /= MeshVertices.Length;
+        previousHandlePos = BaseMesh.transform.GetChild(0).localPosition;
     }
 
     // Update is called once per frame
@@ -56,12 +61,12 @@ public class UpdateMesh : NetworkBehaviour
 
         if (canUpdateMesh)
         {
-            Vector3 delta = transform.GetChild(0).localPosition - previousHandlePos; // can we just use delta?
+            Vector3 delta = BaseMesh.transform.GetChild(0).localPosition - previousHandlePos; // can we just use delta?
             if (delta.magnitude > 0)
             {
-                previousHandlePos = transform.GetChild(0).localPosition;
-                MeshCreator.ExtrudeMesh(GetComponent<MeshFilter>().mesh, delta);
-                GetComponent<MeshCollider>().sharedMesh = GetComponent<MeshFilter>().mesh;
+                previousHandlePos = BaseMesh.transform.GetChild(0).localPosition;
+                MeshCreator.ExtrudeMesh(BaseMesh.GetComponent<MeshFilter>().mesh, delta);
+                BaseMesh.GetComponent<MeshCollider>().sharedMesh = BaseMesh.GetComponent<MeshFilter>().mesh;
                 // Debug.Log("Hey!");
             }
         }
@@ -96,9 +101,16 @@ public class UpdateMesh : NetworkBehaviour
             myId.RemoveClientAuthority();
             if (myId.AssignClientAuthority(netId.connectionToClient))
             {
+                Debug.Log("Assign Success!");
                 manipulating = true;
             }
+            else
+            {
+                Debug.Log("Assign Failed!");
+            }
         }
+
+        // Debug.Log(hasAuthority);
     }
 
     // only the user with authority can set manipulating to false
