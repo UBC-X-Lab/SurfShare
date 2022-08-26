@@ -2,6 +2,8 @@
 *.mp4
 *.avi
 
+*_clone_*
+
 *[Dd]emo
 
 "Adobe Premiere Pro Auto-Save"
