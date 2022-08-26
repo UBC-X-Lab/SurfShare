@@ -50,21 +50,21 @@ public class Main : MonoBehaviour
                     //obj.transform.position = FrameHandler.corners[2];
                     Mesh newMesh = MeshCreator.CreateMesh(vertices, res_con_world[i], heightNormal);
                     obj.GetComponent<MeshFilter>().mesh = newMesh;
-                    obj.GetComponent<MeshRenderer>().enabled = true;
-                    obj.AddComponent<MeshCollider>();
-                    obj.GetComponent<MeshCollider>().convex = true;
+                    // obj.GetComponent<MeshRenderer>().enabled = true;
+                    // obj.AddComponent<MeshCollider>();
+                    // obj.GetComponent<MeshCollider>().convex = true;
                     obj.GetComponent<MeshCollider>().sharedMesh = newMesh;
-                    obj.AddComponent<ObjectManipulator>();
-                    obj.AddComponent<NearInteractionGrabbable>();
+                    // obj.AddComponent<ObjectManipulator>();
+                    // obj.AddComponent<NearInteractionGrabbable>();
 
                     // initiate extrude handle
                     GameObject extrusionHandle = obj.transform.GetChild(0).gameObject;
-                    extrusionHandle.GetComponent<MeshRenderer>().enabled = true;
-                    extrusionHandle.GetComponent<SphereCollider>().enabled = true;
-                    extrusionHandle.AddComponent<ObjectManipulator>();
-                    extrusionHandle.AddComponent<NearInteractionGrabbable>();
+                    // extrusionHandle.GetComponent<MeshRenderer>().enabled = true;
+                    // extrusionHandle.GetComponent<SphereCollider>().enabled = true;
+                    // extrusionHandle.AddComponent<ObjectManipulator>();
+                    // extrusionHandle.AddComponent<NearInteractionGrabbable>();
                     extrusionHandle.GetComponent<ExtrusionController>().myMesh = newMesh;
-                    extrusionHandle.GetComponent<ExtrusionController>().enabled = true;
+                    // extrusionHandle.GetComponent<ExtrusionController>().enabled = true;
 
                     // get top vertices indices (after optimization)
                     for (int j = 0; j < newMesh.vertexCount; j++)

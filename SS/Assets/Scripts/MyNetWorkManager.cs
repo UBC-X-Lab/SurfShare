@@ -11,11 +11,11 @@ public class MyNetWorkManager : NetworkManager
     {
         if (isServer)
         {
-            StartHost();
+            singleton.StartHost();
         }
         else
         {
-            StartClient();
+            singleton.StartClient();
         }
     }
 
