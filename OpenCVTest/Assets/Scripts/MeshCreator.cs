@@ -21,7 +21,7 @@ public static class MeshCreator
             int poly_vertices_index = i % poly_vertices.Length;
             float height = i < poly_vertices.Length ? 0 : meshHeight;
             mesh_vertices[i] = new Vector3(poly_vertices[poly_vertices_index].x, height, poly_vertices[poly_vertices_index].y);
-            Debug.Log(mesh_vertices[i].x + "," + mesh_vertices[i].y + "," + mesh_vertices[i].x);
+            // Debug.Log(mesh_vertices[i].x + "," + mesh_vertices[i].y + "," + mesh_vertices[i].x);
         }
 
         mesh.vertices = mesh_vertices;

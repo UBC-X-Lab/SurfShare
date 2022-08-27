@@ -19,6 +19,7 @@ public class UpdateMesh : NetworkBehaviour
 
     private Vector3 previousHandlePos;
 
+    [SyncVar]
     public bool isKinematic;
 
     // Start is called before the first frame update
@@ -72,49 +73,25 @@ public class UpdateMesh : NetworkBehaviour
             }
         }
 
-        if (isKinematic != BaseMesh.GetComponent<Rigidbody>().isKinematic)
+        if (BaseMesh.GetComponent<Rigidbody>().isKinematic != isKinematic)
         {
-            isKinematic = BaseMesh.GetComponent<Rigidbody>().isKinematic;
-            CmdSyncKinematic(NetworkClient.localPlayer.GetComponent<NetworkIdentity>(), isKinematic);
+            BaseMesh.GetComponent<Rigidbody>().isKinematic = isKinematic;
         }
     }
 
     [Command(requiresAuthority = false)]
-    void CmdSyncKinematic(NetworkIdentity originId, bool value)
-    {
-        // Debug.Log("Origin:" + originId.connectionToClient);
-        foreach (NetworkConnectionToClient netid in NetworkServer.connections.Values)
-        {
-            TargetSyncKinematic(netid, value);
-        }
-    }
-
-    [TargetRpc]
-    void TargetSyncKinematic(NetworkConnection targetConnection, bool value)
+    void CmdSyncKinematic(bool value)
     {
         isKinematic = value;
-        BaseMesh.GetComponent<Rigidbody>().isKinematic = value;
     }
-
-    //[Command]
-    //void CmdUpdateVertices(Vector2[] new_vertices)
-    //{
-    //    vertices.Clear();
-    //    vertices.AddRange(new_vertices);
-    //}
-
-    //[ClientRpc (includeOwner = false)]
-    //void UpdateClientMesh()
-    //{
-    //    Vector2[] MeshVertices = new Vector2[vertices.Count];
-    //    vertices.CopyTo(MeshVertices, 0);
-    //    GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(MeshVertices);
-    //    GetComponent<MeshCollider>().sharedMesh = GetComponent<MeshFilter>().mesh;
-    //}
 
     public void AssignAuthority()
     {
         CmdAssignAuthority(GetComponent<NetworkIdentity>(), NetworkClient.localPlayer.GetComponent<NetworkIdentity>());
+        if (isKinematic != false)
+        {
+            CmdSyncKinematic(false); // turn off Kinematic on pick up
+        }
     }
 
     [Command(requiresAuthority = false)]
@@ -144,29 +121,7 @@ public class UpdateMesh : NetworkBehaviour
         manipulating = false;
     }
 
-    public void turnOffKinematicOnPickUp()
-    {
-        CmdSyncKinematic(NetworkClient.localPlayer.GetComponent<NetworkIdentity>(), false);
-    }
 
-    // TODO
-    private void OnCollisionEnter(Collision collision)
-    {
-        // collision should be an object currently manipulated by a user
-        if (hasAuthority && manipulating)
-        {
-            Debug.Log(collision.gameObject.name);
-            // only detect collision with networked objects
-            if (collision.gameObject.tag == "NetworkedObjects")
-            {
-                if (!collision.gameObject.GetComponentInParent<UpdateMesh>().hasAuthority)
-                {
-                    collision.gameObject.GetComponentInParent<UpdateMesh>().AssignAuthority();
-                }
-                Debug.Log("Assigning collided object authority!");
-            }
-        }
-    }
 
     //void onVerticesUpdated(SyncList<Vector2>.Operation op, int index, Vector2 oldItem, Vector2 newItem)
     //{
