@@ -70,7 +70,7 @@ public class HandEventsHandler : MonoBehaviour
         {
             Debug.Log("Clicked!");
             // call frameHandler onPinched
-            this.GetComponent<FrameHandler>().OnHandRayPinched();
+            this.GetComponent<FrameHandler>().SetLocalPinched();
         }
     }
 }

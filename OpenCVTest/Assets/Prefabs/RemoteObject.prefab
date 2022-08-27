@@ -15,9 +15,10 @@ GameObject:
   - component: {fileID: 5686919285535874481}
   - component: {fileID: 5686919285535874482}
   - component: {fileID: 5686919285535874492}
+  - component: {fileID: 8673216692849176307}
   m_Layer: 0
   m_Name: BaseMesh
-  m_TagString: Untagged
+  m_TagString: NetworkedObjects
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -171,6 +172,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 5686919285794630132}
+        m_MethodName: turnOffKinematicOnPickUp
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onHoverEntered:
     m_PersistentCalls:
       m_Calls: []
@@ -191,6 +203,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTetherWhenManipulating: 0
   IsBoundsHandles: 0
+--- !u!54 &8673216692849176307
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5686919285535874489}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &5686919285571635117
 GameObject:
   m_ObjectHideFlags: 0
@@ -519,3 +547,4 @@ MonoBehaviour:
   vertices_initialized: 0
   manipulating: 0
   canUpdateMesh: 0
+  isKinematic: 0

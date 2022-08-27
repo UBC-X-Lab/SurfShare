@@ -196,7 +196,7 @@ MonoBehaviour:
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs: []
-  isServer: 0
+  isServer: 1
 --- !u!4 &211222439
 Transform:
   m_ObjectHideFlags: 0
@@ -598,7 +598,7 @@ PrefabInstance:
     - target: {fileID: 3515418990045158255, guid: 40b588bd40632eb41a0af374d91c4fc9,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3864793685903309806, guid: 40b588bd40632eb41a0af374d91c4fc9,
         type: 3}
@@ -834,6 +834,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lineSample: {fileID: 647662791527175898, guid: 835e0deecc262874c979a95236e926f9,
     type: 3}
+  remoteFrame: {fileID: 223974226}
 --- !u!114 &515433807
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -955,7 +956,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &675028749
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5,14 +5,13 @@ using Mirror;
 
 public class RemoteSpaceControl : NetworkBehaviour
 {
+    public static bool localSet = false;
     private float localWidth;
     private float localHeight;
 
-    private float remoteWidth;
-    private float remoteHeight;
-
-    private bool localSet = false;
-    private bool remoteSet = false;
+    public static bool remoteSet = true;
+    public static float remoteWidth = 0.5f;
+    public static float remoteHeight = 0.3f;
 
     private bool remoteVideoSet = false;
     private Vector3[] RemoteCorners = new Vector3[4];
@@ -55,6 +54,14 @@ public class RemoteSpaceControl : NetworkBehaviour
         RemoteCorners[1] = remoteFrameOrigin + remoteXAxis;
         RemoteCorners[2] = remoteFrameOrigin + remoteYAxis;
         RemoteCorners[3] = remoteFrameOrigin + remoteXAxis + remoteYAxis;
+
+        // we want the centers of the frames to be placed together!
+        Vector3 frameCenter = (FrameHandler.corners[0] + FrameHandler.corners[1] + FrameHandler.corners[2] + FrameHandler.corners[3]) / 4;
+        Vector3 remoteCenter = (RemoteCorners[0] + RemoteCorners[1] + RemoteCorners[2] + RemoteCorners[3]) / 4;
+        RemoteCorners[0] += frameCenter - remoteCenter;
+        RemoteCorners[1] += frameCenter - remoteCenter;
+        RemoteCorners[2] += frameCenter - remoteCenter;
+        RemoteCorners[3] += frameCenter - remoteCenter;
 
         // place video plane
         RemoteVideoPlane.GetComponent<RemoteVideoPlayerController>().PositionRemotePlayer(RemoteCorners);

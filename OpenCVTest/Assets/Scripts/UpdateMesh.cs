@@ -7,8 +7,6 @@ public class UpdateMesh : NetworkBehaviour
 {
     private GameObject BaseMesh;
 
-    
-
     public readonly SyncList<Vector2> vertices = new SyncList<Vector2>();
 
     [SyncVar]
@@ -21,11 +19,14 @@ public class UpdateMesh : NetworkBehaviour
 
     private Vector3 previousHandlePos;
 
+    public bool isKinematic;
+
     // Start is called before the first frame update
     void Start()
     {
         // vertices.Callback += onVerticesUpdated;
         BaseMesh = transform.GetChild(0).gameObject;
+        isKinematic = BaseMesh.GetComponent<Rigidbody>().isKinematic;
     }
 
     public void CreateMesh()
@@ -70,6 +71,29 @@ public class UpdateMesh : NetworkBehaviour
                 // Debug.Log("Hey!");
             }
         }
+
+        if (isKinematic != BaseMesh.GetComponent<Rigidbody>().isKinematic)
+        {
+            isKinematic = BaseMesh.GetComponent<Rigidbody>().isKinematic;
+            CmdSyncKinematic(NetworkClient.localPlayer.GetComponent<NetworkIdentity>(), isKinematic);
+        }
+    }
+
+    [Command(requiresAuthority = false)]
+    void CmdSyncKinematic(NetworkIdentity originId, bool value)
+    {
+        // Debug.Log("Origin:" + originId.connectionToClient);
+        foreach (NetworkConnectionToClient netid in NetworkServer.connections.Values)
+        {
+            TargetSyncKinematic(netid, value);
+        }
+    }
+
+    [TargetRpc]
+    void TargetSyncKinematic(NetworkConnection targetConnection, bool value)
+    {
+        isKinematic = value;
+        BaseMesh.GetComponent<Rigidbody>().isKinematic = value;
     }
 
     //[Command]
@@ -118,6 +142,30 @@ public class UpdateMesh : NetworkBehaviour
     public void CmdManipulationEnd()
     {
         manipulating = false;
+    }
+
+    public void turnOffKinematicOnPickUp()
+    {
+        CmdSyncKinematic(NetworkClient.localPlayer.GetComponent<NetworkIdentity>(), false);
+    }
+
+    // TODO
+    private void OnCollisionEnter(Collision collision)
+    {
+        // collision should be an object currently manipulated by a user
+        if (hasAuthority && manipulating)
+        {
+            Debug.Log(collision.gameObject.name);
+            // only detect collision with networked objects
+            if (collision.gameObject.tag == "NetworkedObjects")
+            {
+                if (!collision.gameObject.GetComponentInParent<UpdateMesh>().hasAuthority)
+                {
+                    collision.gameObject.GetComponentInParent<UpdateMesh>().AssignAuthority();
+                }
+                Debug.Log("Assigning collided object authority!");
+            }
+        }
     }
 
     //void onVerticesUpdated(SyncList<Vector2>.Operation op, int index, Vector2 oldItem, Vector2 newItem)
