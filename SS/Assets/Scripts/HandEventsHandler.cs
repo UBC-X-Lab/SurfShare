@@ -9,8 +9,11 @@ public class HandEventsHandler : MonoBehaviour
     public bool isLeftHanded = false;
     
     public static Vector3 handray_cursor_position; // cursor position
+    public static Vector3 handray_start_position;
     public static Quaternion handray_cursor_orientation; // cursor orientation
     private bool handray_cursor_present = false; // is there a cursor?
+
+    public GameObject RemoteSpaceControlObject;
 
     // Start is called before the first frame update
     void Start()
@@ -54,6 +57,7 @@ public class HandEventsHandler : MonoBehaviour
                         this.handray_cursor_present = true;
                         //handray_cursor_position = endpoint - 0.2f * Vector3.forward; // for testing purpose
                         handray_cursor_position = endpoint;
+                        handray_start_position = pointer.Result.StartPoint;
                         handray_cursor_orientation = pointer.BaseCursor.Rotation;
                         return;
                     }
@@ -68,9 +72,18 @@ public class HandEventsHandler : MonoBehaviour
     {
         if (this.handray_cursor_present)
         {
-            Debug.Log("Clicked!");
-            // call frameHandler onPinched
-            this.GetComponent<FrameHandler>().SetLocalPinched();
+            if (RemoteSpaceControl.STATE == RemoteSpaceControl.PLACE_LOCAL)
+            {
+                this.GetComponent<FrameHandler>().SetLocalPinched();
+                if (FrameHandler.corners.Count == 1)
+                {
+                    RemoteSpaceControlObject.GetComponent<RemoteSpaceControl>().NotifySetLocal(); // this sets the peer's state to PLACE_REMOTE
+                }
+            }
+            else if (RemoteSpaceControl.STATE == RemoteSpaceControl.PLACE_REMOTE)
+            {
+                RemoteSpaceControlObject.GetComponent<RemoteSpaceControl>().setRemoteVideoPlane = true;
+            }
         }
     }
 }
