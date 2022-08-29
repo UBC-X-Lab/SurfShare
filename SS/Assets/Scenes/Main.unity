@@ -359,7 +359,7 @@ MonoBehaviour:
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 1802745496984246640, guid: 7c7009416951dee4094d41045d3cd01f,
     type: 3}
-  autoCreatePlayer: 0
+  autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs: []
   isServer: 1
@@ -407,53 +407,13 @@ GameObject:
   m_Component:
   - component: {fileID: 307982778}
   - component: {fileID: 307982777}
-  - component: {fileID: 307982776}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: PeerWorldOrigin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!23 &307982776
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 307982775}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_IsActive: 1
 --- !u!33 &307982777
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -469,12 +429,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 307982775}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.0625, y: 0.11111112, z: 0.1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 15
+  m_Father: {fileID: 2033114388}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &358077483
 GameObject:
@@ -956,6 +916,11 @@ PrefabInstance:
       propertyPath: startDimensionIndex
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5656867131449373698, guid: 40b588bd40632eb41a0af374d91c4fc9,
+        type: 3}
+      propertyPath: OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5733978351250233728, guid: 40b588bd40632eb41a0af374d91c4fc9,
         type: 3}
       propertyPath: m_Mesh
@@ -979,11 +944,16 @@ PrefabInstance:
     - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
         type: 3}
       propertyPath: ButtonReleased.m_PersistentCalls.m_Calls.Array.size
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
         type: 3}
       propertyPath: ButtonReleased.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
+        type: 3}
+      propertyPath: ButtonReleased.m_PersistentCalls.m_Calls.Array.data[3].m_Mode
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
@@ -993,7 +963,17 @@ PrefabInstance:
       objectReference: {fileID: 515433812}
     - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
         type: 3}
+      propertyPath: ButtonReleased.m_PersistentCalls.m_Calls.Array.data[3].m_Target
+      value: 
+      objectReference: {fileID: 1307376360}
+    - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
+        type: 3}
       propertyPath: ButtonReleased.m_PersistentCalls.m_Calls.Array.data[2].m_CallState
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
+        type: 3}
+      propertyPath: ButtonReleased.m_PersistentCalls.m_Calls.Array.data[3].m_CallState
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
@@ -1003,7 +983,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
         type: 3}
+      propertyPath: ButtonReleased.m_PersistentCalls.m_Calls.Array.data[3].m_MethodName
+      value: CmdTogglePeerWorldSetup
+      objectReference: {fileID: 0}
+    - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
+        type: 3}
       propertyPath: ButtonReleased.m_PersistentCalls.m_Calls.Array.data[2].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 5822243177580260575, guid: 40b588bd40632eb41a0af374d91c4fc9,
+        type: 3}
+      propertyPath: ButtonReleased.m_PersistentCalls.m_Calls.Array.data[3].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 5972206227985548477, guid: 40b588bd40632eb41a0af374d91c4fc9,
@@ -1223,7 +1213,7 @@ MonoBehaviour:
   AutoLogErrors: 1
   LocalPeerId: Hololens1
   RemotePeerId: Hololens2
-  HttpServerAddress: http://192.168.0.10:3000
+  HttpServerAddress: http://192.168.0.8:3000
   PollTimeMs: 500
 --- !u!4 &675028750
 Transform:
@@ -1802,8 +1792,8 @@ MonoBehaviour:
   FrameUpIndicator: {fileID: 140144206}
   DEBUG_STATE: 0
   LocalVideoPlayer: {fileID: 2044513591}
-  MyWorldOrigin: {fileID: 0}
-  PeerWorldOrigin: {fileID: 0}
+  MyWorldOrigin: {fileID: 515433810}
+  PeerWorldOrigin: {fileID: 307982778}
   Menu: {fileID: 1579289472}
 --- !u!114 &1307376361
 MonoBehaviour:
@@ -2132,6 +2122,7 @@ Transform:
   m_Children:
   - {fileID: 1181272450}
   - {fileID: 140144205}
+  - {fileID: 307982778}
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

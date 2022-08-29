@@ -25,16 +25,26 @@ public class RemoteSpaceControl : NetworkBehaviour
 
     public int DEBUG_STATE;
 
+    // frame placement
     public Transform LocalVideoPlayer;
+    Vector3 space_offset = new Vector3(0, 0, 0); // from remote to me
+    Quaternion quaternion_offset = new Quaternion();
+
+    // world placement
     public Transform MyWorldOrigin;
     public Transform PeerWorldOrigin;
 
+    [SyncVar]
+    bool SetupWorld = false;
+
+    Vector3 world_offset = new Vector3(0, 0, 0);
+    Quaternion world_quaternion_offset = new Quaternion();
+    bool PeerWorldSet = false;
+
     public Transform Menu;
 
- 
-    Vector3 space_offset = new Vector3(0, 0, 0); // from remote to me
 
-    Quaternion quaternion_offset = new Quaternion();
+
 
     // Start is called before the first frame update
     void Start()
@@ -63,6 +73,10 @@ public class RemoteSpaceControl : NetworkBehaviour
             LocalVideoPlayer.rotation = localFrameQuaternion;
             LocalVideoPlayer.localScale = new Vector3(localXAxis.magnitude, localYAxis.magnitude, 1);
 
+            // Setup world position
+            world_offset = LocalVideoPlayer.InverseTransformPoint(MyWorldOrigin.position);
+            world_quaternion_offset = Quaternion.Inverse(LocalVideoPlayer.GetComponent<Transform>().rotation) * MyWorldOrigin.rotation; // from localvideo to world
+
             // setup menu position
             Menu.gameObject.SetActive(true);
             Menu.position = (FrameHandler.corners[2] + FrameHandler.corners[3] + localYAxis) / 2 + Vector3.Cross(localXAxis, localYAxis).normalized * 0.05f;
@@ -70,23 +84,10 @@ public class RemoteSpaceControl : NetworkBehaviour
 
             CmdSync(NetworkClient.localPlayer.GetComponent<NetworkIdentity>(), localWidth, localHeight); // this toggles peer's remote set
 
-            if (setRemoteVideoPlane)
+            if (setRemoteVideoPlane) // second user calls this
             {
-                STATE = PLACE_COMPLETE;
-                // sync space offset so the peer can set this peer's frame
-                // Debug.Log("Offset:" + (RemoteVideoPlane.GetComponent<Transform>().position - localFrameCenter).ToString());
-                // space_offset = RemoteVideoPlane.GetComponent<Transform>().InverseTransformVector(RemoteVideoPlane.GetComponent<Transform>().position - localFrameCenter);
-
-                //space_offset = LocalVideoPlayer.InverseTransformPoint(RemoteVideoPlane.GetComponent<Transform>().position); // this is now directly the remote video relative postion
-                //quaternion_offset = Quaternion.Inverse(localFrameQuaternion) * RemoteVideoPlane.GetComponent<Transform>().rotation;
-                // CmdInitializeSpaceOffset(space_offset, quaternion_offset);
-
-                //space_offset = RemoteVideoPlane.GetComponent<Transform>().InverseTransformPoint(LocalVideoPlayer.position);
-                //quaternion_offset = Quaternion.Inverse(RemoteVideoPlane.GetComponent<Transform>().rotation) * localFrameQuaternion;
-
                 ChangeSpaceOffset();
-
-                // Debug.Log(space_offset);
+                STATE = PLACE_COMPLETE;
                 Debug.Log("Client setup complete!");
             }
         }
@@ -141,23 +142,13 @@ public class RemoteSpaceControl : NetworkBehaviour
                         STATE = PLACE_LOCAL;
                     }
                 }
-                else // if local is already set, then I was the first user, I wait for the second user to place their remote frame for me
-                {
-                    //SetRemoteVideo(null, true);
-
-                    //Vector3 world_space_offset = LocalVideoPlayer.TransformPoint(space_offset);
-                    //RemoteVideoPlane.GetComponent<Transform>().position = world_space_offset;
-
-                    //Vector3 localXAxis = FrameHandler.corners[1] - FrameHandler.corners[0];
-                    //Vector3 localYAxis = FrameHandler.corners[2] - FrameHandler.corners[0];
-                    //Quaternion localFrameQuaternion = Quaternion.LookRotation(-Vector3.Cross(localXAxis, localYAxis), -localYAxis);
-                    //RemoteVideoPlane.GetComponent<Transform>().rotation = localFrameQuaternion * Quaternion.Inverse(quaternion_offset);
-
-                    //Debug.Log("Offset:" + world_space_offset.ToString());
-
-                    //STATE = PLACE_COMPLETE;
-                }
             }
+        }
+
+        if (STATE == PLACE_COMPLETE && SetupWorld && !PeerWorldSet)
+        {
+            PeerWorldSet = true;
+            CmdSetupPeerWorld(NetworkClient.localPlayer.GetComponent<NetworkIdentity>(), world_offset, world_quaternion_offset);
         }
     }
 
@@ -211,26 +202,48 @@ public class RemoteSpaceControl : NetworkBehaviour
     }
 
 
-    //===============================   Sync space offset ==============================//
-    //[Command(requiresAuthority = false)]
-    //void CmdInitializeSpaceOffset(Vector3 new_space_offset, Quaternion new_quaternion_offset)
+    //===============================   Setup Peer World ==============================//
+    //public void TogglePeerWorldSetup()
     //{
-    //    space_offset = new_space_offset;
-    //    quaternion_offset = new_quaternion_offset;
+    //    Debug.Log("Local Called Toggle!");
+    //    CmdTogglePeerWorldSetup();
     //}
+
+    [Command(requiresAuthority = false)]
+    public void CmdTogglePeerWorldSetup()
+    {
+        Debug.Log("Server called toggle!");
+        SetupWorld = true;
+    }
+
+    [Command(requiresAuthority = false)]
+    void CmdSetupPeerWorld(NetworkIdentity originId, Vector3 new_world_position, Quaternion new_world_rotation)
+    {
+        foreach (NetworkConnectionToClient netid in NetworkServer.connections.Values)
+        {
+            if (netid != originId.connectionToClient)
+            {
+                TargetSetupPeerWorld(netid, new_world_position, new_world_rotation);
+            }
+        }
+    }
+
+    [TargetRpc]
+    void TargetSetupPeerWorld(NetworkConnection originId, Vector3 new_world_position, Quaternion new_world_rotation)
+    {
+        // the relative global offsets are directly the local position and rotation
+        PeerWorldOrigin.localPosition = new_world_position;
+        PeerWorldOrigin.localRotation = new_world_rotation;
+        Debug.Log("Peer to frame distance:" + (PeerWorldOrigin.position - PeerWorldOrigin.parent.position).magnitude);
+        Debug.Log("Peer World Set!");
+    }
+
+    //===============================   Sync space offset ==============================//
 
     public void ChangeSpaceOffset()
     {
-        // Vector3 localXAxis = FrameHandler.corners[1] - FrameHandler.corners[0];
-        // Vector3 localYAxis = FrameHandler.corners[2] - FrameHandler.corners[0];
-        // Quaternion localFrameQuaternion = Quaternion.LookRotation(-Vector3.Cross(localXAxis, localYAxis), -localYAxis);
-        // quaternion_offset = Quaternion.Inverse(localFrameQuaternion) * RemoteVideoPlane.GetComponent<Transform>().rotation;
-
         space_offset = RemoteVideoPlane.GetComponent<Transform>().InverseTransformPoint(LocalVideoPlayer.position);
         quaternion_offset = Quaternion.Inverse(RemoteVideoPlane.GetComponent<Transform>().rotation) * LocalVideoPlayer.rotation;
-
-        // Vector3 localFrameCenter = (FrameHandler.corners[0] + FrameHandler.corners[1] + FrameHandler.corners[2] + FrameHandler.corners[3]) / 4.0f;
-        // space_offset = LocalVideoPlayer.InverseTransformPoint(RemoteVideoPlane.GetComponent<Transform>().position);
 
         CmdChangeSpaceOffset(NetworkClient.localPlayer.GetComponent<NetworkIdentity>(), space_offset, quaternion_offset);
     }
@@ -256,16 +269,16 @@ public class RemoteSpaceControl : NetworkBehaviour
             SetRemoteVideo(null, true);
             STATE = PLACE_COMPLETE;
         }
-
         Vector3 world_space_offset = LocalVideoPlayer.TransformPoint(new_space_offset);
         RemoteVideoPlane.GetComponent<Transform>().position = world_space_offset;
-
-        // Vector3 localXAxis = FrameHandler.corners[1] - FrameHandler.corners[0];
-        // Vector3 localYAxis = FrameHandler.corners[2] - FrameHandler.corners[0];
-        // Quaternion localFrameQuaternion = Quaternion.LookRotation(-Vector3.Cross(localXAxis, localYAxis), -localYAxis);
         RemoteVideoPlane.GetComponent<Transform>().rotation = LocalVideoPlayer.rotation * new_quaternion_offset;
-
         Debug.Log("Remote Space Reset!");
+
+        //if (STATE == PLACE_REMOTE)
+        //{
+        //    CmdTogglePeerWorldSetp(); // this marks that all setup are done, so we do not have message arrive out of order error;
+        //    STATE = PLACE_COMPLETE;
+        //}
     }
 
     //===============================   Notify set local ==============================//

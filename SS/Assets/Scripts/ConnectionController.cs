@@ -22,22 +22,25 @@ public class ConnectionController : MonoBehaviour
 
     public void StartConnection()
     {
-        if (!string.IsNullOrEmpty(localPeerId) && !string.IsNullOrEmpty(remotePeerId))
+        if (RemoteSpaceControl.STATE == RemoteSpaceControl.PLACE_COMPLETE)
         {
-            if (!connection_started)
+            if (!string.IsNullOrEmpty(localPeerId) && !string.IsNullOrEmpty(remotePeerId))
             {
-                connection_started = true;
-                myPeerConnection.StartConnection();
-                Debug.Log("Starting connection...");
+                if (!connection_started)
+                {
+                    connection_started = true;
+                    myPeerConnection.StartConnection();
+                    Debug.Log("Starting connection...");
+                }
+                else
+                {
+                    Debug.Log("Connection has already established!");
+                }
             }
             else
             {
-                Debug.Log("Connection has already established!");
+                Debug.Log("[START CONNECTION] peer ids not provided!");
             }
-        }
-        else
-        {
-            Debug.Log("[START CONNECTION] peer ids not provided!");
         }
     }
 }
