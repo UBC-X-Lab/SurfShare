@@ -19,7 +19,7 @@ public static class MeshCreator
         for (int i = 0; i < mesh_vertices.Length; i++)
         {
             int poly_vertices_index = i % poly_vertices.Length;
-            mesh_vertices[i] = world_vertices[poly_vertices_index] + 0.015f * Vector3.right; // offset to counter HL intrinsic errors
+            mesh_vertices[i] = world_vertices[poly_vertices_index]; // offset to counter HL intrinsic errors
             if (i >= poly_vertices.Length)
             {
                 mesh_vertices[i] += heightNormal * meshHeight;

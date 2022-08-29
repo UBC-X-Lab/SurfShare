@@ -22,12 +22,16 @@ public class UpdateMesh : NetworkBehaviour
     [SyncVar]
     public bool isKinematic;
 
+    [SyncVar]
+    public bool useGravity;
+
     // Start is called before the first frame update
     void Start()
     {
         // vertices.Callback += onVerticesUpdated;
         BaseMesh = transform.GetChild(0).gameObject;
         isKinematic = BaseMesh.GetComponent<Rigidbody>().isKinematic;
+        useGravity = BaseMesh.GetComponent<Rigidbody>().useGravity;
     }
 
     public void CreateMesh()
@@ -77,12 +81,23 @@ public class UpdateMesh : NetworkBehaviour
         {
             BaseMesh.GetComponent<Rigidbody>().isKinematic = isKinematic;
         }
+
+        if (BaseMesh.GetComponent<Rigidbody>().useGravity != useGravity)
+        {
+            BaseMesh.GetComponent<Rigidbody>().useGravity = useGravity;
+        }
     }
 
     [Command(requiresAuthority = false)]
     void CmdSyncKinematic(bool value)
     {
         isKinematic = value;
+    }
+
+    [Command(requiresAuthority = false)]
+    void CmdSyncGravity(bool value)
+    {
+        useGravity = value;
     }
 
     public void AssignAuthority()
@@ -92,6 +107,7 @@ public class UpdateMesh : NetworkBehaviour
         {
             CmdSyncKinematic(false); // turn off Kinematic on pick up
         }
+        CmdSyncGravity(false);
     }
 
     [Command(requiresAuthority = false)]
@@ -119,6 +135,7 @@ public class UpdateMesh : NetworkBehaviour
     public void CmdManipulationEnd()
     {
         manipulating = false;
+        CmdSyncGravity(true);
     }
 
 

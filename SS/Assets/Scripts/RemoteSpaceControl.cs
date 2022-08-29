@@ -14,7 +14,7 @@ public class RemoteSpaceControl : NetworkBehaviour
     public static float remoteHeight = 0.3f;
 
     public bool setRemoteVideoPlane = false;
-    private Vector3[] RemoteCorners = new Vector3[4];
+    public static Vector3[] RemoteCorners = new Vector3[4];
     public GameObject RemoteVideoPlane;
     public GameObject RemoteVideoFrame;
     public GameObject FrameUpIndicator;
@@ -164,6 +164,7 @@ public class RemoteSpaceControl : NetworkBehaviour
             RemoteCorners[1] = remoteFrameOrigin + remoteXAxis;
             RemoteCorners[2] = remoteFrameOrigin + remoteYAxis;
             RemoteCorners[3] = remoteFrameOrigin + remoteXAxis + remoteYAxis;
+            RemoteSpaceControl.RemoteCorners = RemoteCorners;
         }
 
         // place video plane

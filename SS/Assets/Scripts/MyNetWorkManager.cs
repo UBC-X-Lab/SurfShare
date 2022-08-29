@@ -13,9 +13,14 @@ public class MyNetWorkManager : NetworkManager
         {
             singleton.StartHost();
         }
-        else
+    }
+
+    private void Update()
+    {
+        if (Main.WebRTCSetupComplete && !isServer)
         {
             singleton.StartClient();
+            Main.WebRTCSetupComplete = false;
         }
     }
 

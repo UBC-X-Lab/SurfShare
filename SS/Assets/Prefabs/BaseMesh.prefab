@@ -186,7 +186,7 @@ GameObject:
   - component: {fileID: 863405080682452299}
   - component: {fileID: 7760771017231019309}
   m_Layer: 0
-  m_Name: ExtrusionHandle
+  m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

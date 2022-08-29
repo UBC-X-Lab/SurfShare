@@ -297,6 +297,7 @@ namespace CustomVideoSources
             {
                 Debug.Log("Opt-in Rendering from PV camera Failed");
             }
+            Main.WebRTCSetupComplete = true;
         }
 
 
