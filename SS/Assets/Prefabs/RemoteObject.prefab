@@ -73,6 +73,7 @@ MonoBehaviour:
   vertices_initialized: 0
   manipulating: 0
   canUpdateMesh: 0
+  stay_kinematic: 0
   isKinematic: 1
   useGravity: 1
 --- !u!114 &-1321152000188269490
@@ -467,7 +468,7 @@ MonoBehaviour:
   useForcesForNearManipulation: 0
   oneHandRotationModeNear: 1
   oneHandRotationModeFar: 1
-  releaseBehavior: -1
+  releaseBehavior: 1
   transformSmoothingLogicType:
     reference: Microsoft.MixedReality.Toolkit.Utilities.DefaultTransformSmoothingLogic,
       Microsoft.MixedReality.Toolkit.SDK
@@ -497,7 +498,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 7744705424954965448}
-        m_MethodName: CmdManipulationEnd
+        m_MethodName: OnManipulationEnd
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

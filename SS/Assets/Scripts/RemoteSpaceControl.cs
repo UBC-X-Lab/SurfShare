@@ -41,6 +41,8 @@ public class RemoteSpaceControl : NetworkBehaviour
     Quaternion world_quaternion_offset = new Quaternion();
     bool PeerWorldSet = false;
 
+    static public bool remoteSpaceSetupCompleted = false;
+
     public Transform Menu;
 
 
@@ -235,6 +237,7 @@ public class RemoteSpaceControl : NetworkBehaviour
         // the relative global offsets are directly the local position and rotation
         PeerWorldOrigin.localPosition = new_world_position;
         PeerWorldOrigin.localRotation = new_world_rotation;
+        remoteSpaceSetupCompleted = true;
         Debug.Log("Peer to frame distance:" + (PeerWorldOrigin.position - PeerWorldOrigin.parent.position).magnitude);
         Debug.Log("Peer World Set!");
     }

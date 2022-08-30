@@ -17,7 +17,7 @@ public class PlayerControl : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
@@ -28,14 +28,17 @@ public class PlayerControl : NetworkBehaviour
             Spawn = false;
             CmdSpawnObject();
         }
+
+        Debug.Log(hasAuthority);
     }
 
 
     [Command]
-    public void CmdSpawnMesh(Vector2[] vertices)
+    public void CmdSpawnMesh(Vector2[] vertices, bool stayKinematic)
     {
         GameObject meshObj = Instantiate(MeshPrefab);
         NetworkServer.Spawn(meshObj);
+        meshObj.GetComponent<UpdateMesh>().stayKinematic = stayKinematic;
         meshObj.GetComponent<UpdateMesh>().vertices.AddRange(vertices);
         meshObj.GetComponent<UpdateMesh>().vertices_initialized = true;
     }

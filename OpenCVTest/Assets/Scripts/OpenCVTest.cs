@@ -18,6 +18,8 @@ public class OpenCVTest : MonoBehaviour
 
     public bool Spawn = false;
 
+    public bool createKinematic;
+
     static public readonly UnityEngine.Object spawn_lock = new UnityEngine.Object();
 
     // Start is called before the first frame update
@@ -93,7 +95,7 @@ public class OpenCVTest : MonoBehaviour
                 {
                     vertices[i] = new Vector2(con[i].X / (float)originalTex.width * image_width, con[i].Y / (float)originalTex.height * image_height);
                 }
-                NetworkClient.localPlayer.gameObject.GetComponent<PlayerControl>().CmdSpawnMesh(vertices);
+                NetworkClient.localPlayer.gameObject.GetComponent<PlayerControl>().CmdSpawnMesh(vertices, createKinematic);
                 //GameObject obj = Instantiate(BaseMesh);
                 //obj.transform.position = image_origin;
                 //obj.GetComponent<UpdateMesh>().enabled = true;

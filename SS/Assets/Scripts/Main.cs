@@ -8,11 +8,14 @@ using Mirror;
 
 public class Main : MonoBehaviour
 {
+
     public static bool meshCreation = false;
 
     public static bool toggleExtrusion = true;
 
     public static bool WebRTCSetupComplete = false;
+
+    public bool KinematicCreation = false;
 
     public static List<Point[]> res_con = new List<Point[]>(); // contour position on the image
     public static List<Vector3[]> res_con_world = new List<Vector3[]>(); // contour position in the world
@@ -55,7 +58,7 @@ public class Main : MonoBehaviour
                     Vector3 Y_Axis = FrameHandler.corners[2] - FrameHandler.corners[0];
                     Vector3 heightNormal = Vector3.Normalize(Vector3.Cross(X_Axis, Y_Axis));
 
-                    NetworkClient.localPlayer.gameObject.GetComponent<PlayerController>().SpawnMesh(vertices, res_con_world[i], heightNormal);
+                    NetworkClient.localPlayer.gameObject.GetComponent<PlayerController>().SpawnMesh(vertices, res_con_world[i], heightNormal, KinematicCreation);
                 }
                 res_con.Clear();
                 res_con_world.Clear();
@@ -69,6 +72,16 @@ public class Main : MonoBehaviour
         if (RemoteSpaceControl.STATE == RemoteSpaceControl.PLACE_COMPLETE)
         {
             meshCreation = true;
+            KinematicCreation = false;
+        }
+    }
+
+    public void OnKinematicCreation()
+    {
+        if (RemoteSpaceControl.STATE == RemoteSpaceControl.PLACE_COMPLETE)
+        {
+            meshCreation = true;
+            KinematicCreation = true;
         }
     }
 

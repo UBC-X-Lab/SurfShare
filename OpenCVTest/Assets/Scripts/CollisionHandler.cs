@@ -21,4 +21,24 @@ public class CollisionHandler : MonoBehaviour
             }
         }
     }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (transform.parent.GetComponent<UpdateMesh>().hasAuthority && transform.parent.GetComponent<UpdateMesh>().manipulating)
+        {
+            if (collision.gameObject.tag == "NetworkedObjects")
+            {
+                // fire it away!
+                if (collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude * 3 < 1)
+                {
+                    collision.gameObject.GetComponent<Rigidbody>().velocity = collision.gameObject.GetComponent<Rigidbody>().velocity * 3;
+                }
+                else
+                {
+                    collision.gameObject.GetComponent<Rigidbody>().velocity = collision.gameObject.GetComponent<Rigidbody>().velocity.normalized * 1;
+                }
+                
+            }
+        }
+    }
 }

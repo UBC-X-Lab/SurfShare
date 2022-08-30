@@ -20,6 +20,9 @@ public class UpdateMesh : NetworkBehaviour
     private Vector3 previousHandlePos;
 
     [SyncVar]
+    public bool stayKinematic = false;
+
+    [SyncVar]
     public bool isKinematic;
 
     [SyncVar]
@@ -77,7 +80,7 @@ public class UpdateMesh : NetworkBehaviour
             }
         }
 
-        if (BaseMesh.GetComponent<Rigidbody>().isKinematic != isKinematic)
+        if (BaseMesh.GetComponent<Rigidbody>().isKinematic != isKinematic && !stayKinematic) // don't update kinematic if staykinematic is true
         {
             BaseMesh.GetComponent<Rigidbody>().isKinematic = isKinematic;
         }
@@ -128,6 +131,12 @@ public class UpdateMesh : NetworkBehaviour
         }
 
         // Debug.Log(hasAuthority);
+    }
+
+    public void OnManipulationEnd()
+    {
+        BaseMesh.GetComponent<Rigidbody>().velocity = BaseMesh.GetComponent<Rigidbody>().velocity * 5;
+        CmdManipulationEnd();
     }
 
     // only the user with authority can set manipulating to false

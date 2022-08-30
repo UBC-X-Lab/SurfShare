@@ -32,6 +32,9 @@ public class UpdateMesh : NetworkBehaviour
     public bool canUpdateMesh = false; // have we initilized, can we update?
 
     [SyncVar]
+    public bool stay_kinematic = false;
+
+    [SyncVar]
     public bool isKinematic = true;
 
     [SyncVar]
@@ -50,10 +53,12 @@ public class UpdateMesh : NetworkBehaviour
 
     void Update()
     {
-        Handle.GetComponent<SphereCollider>().enabled = Main.toggleExtrusion;
-        Handle.GetComponent<MeshRenderer>().enabled = Main.toggleExtrusion;
-        Handle.GetComponent<NearInteractionGrabbable>().enabled = Main.toggleExtrusion;
-        Handle.GetComponent<ObjectManipulator>().enabled = Main.toggleExtrusion;
+        //Handle.GetComponent<SphereCollider>().enabled = Main.toggleExtrusion;
+        //Handle.GetComponent<MeshRenderer>().enabled = Main.toggleExtrusion;
+        //Handle.GetComponent<NearInteractionGrabbable>().enabled = Main.toggleExtrusion;
+        //Handle.GetComponent<ObjectManipulator>().enabled = Main.toggleExtrusion;
+
+        Handle.SetActive(Main.toggleExtrusion);
 
         // call once for initilization
         if (vertices_initialized && !canUpdateMesh)
@@ -93,7 +98,7 @@ public class UpdateMesh : NetworkBehaviour
             }
         }
 
-        if (BaseMesh.GetComponent<Rigidbody>().isKinematic != isKinematic)
+        if (BaseMesh.GetComponent<Rigidbody>().isKinematic != isKinematic && !stay_kinematic)
         {
             BaseMesh.GetComponent<Rigidbody>().isKinematic = isKinematic;
         }
@@ -172,7 +177,7 @@ public class UpdateMesh : NetworkBehaviour
         CmdAssignAuthority(GetComponent<NetworkIdentity>(), NetworkClient.localPlayer.GetComponent<NetworkIdentity>());
         if (isKinematic != false)
         {
-            CmdSyncKinematic(false); // turn off Kinematic on pick up
+            CmdSyncKinematic(false);
         }
         CmdSyncGravity(false);
     }
@@ -197,9 +202,15 @@ public class UpdateMesh : NetworkBehaviour
         // Debug.Log(hasAuthority);
     }
 
+    public void OnManipulationEnd()
+    {
+        CmdManipulationEnd();
+        BaseMesh.GetComponent<Rigidbody>().velocity = BaseMesh.GetComponent<Rigidbody>().velocity * 10;
+    }
+
     // only the user with authority can set manipulating to false
     [Command]
-    public void CmdManipulationEnd()
+    void CmdManipulationEnd()
     {
         manipulating = false;
         useGravity = true;
