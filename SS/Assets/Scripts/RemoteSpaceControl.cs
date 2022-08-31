@@ -23,7 +23,7 @@ public class RemoteSpaceControl : NetworkBehaviour
     public static readonly int PLACE_LOCAL = 0, PLACE_REMOTE = 1, PLACE_COMPLETE = 2;
     public static int STATE = PLACE_LOCAL;
 
-    public int DEBUG_STATE;
+    // public int DEBUG_STATE;
 
     // frame placement
     public Transform LocalVideoPlayer;
@@ -58,7 +58,7 @@ public class RemoteSpaceControl : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        DEBUG_STATE = STATE;
+        // DEBUG_STATE = STATE;
 
         if (FrameHandler.corners.Count == 4 && !localSet)
         {
@@ -215,7 +215,7 @@ public class RemoteSpaceControl : NetworkBehaviour
     [Command(requiresAuthority = false)]
     public void CmdTogglePeerWorldSetup()
     {
-        Debug.Log("Server called toggle!");
+        // Debug.Log("Server called toggle!");
         SetupWorld = true;
     }
 

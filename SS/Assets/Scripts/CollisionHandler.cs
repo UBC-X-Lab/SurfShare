@@ -24,19 +24,20 @@ public class CollisionHandler : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
-        if (transform.parent.GetComponent<UpdateMesh>().hasAuthority && transform.parent.GetComponent<UpdateMesh>().manipulating)
+        if (transform.parent.GetComponent<UpdateMesh>().hasAuthority)// && transform.parent.GetComponent<UpdateMesh>().manipulating)
         {
             // only detect collision with networked objects
             if (collision.gameObject.tag == "NetworkedObjects")
             {
+                Debug.Log("Bounce off speed:" + collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude);
                 // fire it away!
-                if (collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude * 3 < 2)
+                if (collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude * 10 < 2)
                 {
-                    collision.gameObject.GetComponent<Rigidbody>().velocity = collision.gameObject.GetComponent<Rigidbody>().velocity * 5;
+                    collision.gameObject.GetComponent<Rigidbody>().velocity = collision.gameObject.GetComponent<Rigidbody>().velocity * 10;
                 }
                 else
                 {
-                    collision.gameObject.GetComponent<Rigidbody>().velocity = collision.gameObject.GetComponent<Rigidbody>().velocity.normalized * 2;
+                    collision.gameObject.GetComponent<Rigidbody>().velocity = collision.gameObject.GetComponent<Rigidbody>().velocity.normalized * 10;
                 }
             }
         }

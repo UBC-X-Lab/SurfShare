@@ -12,6 +12,8 @@ public class PlayerController : NetworkBehaviour
     // Head
     private GameObject Head;
 
+    private GameObject RemoteVideoPlayer;
+
     [SyncVar]
     public bool headInitialized = false;
 
@@ -22,7 +24,7 @@ public class PlayerController : NetworkBehaviour
     {
         Head = transform.GetChild(0).gameObject;
         PeerWorldOrigin = GameObject.Find("PeerWorldOrigin").transform;
-        
+        RemoteVideoPlayer = GameObject.Find("RemoteVideoPlayer");
     }
 
     // Update is called once per frame
@@ -31,6 +33,7 @@ public class PlayerController : NetworkBehaviour
         if (!hasAuthority && RemoteSpaceControl.remoteSpaceSetupCompleted && !headInitialized)
         {
             Debug.Log("Peer Head initialized!");
+            RemoteVideoPlayer.GetComponent<BoxCollider>().enabled = false;
             CmdSetHeadInitilized();
             Head.GetComponent<MeshRenderer>().enabled = true;
             transform.position = PeerWorldOrigin.position;
@@ -59,25 +62,26 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    public void SpawnMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, bool KinematicCreation)
+    public void SpawnMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, Color mesh_color, bool KinematicCreation)
     {
-        CmdSpawnMesh(poly_vertices, world_vertices, heightNormal, KinematicCreation, GetComponent<NetworkIdentity>());
+        CmdSpawnMesh(poly_vertices, world_vertices, heightNormal, mesh_color, KinematicCreation, GetComponent<NetworkIdentity>());
     }
 
-    [Command]
+    [Command (requiresAuthority = false)]
     void CmdSetHeadInitilized()
     {
         headInitialized = true;
     }
 
     [Command]
-    void CmdSpawnMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, bool KinematicCreation, NetworkIdentity netid)
+    void CmdSpawnMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, Color mesh_color, bool KinematicCreation, NetworkIdentity netid)
     {
         GameObject meshObj = Instantiate(RemoteObject);
         NetworkServer.Spawn(meshObj, netid.connectionToClient);
         meshObj.GetComponent<UpdateMesh>().sync_poly_vertices.AddRange(poly_vertices);
         meshObj.GetComponent<UpdateMesh>().sync_world_vertices.AddRange(world_vertices);
         meshObj.GetComponent<UpdateMesh>().heightNormal = heightNormal;
+        meshObj.GetComponent<UpdateMesh>().mesh_color = mesh_color;
         meshObj.GetComponent<UpdateMesh>().stay_kinematic = KinematicCreation;
         meshObj.GetComponent<UpdateMesh>().vertices_initialized = true;
 

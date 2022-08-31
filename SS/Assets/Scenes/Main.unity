@@ -1271,6 +1271,7 @@ MonoBehaviour:
   KinematicCreation: 0
   RemoteObject: {fileID: 7744705424954965450, guid: 73314ad92df143d44b35524365e42831,
     type: 3}
+  bgs: 1
 --- !u!114 &515433809
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1965,7 +1966,6 @@ MonoBehaviour:
   RemoteVideoPlane: {fileID: 2033114383}
   RemoteVideoFrame: {fileID: 223974226}
   FrameUpIndicator: {fileID: 140144206}
-  DEBUG_STATE: 0
   LocalVideoPlayer: {fileID: 2044513591}
   MyWorldOrigin: {fileID: 515433810}
   PeerWorldOrigin: {fileID: 307982778}
@@ -2022,7 +2022,7 @@ PrefabInstance:
     - target: {fileID: 2070291447063185073, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
         type: 3}
       propertyPath: ButtonReleased.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
-      value: OnExtrusionToggle
+      value: OnToggleBackgroundSubtraction
       objectReference: {fileID: 0}
     - target: {fileID: 2070291447063185073, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
         type: 3}
@@ -2032,7 +2032,7 @@ PrefabInstance:
     - target: {fileID: 2204069621426241315, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
         type: 3}
       propertyPath: m_Name
-      value: Test
+      value: ToggleBGS
       objectReference: {fileID: 0}
     - target: {fileID: 2204069621878992557, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
         type: 3}
@@ -2042,7 +2042,7 @@ PrefabInstance:
     - target: {fileID: 2204069621878992595, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
         type: 3}
       propertyPath: m_text
-      value: Test
+      value: Toggle BGS
       objectReference: {fileID: 0}
     - target: {fileID: 2204069621878992595, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
         type: 3}
@@ -2169,10 +2169,30 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4607504470098667674, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 7060011145322376313, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
         type: 3}
       propertyPath: m_text
-      value: Say "Toggle Profiler"
+      value: Say "Select"
+      objectReference: {fileID: 0}
+    - target: {fileID: 7060011145322376313, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
+        type: 3}
+      propertyPath: m_textAlignment
+      value: 65535
+      objectReference: {fileID: 0}
+    - target: {fileID: 7060011145322376313, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 7060011145322376313, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
+        type: 3}
+      propertyPath: m_VerticalAlignment
+      value: 512
       objectReference: {fileID: 0}
     - target: {fileID: 7060011145322376313, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
         type: 3}
@@ -2183,6 +2203,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_textInfo.wordCount
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7060011145322376313, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
+        type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7060011145322376313, guid: 3f1f46cbecbe08e46a303ccfdb5b498a,
         type: 3}
@@ -2396,7 +2421,7 @@ MonoBehaviour:
     _receiver: {fileID: 2047271282}
     _senderTrackName: 
   - _mediaKind: 1
-    _source: {fileID: 2044513590}
+    _source: {fileID: 0}
     _receiver: {fileID: 2033114387}
     _senderTrackName: 
 --- !u!4 &1641159554
@@ -2456,6 +2481,8 @@ MonoBehaviour:
   FrameLoadStatHolder: {fileID: 0}
   FramePresentStatHolder: {fileID: 0}
   FrameSkipStatHolder: {fileID: 0}
+  videoMaterial: {fileID: 2100000, guid: 65cfd2b09432a5b49a1e37f0d5939995, type: 2}
+  nonBSVideoMaterial: {fileID: 2100000, guid: 82241a8371f7b1c4db3b05da484e9648, type: 2}
 --- !u!23 &2033114385
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2960,77 +2987,3 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &6117771132770605198
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620200, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620202, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: m_Name
-      value: Player
-      objectReference: {fileID: 0}
-    - target: {fileID: 8867302678041620203, guid: 9b0afa49940bd9b47b351942386bca70,
-        type: 3}
-      propertyPath: sceneId
-      value: 3373327803
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 9b0afa49940bd9b47b351942386bca70, type: 3}

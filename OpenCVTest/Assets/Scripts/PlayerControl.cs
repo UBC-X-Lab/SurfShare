@@ -29,7 +29,7 @@ public class PlayerControl : NetworkBehaviour
             CmdSpawnObject();
         }
 
-        Debug.Log(hasAuthority);
+        // Debug.Log(hasAuthority);
     }
 
 

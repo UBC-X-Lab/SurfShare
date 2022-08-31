@@ -297,6 +297,8 @@ namespace CustomVideoSources
             {
                 Debug.Log("Opt-in Rendering from PV camera Failed");
             }
+
+            Debug.Log("Camera Setup Complete");
             Main.WebRTCSetupComplete = true;
         }
 
@@ -369,16 +371,55 @@ namespace CustomVideoSources
                                                     OpenCvSharp.Point[] approx_contour = Cv2.ApproxPolyDP(contours[i], eps, true);
                                                     // convert to Windows foundataion
                                                     Windows.Foundation.Point[] pixel_pos = new Windows.Foundation.Point[approx_contour.Length];
+
+                                                    Windows.Foundation.Point contour_center = new Windows.Foundation.Point();
                                                     for (int j = 0; j < pixel_pos.Length; j++)
                                                     {
                                                         // the opencv image is bottom up while the system image is top down
                                                         pixel_pos[j] = new Windows.Foundation.Point(approx_contour[j].X, FrameProcessor.targetHeight - 1 - approx_contour[j].Y);
+                                                        contour_center.X += pixel_pos[j].X;
+                                                        contour_center.Y += pixel_pos[j].Y;
                                                     }
+
+                                                    // calculate color
+                                                    contour_center.X /= pixel_pos.Length;
+                                                    contour_center.Y /= pixel_pos.Length;
+
+                                                    Color mesh_color = new Color(0, 0, 0);
+                                                    int color_extraction_count = 0;
+                                                    for (int y = (int) contour_center.Y - 5; y < (int) contour_center.Y + 5; y++)
+                                                    {
+                                                        if (y > FrameProcessor.targetHeight - 1)
+                                                        {
+                                                            break;
+                                                        }
+
+                                                        for (int x = (int) contour_center.X - 5; x < (int) contour_center.X + 5; x++)
+                                                        {
+                                                            if (x > FrameProcessor.targetWidth - 1)
+                                                            {
+                                                                break;
+                                                            }
+
+                                                            mesh_color.b += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4] / 255f;
+                                                            mesh_color.g += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4 + 1] / 255f;
+                                                            mesh_color.r += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4 + 2] / 255f;
+                                                            color_extraction_count += 1;
+                                                        }
+                                                    }
+
+                                                    mesh_color.b /= color_extraction_count;
+                                                    mesh_color.g /= color_extraction_count;
+                                                    mesh_color.r /= color_extraction_count;
+                                                    Debug.Log("Mesh Color is R:" + mesh_color.r + ", G:" + mesh_color.b + ", B:" + mesh_color.b);
+
+
                                                     Vector3[] contour_world = FrameProcessor.ProjectFrameCoorsToWorld(pixel_pos, mediaFrameReference.CoordinateSystem);
                                                     if (contour_world != null)
                                                     {
                                                         Main.res_con.Add(approx_contour);
                                                         Main.res_con_world.Add(contour_world);
+                                                        Main.mesh_colors.Add(mesh_color);
                                                         Debug.Log("Contour size:" + Main.res_con[Main.res_con.Count - 1].Length);
                                                         Debug.Log(Cv2.ContourArea(contours[i]));
                                                     }
@@ -403,6 +444,12 @@ namespace CustomVideoSources
                                 }
                                 else // corners are not set yet, transmit original frames
                                 {
+                                    if (Main.meshCreation)
+                                    {
+                                        Main.meshCreation = false;
+                                        Debug.Log("Can not do mesh creation in this mode!");
+                                    }
+
                                     var frame = new Argb32VideoFrame
                                     {
                                         data = (IntPtr)dataInBytes,

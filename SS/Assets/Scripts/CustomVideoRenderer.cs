@@ -77,7 +77,8 @@ namespace Microsoft.MixedReality.WebRTC.Unity
         /// </summary>
         private float lastUpdateTime = 0.0f;
 
-        private Material videoMaterial;
+        public Material videoMaterial;
+        public Material nonBSVideoMaterial;
         private float _minUpdateDelay;
 
         private VideoFrameQueue<I420AVideoFrameStorage> _i420aFrameQueue = null;
@@ -176,7 +177,7 @@ namespace Microsoft.MixedReality.WebRTC.Unity
             _textureV.Apply();
 
             // Assign that texture to the video player's Renderer component
-            videoMaterial = GetComponent<Renderer>().material;
+            // videoMaterial = GetComponent<Renderer>().material;
             if (_i420aFrameQueue != null)
             {
                 videoMaterial.SetTexture("_YPlane", _textureY);
@@ -197,6 +198,21 @@ namespace Microsoft.MixedReality.WebRTC.Unity
         /// </remarks>
         private void Update()
         {
+            if (Main.bgs_on)
+            {
+                if (!GetComponent<Renderer>().material.Equals(videoMaterial))
+                {
+                    GetComponent<Renderer>().material = videoMaterial;
+                }
+            }
+            else
+            {
+                if (!GetComponent<Renderer>().material.Equals(nonBSVideoMaterial))
+                {
+                    GetComponent<Renderer>().material = nonBSVideoMaterial;
+                }
+            }
+
             if ((_i420aFrameQueue != null) || (_argb32FrameQueue != null))
             {
 #if UNITY_EDITOR
@@ -259,6 +275,7 @@ namespace Microsoft.MixedReality.WebRTC.Unity
                 {
                     _textureY = new Texture2D(lumaWidth, lumaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_YPlane", _textureY);
+                    nonBSVideoMaterial.SetTexture("_YPlane", _textureY);
                 }
                 int chromaWidth = lumaWidth / 2;
                 int chromaHeight = lumaHeight / 2;
@@ -266,11 +283,13 @@ namespace Microsoft.MixedReality.WebRTC.Unity
                 {
                     _textureU = new Texture2D(chromaWidth, chromaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_UPlane", _textureU);
+                    nonBSVideoMaterial.SetTexture("_UPlane", _textureU);
                 }
                 if (_textureV == null || (_textureV.width != chromaWidth || _textureV.height != chromaHeight))
                 {
                     _textureV = new Texture2D(chromaWidth, chromaHeight, TextureFormat.R8, mipChain: false);
                     videoMaterial.SetTexture("_VPlane", _textureV);
+                    nonBSVideoMaterial.SetTexture("_VPlane", _textureV);
                 }
 
                 // initialize the first texture (as background)

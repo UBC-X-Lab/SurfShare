@@ -29,9 +29,9 @@ public class CollisionHandler : MonoBehaviour
             if (collision.gameObject.tag == "NetworkedObjects")
             {
                 // fire it away!
-                if (collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude * 3 < 1)
+                if (collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude * 10 < 10)
                 {
-                    collision.gameObject.GetComponent<Rigidbody>().velocity = collision.gameObject.GetComponent<Rigidbody>().velocity * 3;
+                    collision.gameObject.GetComponent<Rigidbody>().velocity = collision.gameObject.GetComponent<Rigidbody>().velocity * 10;
                 }
                 else
                 {

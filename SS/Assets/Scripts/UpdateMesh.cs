@@ -21,6 +21,9 @@ public class UpdateMesh : NetworkBehaviour
     public readonly SyncList<Vector3> sync_world_vertices = new SyncList<Vector3>();
 
     [SyncVar]
+    public Color mesh_color = new Color(1, 1, 1);
+
+    [SyncVar]
     public Vector3 heightNormal;
 
     [SyncVar]
@@ -42,11 +45,11 @@ public class UpdateMesh : NetworkBehaviour
 
     private bool isOwner;
 
+
     void Start()
     {
         BaseMesh = transform.GetChild(0).gameObject;
         Handle = BaseMesh.transform.GetChild(0).gameObject;
-        BaseMesh.GetComponent<Renderer>().material.color = new Color(1, 0, 0);
         PeerWorldOrigin = GameObject.Find("PeerWorldOrigin").transform;
         // Debug.Log("Lalala");
     }
@@ -158,6 +161,8 @@ public class UpdateMesh : NetworkBehaviour
         {
             isOwner = true;
         }
+
+        BaseMesh.GetComponent<Renderer>().material.color = mesh_color;
     }
 
     [Command(requiresAuthority = false)]
@@ -205,7 +210,8 @@ public class UpdateMesh : NetworkBehaviour
     public void OnManipulationEnd()
     {
         CmdManipulationEnd();
-        BaseMesh.GetComponent<Rigidbody>().velocity = BaseMesh.GetComponent<Rigidbody>().velocity * 10;
+        // Debug.Log("Release Speed:" + BaseMesh.GetComponent<Rigidbody>().velocity.magnitude);
+        BaseMesh.GetComponent<Rigidbody>().velocity = BaseMesh.GetComponent<Rigidbody>().velocity.normalized * 2f;
     }
 
     // only the user with authority can set manipulating to false
