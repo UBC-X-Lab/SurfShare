@@ -35,7 +35,7 @@ public class PlayerController : NetworkBehaviour
             Debug.Log("Peer Head initialized!");
             RemoteVideoPlayer.GetComponent<BoxCollider>().enabled = false;
             CmdSetHeadInitilized();
-            Head.GetComponent<MeshRenderer>().enabled = true;
+            Head.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().enabled = true;
             transform.position = PeerWorldOrigin.position;
             transform.rotation = PeerWorldOrigin.rotation;
         }

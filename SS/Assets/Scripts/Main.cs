@@ -25,7 +25,7 @@ public class Main : MonoBehaviour
     public GameObject RemoteObject;
     // public GameObject RemoteVideoPlayer;
 
-    public bool bgs = true;
+    //public bool bgs = true;
     static public bool bgs_on = true;
 
     //private int frame_width = 640;
@@ -40,7 +40,7 @@ public class Main : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        bgs_on = bgs;
+        // bgs_on = bgs;
         // process mesh creation
         lock (res_con_lock)
         {

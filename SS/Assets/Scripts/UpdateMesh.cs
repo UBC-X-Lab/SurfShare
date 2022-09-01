@@ -211,7 +211,8 @@ public class UpdateMesh : NetworkBehaviour
     {
         CmdManipulationEnd();
         // Debug.Log("Release Speed:" + BaseMesh.GetComponent<Rigidbody>().velocity.magnitude);
-        BaseMesh.GetComponent<Rigidbody>().velocity = BaseMesh.GetComponent<Rigidbody>().velocity.normalized * 2f;
+        BaseMesh.GetComponent<Rigidbody>().AddForce((FrameHandler.corners[0] - FrameHandler.corners[2]).normalized * 0.2f, ForceMode.VelocityChange);
+        Debug.Log("Release Speed:" + BaseMesh.GetComponent<Rigidbody>().velocity.magnitude);
     }
 
     // only the user with authority can set manipulating to false
