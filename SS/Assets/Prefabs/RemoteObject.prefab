@@ -69,6 +69,7 @@ MonoBehaviour:
   topVerticesIndices: 
   myMesh: {fileID: 0}
   handlePreviousPosition: {x: 0, y: 0, z: 0}
+  mesh_color: {r: 1, g: 1, b: 1, a: 1}
   heightNormal: {x: 0, y: 0, z: 0}
   vertices_initialized: 0
   manipulating: 0
@@ -354,7 +355,7 @@ GameObject:
   - component: {fileID: 3122595584495130279}
   m_Layer: 0
   m_Name: BaseMesh
-  m_TagString: Untagged
+  m_TagString: NetworkedObjects
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
