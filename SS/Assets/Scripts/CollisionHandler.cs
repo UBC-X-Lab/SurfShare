@@ -10,7 +10,7 @@ public class CollisionHandler : MonoBehaviour
         if (transform.parent.GetComponent<UpdateMesh>().hasAuthority && transform.parent.GetComponent<UpdateMesh>().manipulating)
         {
             // only detect collision with networked objects
-            if (collision.gameObject.tag == "NetworkedObjects")
+            if (collision.gameObject.tag == "NetworkedObjects" && !collision.gameObject.GetComponentInParent<UpdateMesh>().manipulating)
             {
                 // Debug.Log(collision.gameObject.name);
                 if (!collision.gameObject.GetComponentInParent<UpdateMesh>().hasAuthority)
@@ -22,7 +22,7 @@ public class CollisionHandler : MonoBehaviour
                 Debug.Log("Bounce off speed: " + collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude);
             }
         }
-        else
+        else if (!transform.parent.GetComponent<UpdateMesh>().manipulating)
         {
             // on collusion, a free object with higher speed assign other objects its authority
             if (collision.gameObject.tag == "NetworkedObjects" && !collision.gameObject.GetComponentInParent<UpdateMesh>().manipulating)

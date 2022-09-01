@@ -292,7 +292,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 7744705424954965448}
-        m_MethodName: AssignAuthority
+        m_MethodName: OnExtrusionStart
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -306,7 +306,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 7744705424954965448}
-        m_MethodName: CmdManipulationEnd
+        m_MethodName: OnExtrusionEnd
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -485,7 +485,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 7744705424954965448}
-        m_MethodName: AssignAuthority
+        m_MethodName: OnManipulationStart
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -177,26 +177,55 @@ public class UpdateMesh : NetworkBehaviour
         useGravity = value;
     }
 
+    [Command]
+    void CmdsyncManipulation(bool value)
+    {
+        manipulating = value;
+    }
+
+    public void OnManipulationStart()
+    {
+        AssignAuthority();
+        // if assign success, start manipulation
+        if (hasAuthority)
+        {
+            if (isKinematic != false)
+            {
+                CmdSyncKinematic(false);
+            }
+            CmdSyncGravity(false);
+            CmdsyncManipulation(true);
+        }
+    }
+
+    public void OnExtrusionStart()
+    {
+        AssignAuthority();
+        if (hasAuthority)
+        {
+            CmdsyncManipulation(true);
+        }
+    }
+
+
     public void AssignAuthority()
     {
         CmdAssignAuthority(GetComponent<NetworkIdentity>(), NetworkClient.localPlayer.GetComponent<NetworkIdentity>());
-        if (isKinematic != false)
-        {
-            CmdSyncKinematic(false);
-        }
-        CmdSyncGravity(false);
     }
 
     [Command(requiresAuthority = false)]
     void CmdAssignAuthority(NetworkIdentity myId, NetworkIdentity netId)
     {
+        // can only assign authority if no one is manipulating
         if (!manipulating)
         {
             myId.RemoveClientAuthority();
             if (myId.AssignClientAuthority(netId.connectionToClient))
             {
                 Debug.Log("Assign Success!");
-                manipulating = true;
+                //manipulating = true;
+                //useGravity = false;
+                //isKinematic = false;
             }
             else
             {
@@ -209,12 +238,23 @@ public class UpdateMesh : NetworkBehaviour
 
     public void OnManipulationEnd()
     {
-        CmdManipulationEnd();
+        if (hasAuthority)
+        {
+            CmdManipulationEnd();
+        }
         // Debug.Log("Release Speed:" + BaseMesh.GetComponent<Rigidbody>().velocity.magnitude);
-        BaseMesh.GetComponent<Rigidbody>().AddForce((FrameHandler.corners[0] - FrameHandler.corners[2]).normalized * 0.2f, ForceMode.VelocityChange);
-        Debug.Log("Release Speed:" + BaseMesh.GetComponent<Rigidbody>().velocity.magnitude);
+        // BaseMesh.GetComponent<Rigidbody>().AddForce((FrameHandler.corners[0] - FrameHandler.corners[2]).normalized * 0.5f, ForceMode.VelocityChange);
+        // Debug.Log("Release Speed:" + BaseMesh.GetComponent<Rigidbody>().velocity.magnitude);
     }
 
+
+    public void OnExtrusionEnd()
+    {
+        if (hasAuthority)
+        {
+            CmdManipulationEnd();
+        }
+    }
     // only the user with authority can set manipulating to false
     [Command]
     void CmdManipulationEnd()
