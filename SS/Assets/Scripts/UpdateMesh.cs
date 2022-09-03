@@ -56,12 +56,10 @@ public class UpdateMesh : NetworkBehaviour
 
     void Update()
     {
-        //Handle.GetComponent<SphereCollider>().enabled = Main.toggleExtrusion;
-        //Handle.GetComponent<MeshRenderer>().enabled = Main.toggleExtrusion;
+        Handle.GetComponent<SphereCollider>().enabled = Main.toggleExtrusion;
+        Handle.GetComponent<MeshRenderer>().enabled = Main.toggleExtrusion;
         //Handle.GetComponent<NearInteractionGrabbable>().enabled = Main.toggleExtrusion;
         //Handle.GetComponent<ObjectManipulator>().enabled = Main.toggleExtrusion;
-
-        Handle.SetActive(Main.toggleExtrusion);
 
         // call once for initilization
         if (vertices_initialized && !canUpdateMesh)
