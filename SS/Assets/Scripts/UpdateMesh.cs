@@ -166,7 +166,7 @@ public class UpdateMesh : NetworkBehaviour
     }
 
     [Command(requiresAuthority = false)]
-    void CmdSyncKinematic(bool value)
+    public void CmdSyncKinematic(bool value)
     {
         isKinematic = value;
     }

@@ -407,7 +407,7 @@ namespace CameraFrameUtilities
             return result;
         }
 
-        public static byte* Bg_subtraction(bool flip_Y=true)
+        public static byte* Bg_subtraction(bool flip_Y=true, float thresh_h=0.042f, float thresh_s=0.8f, float thresh_v=0.8f)
         {
             if (first_frame == null)
             {
@@ -425,18 +425,33 @@ namespace CameraFrameUtilities
                     {
                         float bg_h = first_frame[targetWidth * 3 * i + 3 * j];
                         float bg_s = first_frame[targetWidth * 3 * i + 3 * j + 1];
+                        float bg_v = first_frame[targetWidth * 3 * i + 3 * j + 2];
                         float cur_h = current_frame[targetWidth * 3 * i + 3 * j];
                         float cur_s = current_frame[targetWidth * 3 * i + 3 * j + 1];
+                        float cur_v = current_frame[targetWidth * 3 * i + 3 * j + 2];
 
-                        bool is_forground = (Math.Abs(bg_h - cur_h) > 0.045 && Math.Abs(bg_s - cur_s) > 0.045);
+
+                        bool is_foreground = false;
+
+                        if (bg_s > 0.2 && bg_v > 0.2) {
+                            is_foreground = (Math.Abs(bg_h - cur_h) > thresh_h || Math.Abs(bg_s - cur_s) > thresh_s || Math.Abs(bg_v - cur_v) > thresh_v);
+                        }
+                        else if (bg_s <= 0.2 && bg_v > 0.2) {
+                            is_foreground = (bg_s > 0.25);
+                        }
+                        else if (bg_v <= 0.2)
+                        {
+                            is_foreground = (bg_v > 0.25);
+                        }
+
 
                         if (!flip_Y)
                         {
-                            mask[targetWidth * i + j] = (is_forground ? (byte)255 : (byte)0);
+                            mask[targetWidth * i + j] = (is_foreground ? (byte)255 : (byte)0);
                         }
                         else
                         {
-                            mask[targetWidth * (targetHeight - i - 1) + j] = (is_forground ? (byte)255 : (byte)0);
+                            mask[targetWidth * (targetHeight - i - 1) + j] = (is_foreground ? (byte)255 : (byte)0);
                         }
                     }
                 }

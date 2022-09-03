@@ -11,8 +11,8 @@ public class MyNetWorkManager : NetworkManager
     {
         if (isServer)
         {
-            //singleton.StartServer();
-            singleton.StartHost();
+            singleton.StartServer();
+            //singleton.StartHost();
         }
     }
 

@@ -43,6 +43,11 @@ public class PlayerController : NetworkBehaviour
         // continue to track peer world origin
         if (!hasAuthority && headInitialized)
         {
+            if (Head.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().enabled != Main.head_on)
+            {
+                Head.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().enabled = Main.head_on;
+            }
+
             if (!transform.position.Equals(PeerWorldOrigin.position))
             {
                 transform.position = PeerWorldOrigin.position;

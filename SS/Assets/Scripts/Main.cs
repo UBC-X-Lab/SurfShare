@@ -27,6 +27,7 @@ public class Main : MonoBehaviour
 
     //public bool bgs = true;
     static public bool bgs_on = true;
+    static public bool head_on = true;
 
     //private int frame_width = 640;
     //private int frame_height = 360;
@@ -71,6 +72,23 @@ public class Main : MonoBehaviour
                 res_con_world.Clear();
                 mesh_colors.Clear();
                 Debug.Log("Meshes Created!");
+            }
+        }
+    }
+
+    public void OnToggleHeadDisplay()
+    {
+        if (RemoteSpaceControl.STATE == RemoteSpaceControl.PLACE_COMPLETE)
+        {
+            if (head_on)
+            {
+                Debug.Log("Head off");
+                head_on = false;
+            }
+            else
+            {
+                Debug.Log("Head on");
+                head_on = true;
             }
         }
     }

@@ -105,7 +105,9 @@ Shader "Video/CustomYUVFeedShader"
             IN.uv_YPlane.x = 1 - IN.uv_YPlane.x;
 #endif
 
-            float threshold = 0.045;
+            float thresh_h = 0.042;
+            float thresh_s = 0.6;
+            float thresh_v = 0.5;
             yuv.x = tex2D(_YPlane, IN.uv_YPlane).r;
             yuv.y = tex2D(_UPlane, IN.uv_YPlane).r;
             yuv.z = tex2D(_VPlane, IN.uv_YPlane).r;
@@ -125,7 +127,21 @@ Shader "Video/CustomYUVFeedShader"
             // return rgb;
             // return bg_rgb;
 
-            if (abs(hsv[0] - bg_hsv[0]) > threshold && abs(hsv[1] - bg_hsv[1]) > threshold) { // foreground
+            bool is_foreground = false;
+            
+            // background not white or black
+            if (bg_hsv[1] > 0.2 && bg_hsv[2] > 0.2) {
+                is_foreground = (abs(hsv[0] - bg_hsv[0]) > thresh_h || abs(hsv[1] - bg_hsv[1]) > thresh_s || abs(hsv[2] - bg_hsv[2]) > thresh_v);
+            }
+            else if (bg_hsv[1] <= 0.2 && bg_hsv[2] > 0.2) {
+                is_foreground = (hsv[1] > 0.25);
+            }
+            else if (bg_hsv[2] <= 0.2)
+            {
+                is_foreground = (hsv[2] > 0.25);
+            }
+
+            if (is_foreground) { // foreground
                 o.Albedo = rgb;
                 o.Alpha = 1;
             }

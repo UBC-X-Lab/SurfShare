@@ -18,6 +18,12 @@ public class CollisionHandler : MonoBehaviour
                     collision.gameObject.GetComponentInParent<UpdateMesh>().AssignAuthority();
                     Debug.Log("Controlled object assigning collided object authority!");
                 }
+
+                // if not stay kinematic, turn kinematic off
+                if (!collision.gameObject.GetComponentInParent<UpdateMesh>().stay_kinematic && collision.gameObject.GetComponentInParent<UpdateMesh>().isKinematic)
+                {
+                    collision.gameObject.GetComponentInParent<UpdateMesh>().CmdSyncKinematic(false);
+                }
                 collision.gameObject.GetComponent<Rigidbody>().AddForce((FrameHandler.corners[0] - FrameHandler.corners[2]).normalized * 0.5f, ForceMode.VelocityChange);
                 Debug.Log("Bounce off speed: " + collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude);
             }
@@ -34,6 +40,13 @@ public class CollisionHandler : MonoBehaviour
                         collision.gameObject.GetComponentInParent<UpdateMesh>().AssignAuthority();
                         Debug.Log("Faster object assigning collided object authority!");
                     }
+
+                    // if not stay kinematic, turn kinematic off
+                    if (!collision.gameObject.GetComponentInParent<UpdateMesh>().stay_kinematic && collision.gameObject.GetComponentInParent<UpdateMesh>().isKinematic)
+                    {
+                        collision.gameObject.GetComponentInParent<UpdateMesh>().CmdSyncKinematic(false);
+                    }
+                    collision.gameObject.GetComponent<Rigidbody>().AddForce(gameObject.GetComponent<Rigidbody>().velocity.normalized, ForceMode.VelocityChange);
                 }
             }
         }
