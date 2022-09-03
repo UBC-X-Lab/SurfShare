@@ -433,15 +433,15 @@ namespace CameraFrameUtilities
 
                         bool is_foreground = false;
 
-                        if (bg_s > 0.2 && bg_v > 0.2) {
+                        if (bg_s > 0.2f && bg_v > 0.2f) {
                             is_foreground = (Math.Abs(bg_h - cur_h) > thresh_h || Math.Abs(bg_s - cur_s) > thresh_s || Math.Abs(bg_v - cur_v) > thresh_v);
                         }
-                        else if (bg_s <= 0.2 && bg_v > 0.2) {
-                            is_foreground = (bg_s > 0.25);
+                        else if (bg_s <= 0.2f && bg_v > 0.2f) {
+                            is_foreground = (cur_s > 0.25f);
                         }
-                        else if (bg_v <= 0.2)
+                        else if (bg_v <= 0.2f)
                         {
-                            is_foreground = (bg_v > 0.25);
+                            is_foreground = (cur_v > 0.25f);
                         }
 
 

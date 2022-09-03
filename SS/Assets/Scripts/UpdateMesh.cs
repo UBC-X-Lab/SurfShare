@@ -82,7 +82,7 @@ public class UpdateMesh : NetworkBehaviour
             }
         }
 
-        if (Main.toggleExtrusion && canUpdateMesh)
+        if (canUpdateMesh)
         {
             Vector3 delta = Handle.transform.localPosition - handlePreviousPosition;
 
