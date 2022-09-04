@@ -87,12 +87,12 @@ public class PlayerController : NetworkBehaviour
         meshObj.GetComponent<UpdateMesh>().sync_world_vertices.AddRange(world_vertices);
         meshObj.GetComponent<UpdateMesh>().heightNormal = heightNormal;
         meshObj.GetComponent<UpdateMesh>().mesh_color = mesh_color;
-        meshObj.GetComponent<UpdateMesh>().stay_kinematic = KinematicCreation;
+        meshObj.GetComponent<UpdateMesh>().has_rigidbody = !KinematicCreation;
         meshObj.GetComponent<UpdateMesh>().vertices_initialized = true;
 
         if (KinematicCreation)
         {
-            Debug.Log("This object stays kinematic");
+            Debug.Log("This object has no rigidbody");
         }
     }
 }

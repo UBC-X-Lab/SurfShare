@@ -35,7 +35,7 @@ public class UpdateMesh : NetworkBehaviour
     public bool canUpdateMesh = false; // have we initilized, can we update?
 
     [SyncVar]
-    public bool stay_kinematic = false;
+    public bool has_rigidbody = true;
 
     [SyncVar]
     public bool isKinematic = true;
@@ -99,14 +99,17 @@ public class UpdateMesh : NetworkBehaviour
             }
         }
 
-        if (BaseMesh.GetComponent<Rigidbody>().isKinematic != isKinematic && !stay_kinematic)
+        if (canUpdateMesh && has_rigidbody)
         {
-            BaseMesh.GetComponent<Rigidbody>().isKinematic = isKinematic;
-        }
+            if (BaseMesh.GetComponent<Rigidbody>().isKinematic != isKinematic)
+            {
+                BaseMesh.GetComponent<Rigidbody>().isKinematic = isKinematic;
+            }
 
-        if (BaseMesh.GetComponent<Rigidbody>().useGravity != useGravity)
-        {
-            BaseMesh.GetComponent<Rigidbody>().useGravity = useGravity;
+            if (BaseMesh.GetComponent<Rigidbody>().useGravity != useGravity)
+            {
+                BaseMesh.GetComponent<Rigidbody>().useGravity = useGravity;
+            }
         }
 
         handlePreviousPosition = Handle.transform.localPosition;
@@ -161,6 +164,10 @@ public class UpdateMesh : NetworkBehaviour
         }
 
         BaseMesh.GetComponent<Renderer>().material.color = mesh_color;
+        if (!has_rigidbody)
+        {
+            Destroy(BaseMesh.GetComponent<Rigidbody>());
+        }
     }
 
     [Command(requiresAuthority = false)]

@@ -20,12 +20,14 @@ public class CollisionHandler : MonoBehaviour
                 }
 
                 // if not stay kinematic, turn kinematic off
-                if (!collision.gameObject.GetComponentInParent<UpdateMesh>().stay_kinematic && collision.gameObject.GetComponentInParent<UpdateMesh>().isKinematic)
+                if (collision.gameObject.GetComponentInParent<UpdateMesh>().has_rigidbody && collision.gameObject.GetComponentInParent<UpdateMesh>().isKinematic)
                 {
                     collision.gameObject.GetComponentInParent<UpdateMesh>().CmdSyncKinematic(false);
                 }
-                collision.gameObject.GetComponent<Rigidbody>().AddForce((FrameHandler.corners[0] - FrameHandler.corners[2]).normalized * 0.5f, ForceMode.VelocityChange);
-                Debug.Log("Bounce off speed: " + collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude);
+
+                // collision.gameObject.GetComponent<Rigidbody>().AddForce((FrameHandler.corners[0] - FrameHandler.corners[2]).normalized * 0.5f, ForceMode.VelocityChange);
+                
+                // Debug.Log("Bounce off speed: " + collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude);
             }
         }
         else if (!transform.parent.GetComponent<UpdateMesh>().manipulating)
@@ -33,20 +35,24 @@ public class CollisionHandler : MonoBehaviour
             // on collusion, a free object with higher speed assign other objects its authority
             if (collision.gameObject.tag == "NetworkedObjects" && !collision.gameObject.GetComponentInParent<UpdateMesh>().manipulating)
             {
-                if (gameObject.gameObject.GetComponent<Rigidbody>().velocity.magnitude > collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude)
+                // only applies to rigid objects
+                if (collision.gameObject.GetComponentInParent<UpdateMesh>().has_rigidbody && gameObject.GetComponentInParent<UpdateMesh>().has_rigidbody)
                 {
-                    if (!collision.gameObject.GetComponentInParent<UpdateMesh>().hasAuthority)
+                    if (gameObject.GetComponent<Rigidbody>().velocity.magnitude > collision.gameObject.GetComponent<Rigidbody>().velocity.magnitude)
                     {
-                        collision.gameObject.GetComponentInParent<UpdateMesh>().AssignAuthority();
-                        Debug.Log("Faster object assigning collided object authority!");
-                    }
+                        if (!collision.gameObject.GetComponentInParent<UpdateMesh>().hasAuthority)
+                        {
+                            collision.gameObject.GetComponentInParent<UpdateMesh>().AssignAuthority();
+                            Debug.Log("Faster object assigning collided object authority!");
+                        }
 
-                    // if not stay kinematic, turn kinematic off
-                    if (!collision.gameObject.GetComponentInParent<UpdateMesh>().stay_kinematic && collision.gameObject.GetComponentInParent<UpdateMesh>().isKinematic)
-                    {
-                        collision.gameObject.GetComponentInParent<UpdateMesh>().CmdSyncKinematic(false);
+                        // if not stay kinematic, turn kinematic off
+                        if (collision.gameObject.GetComponentInParent<UpdateMesh>().has_rigidbody && collision.gameObject.GetComponentInParent<UpdateMesh>().isKinematic)
+                        {
+                            collision.gameObject.GetComponentInParent<UpdateMesh>().CmdSyncKinematic(false);
+                        }
+                        // collision.gameObject.GetComponent<Rigidbody>().AddForce(gameObject.GetComponent<Rigidbody>().velocity.normalized, ForceMode.VelocityChange);
                     }
-                    collision.gameObject.GetComponent<Rigidbody>().AddForce(gameObject.GetComponent<Rigidbody>().velocity.normalized, ForceMode.VelocityChange);
                 }
             }
         }
