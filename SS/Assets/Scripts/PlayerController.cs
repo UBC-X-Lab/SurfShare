@@ -14,6 +14,8 @@ public class PlayerController : NetworkBehaviour
 
     private GameObject RemoteVideoPlayer;
 
+    private GameObject RemoteAudio;
+
     [SyncVar]
     public bool headInitialized = false;
 
@@ -25,6 +27,7 @@ public class PlayerController : NetworkBehaviour
         Head = transform.GetChild(0).gameObject;
         PeerWorldOrigin = GameObject.Find("PeerWorldOrigin").transform;
         RemoteVideoPlayer = GameObject.Find("RemoteVideoPlayer");
+        RemoteAudio = GameObject.Find("RemoteAudio");
     }
 
     // Update is called once per frame
@@ -57,6 +60,10 @@ public class PlayerController : NetworkBehaviour
             {
                 transform.rotation = PeerWorldOrigin.rotation;
             }
+
+            RemoteAudio.GetComponent<AudioSource>().spatialize = Main.head_on; // only turn on spatialize if the head is on
+            RemoteAudio.transform.position = Head.transform.position;
+            RemoteAudio.transform.rotation = Head.transform.rotation;
         }
 
         if (hasAuthority && headInitialized)
