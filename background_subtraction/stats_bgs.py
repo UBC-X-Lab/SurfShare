@@ -64,14 +64,14 @@ def configure(configure_frames):
 def get_stat_frame(mean, std, frame):
     diff = np.abs(frame.reshape(mean.shape) - mean)
     diff = (diff > std).astype(np.int8)
-    mask = diff[:, 0] * diff[:, 1]
+    mask = diff[:, 0] * diff[:, 1] * diff[:, 2]
     mask[mask > 0] = 255
     return mask.reshape((frame.shape[0], frame.shape[1])).astype(np.uint8)
 
 def main():
     parser = argparse.ArgumentParser(description='This program shows how to use background subtraction methods provided by \
                                                 OpenCV. You can process both videos and images.')
-    parser.add_argument('--input', type=str, help='Path to a video or a sequence of image.', default='test_images/real_test1.mp4')
+    parser.add_argument('--input', type=str, help='Path to a video or a sequence of image.', default='test_images/test_red_1.mp4')
     args = parser.parse_args()
 
     capture = cv.VideoCapture(cv.samples.findFileOrKeep(args.input))
@@ -104,9 +104,9 @@ def main():
             configure_frames.append(hsv_frame.reshape((hsv_frame.shape[0] * hsv_frame.shape[1], hsv_frame.shape[2])))
             if count == 240:
                 mean, std = configure(np.asarray(configure_frames))
-                std[std == 0] = 0.1
-                std[:, 0] = std[:, 0] * 8
-                std[:, 1] = std[:, 1] * 8
+                std[std == 0] = 0.04
+                std[:, 0] = std[:, 0] * 6
+                std[:, 1] = std[:, 1] * 6
                 std[:, 2] = std[:, 2] * 6
         else:
             # print(np.abs(first_hsv_frame - hsv_frame).reshape((hsv_frame.shape[0] * hsv_frame.shape[1], hsv_frame.shape[2])))

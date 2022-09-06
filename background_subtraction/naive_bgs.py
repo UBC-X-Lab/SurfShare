@@ -43,22 +43,39 @@ def frame_rgb_to_hsv_fast(frame):
     # print(f"color convertion took {time.time() - start}")
     return hsv_frame
     
-def get_naive_mask(first_frame, hsv_frame, thresh=0.04):
+def get_naive_mask(first_frame, hsv_frame, thresh_H=0.042, thresh_S=0.5, thresh_V=0.6):
     # start = time.time()
     diff = np.abs(hsv_frame - first_frame)
     shape = (diff.shape[0], diff.shape[1], diff.shape[2])
-    diff[diff <= thresh] = 0
-    diff[diff > thresh] = 1 # foreground
-    diff = diff.reshape((shape[0] * shape[1], shape[2])).astype(np.float16)
-    mask = np.multiply(diff[:, 0], diff[:, 1]) * 255
+
+    diff = diff.reshape((shape[0] * shape[1], shape[2]))
+
+    diff_H = diff[:, 0]
+    diff_S = diff[:, 1]
+    diff_V = diff[:, 2]
+
+    diff_H[diff_H <= thresh_H] = 0
+    diff_H[diff_H > thresh_H] = 1
+    
+    diff_S[diff_S <= thresh_S] = 0
+    diff_S[diff_S > thresh_S] = 1
+
+    diff_V[diff_V <= thresh_V] = 0
+    diff_V[diff_V > thresh_V] = 1
+
+    diff_H = diff_H.astype(np.uint8)
+    diff_S = diff_S.astype(np.uint8)
+    diff_V = diff_V.astype(np.uint8)
+    mask = (diff_H | diff_S | diff_V) * 255
+    # print(diff[:, 0])
     # print(f"masking took{time.time() - start}")
-    return mask.reshape((shape[0], shape[1])).astype(np.uint8)
+    return mask.reshape((shape[0], shape[1]))
 
 
 def main():
     parser = argparse.ArgumentParser(description='This program shows how to use background subtraction methods provided by \
                                                 OpenCV. You can process both videos and images.')
-    parser.add_argument('--input', type=str, help='Path to a video or a sequence of image.', default='test_images/real_test1.mp4')
+    parser.add_argument('--input', type=str, help='Path to a video or a sequence of image.', default='test_images/test_desk.mp4')
     args = parser.parse_args()
 
     capture = cv.VideoCapture(cv.samples.findFileOrKeep(args.input))
@@ -101,11 +118,11 @@ def main():
         print(count)
 
         keyboard = cv.waitKey(30)
-        # if keyboard == 'q' or keyboard == 27 or count == 300:
+        # if keyboard == 'q' or keyboard == 27 or count == 2:
         if keyboard == 'q' or keyboard == 27:
             break
 
-    out = cv.VideoWriter('mask.mp4', cv.VideoWriter_fourcc(*'mp4v'), 30, size) # last parameter set color to gray scale
+    out = cv.VideoWriter('naive_mask.mp4', cv.VideoWriter_fourcc(*'mp4v'), 30, size) # last parameter set color to gray scale
     for i in range(len(frame_array)):
         out.write(frame_array[i])
     out.release()
