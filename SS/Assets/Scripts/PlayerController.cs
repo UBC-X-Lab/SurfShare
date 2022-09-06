@@ -51,6 +51,11 @@ public class PlayerController : NetworkBehaviour
                 Head.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().enabled = Main.head_on;
             }
 
+            if (RemoteAudio.GetComponent<AudioSource>().spatialize != Main.head_on)
+            {
+                RemoteAudio.GetComponent<AudioSource>().spatialize = Main.head_on;
+            }
+
             if (!transform.position.Equals(PeerWorldOrigin.position))
             {
                 transform.position = PeerWorldOrigin.position;
@@ -61,9 +66,11 @@ public class PlayerController : NetworkBehaviour
                 transform.rotation = PeerWorldOrigin.rotation;
             }
 
-            RemoteAudio.GetComponent<AudioSource>().spatialize = Main.head_on; // only turn on spatialize if the head is on
-            RemoteAudio.transform.position = Head.transform.position;
-            RemoteAudio.transform.rotation = Head.transform.rotation;
+            if (Main.head_on)
+            {
+                RemoteAudio.transform.position = Head.transform.position;
+                RemoteAudio.transform.rotation = Head.transform.rotation;
+            }
         }
 
         if (hasAuthority && headInitialized)
