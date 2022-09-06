@@ -8,8 +8,11 @@ using Mirror;
 public class UpdateMesh : NetworkBehaviour
 {
     public List<int> topVerticesIndices = new List<int>();
+    public List<Vector3> initialTopVertices = new List<Vector3>();
     public Mesh myMesh;
-    public Vector3 handlePreviousPosition;
+
+    // public Vector3 handlePreviousPosition;
+    public Vector3 initialHandlePosition;
 
     private GameObject BaseMesh;
     private GameObject Handle;
@@ -84,15 +87,17 @@ public class UpdateMesh : NetworkBehaviour
 
         if (canUpdateMesh)
         {
-            Vector3 delta = Handle.transform.localPosition - handlePreviousPosition;
+            Vector3 delta = Handle.transform.localPosition - initialHandlePosition;
 
             if (delta.magnitude > 0)
             {
                 // Debug.Log("LocalPosition:" + this.transform.localPosition);
                 Vector3[] new_vertices = myMesh.vertices;
+                int count = 0;
                 foreach (int vertex_index in topVerticesIndices)
                 {
-                    new_vertices[vertex_index] += delta;
+                    new_vertices[vertex_index] = initialTopVertices[count] + delta;
+                    count += 1;
                 }
                 myMesh.vertices = new_vertices;
                 BaseMesh.GetComponent<MeshCollider>().sharedMesh = myMesh;
@@ -111,8 +116,6 @@ public class UpdateMesh : NetworkBehaviour
                 BaseMesh.GetComponent<Rigidbody>().useGravity = useGravity;
             }
         }
-
-        handlePreviousPosition = Handle.transform.localPosition;
     }
 
     public void CreateMesh()
@@ -142,7 +145,8 @@ public class UpdateMesh : NetworkBehaviour
             }
             if (isTop)
             {
-                this.GetComponent<UpdateMesh>().topVerticesIndices.Add(j);
+                topVerticesIndices.Add(j);
+                initialTopVertices.Add(cur_vertex);
                 Handle.transform.localPosition += cur_vertex;
             }
         }
@@ -150,7 +154,9 @@ public class UpdateMesh : NetworkBehaviour
         //Debug.Log("Number of vertices:" + newMesh.vertexCount);
         Handle.transform.position /= this.GetComponent<UpdateMesh>().topVerticesIndices.Count;
         Handle.transform.position += 0.05f * heightNormal;
-        this.GetComponent<UpdateMesh>().handlePreviousPosition = Handle.transform.localPosition;
+        // this.GetComponent<UpdateMesh>().handlePreviousPosition = Handle.transform.localPosition;
+
+        initialHandlePosition = Handle.transform.localPosition;
 
         if (!hasAuthority)
         {
