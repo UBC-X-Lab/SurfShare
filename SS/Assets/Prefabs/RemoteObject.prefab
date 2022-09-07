@@ -32,6 +32,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7744705425890743930}
+  - {fileID: 7744705425670506651}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -67,14 +68,15 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   topVerticesIndices: 
+  initialTopVertices: []
   myMesh: {fileID: 0}
-  handlePreviousPosition: {x: 0, y: 0, z: 0}
+  initialHandlePosition: {x: 0, y: 0, z: 0}
   mesh_color: {r: 1, g: 1, b: 1, a: 1}
   heightNormal: {x: 0, y: 0, z: 0}
   vertices_initialized: 0
   manipulating: 0
   canUpdateMesh: 0
-  stay_kinematic: 0
+  has_rigidbody: 1
   isKinematic: 1
   useGravity: 1
 --- !u!114 &-1321152000188269490
@@ -162,6 +164,7 @@ GameObject:
   - component: {fileID: 4819656953675822520}
   - component: {fileID: 8615858225441272426}
   - component: {fileID: 7744705425670506648}
+  - component: {fileID: 322989270140197415}
   m_Layer: 0
   m_Name: Handle
   m_TagString: Untagged
@@ -176,12 +179,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7744705425670506650}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.04, y: 0.03, z: 0.04}
   m_Children: []
-  m_Father: {fileID: 7744705425890743930}
-  m_RootOrder: 0
+  m_Father: {fileID: 7744705424954965451}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7744705425670506644
 MeshFilter:
@@ -336,6 +339,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTetherWhenManipulating: 0
   IsBoundsHandles: 0
+--- !u!114 &322989270140197415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7744705425670506650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b3e6359c9750ad4fb8a05c9b8704d7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handType: 3
+  proximityType: 3
+  constraintOnRotation: -1
+  useLocalSpaceForConstraint: 0
 --- !u!1 &7744705425890743933
 GameObject:
   m_ObjectHideFlags: 0
@@ -370,8 +389,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 7744705425670506651}
+  m_Children: []
   m_Father: {fileID: 7744705424954965451}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

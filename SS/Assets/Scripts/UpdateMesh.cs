@@ -52,7 +52,8 @@ public class UpdateMesh : NetworkBehaviour
     void Start()
     {
         BaseMesh = transform.GetChild(0).gameObject;
-        Handle = BaseMesh.transform.GetChild(0).gameObject;
+        // Handle = BaseMesh.transform.GetChild(0).gameObject;
+        Handle = transform.GetChild(1).gameObject;
         PeerWorldOrigin = GameObject.Find("PeerWorldOrigin").transform;
         // Debug.Log("Lalala");
     }
@@ -152,8 +153,8 @@ public class UpdateMesh : NetworkBehaviour
         }
         //Debug.Log("Number of top:" + MyObject.GetComponent<UpdateMesh>().topVerticesIndices.Count);
         //Debug.Log("Number of vertices:" + newMesh.vertexCount);
-        Handle.transform.position /= this.GetComponent<UpdateMesh>().topVerticesIndices.Count;
-        Handle.transform.position += 0.05f * heightNormal;
+        Handle.transform.localPosition /= this.GetComponent<UpdateMesh>().topVerticesIndices.Count;
+        Handle.transform.localPosition += 0.05f * heightNormal;
         // this.GetComponent<UpdateMesh>().handlePreviousPosition = Handle.transform.localPosition;
 
         initialHandlePosition = Handle.transform.localPosition;
