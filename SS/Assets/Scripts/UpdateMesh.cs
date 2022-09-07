@@ -35,6 +35,9 @@ public class UpdateMesh : NetworkBehaviour
     [SyncVar]
     public bool manipulating = false;
 
+    [SyncVar]
+    public Vector3 handleLocalPosition;
+
     public bool canUpdateMesh = false; // have we initilized, can we update?
 
     [SyncVar]
@@ -48,12 +51,15 @@ public class UpdateMesh : NetworkBehaviour
 
     private bool isOwner;
 
+    private int frameCount = 0;
+
+    private int updateRate = 2;
+
 
     void Start()
     {
         BaseMesh = transform.GetChild(0).gameObject;
-        // Handle = BaseMesh.transform.GetChild(0).gameObject;
-        Handle = transform.GetChild(1).gameObject;
+        Handle = BaseMesh.transform.GetChild(0).gameObject;
         PeerWorldOrigin = GameObject.Find("PeerWorldOrigin").transform;
         // Debug.Log("Lalala");
     }
@@ -105,6 +111,19 @@ public class UpdateMesh : NetworkBehaviour
             }
         }
 
+        if (canUpdateMesh && hasAuthority)
+        {
+            if (frameCount % updateRate == 0)
+            {
+                CmdSyncHandleLocalPosition(Handle.transform.localPosition);
+            }
+        }
+
+        if (canUpdateMesh && !hasAuthority)
+        {
+            Handle.transform.localPosition = handleLocalPosition;
+        }
+
         if (canUpdateMesh && has_rigidbody)
         {
             if (BaseMesh.GetComponent<Rigidbody>().isKinematic != isKinematic)
@@ -117,6 +136,12 @@ public class UpdateMesh : NetworkBehaviour
                 BaseMesh.GetComponent<Rigidbody>().useGravity = useGravity;
             }
         }
+
+        if (frameCount % updateRate == 0)
+        {
+            frameCount = 0;
+        }
+        frameCount += 1;
     }
 
     public void CreateMesh()
@@ -158,6 +183,7 @@ public class UpdateMesh : NetworkBehaviour
         // this.GetComponent<UpdateMesh>().handlePreviousPosition = Handle.transform.localPosition;
 
         initialHandlePosition = Handle.transform.localPosition;
+        handleLocalPosition = initialHandlePosition;
 
         if (!hasAuthority)
         {
@@ -193,6 +219,12 @@ public class UpdateMesh : NetworkBehaviour
     void CmdsyncManipulation(bool value)
     {
         manipulating = value;
+    }
+
+    [Command]
+    void CmdSyncHandleLocalPosition(Vector3 pos)
+    {
+        handleLocalPosition = pos;
     }
 
     public void OnManipulationStart()

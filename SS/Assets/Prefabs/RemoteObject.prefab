@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 3318647126761740951}
   - component: {fileID: 7744705424954965448}
   - component: {fileID: -1321152000188269490}
-  - component: {fileID: 964883656578281587}
   m_Layer: 0
   m_Name: RemoteObject
   m_TagString: Untagged
@@ -32,7 +31,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7744705425890743930}
-  - {fileID: 7744705425670506651}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -114,41 +112,6 @@ MonoBehaviour:
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
   target: {fileID: 7744705425890743930}
---- !u!114 &964883656578281587
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7744705424954965450}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 734b48bea0b204338958ee3d885e11f0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncMode: 0
-  syncInterval: 0.1
-  clientAuthority: 1
-  sendInterval: 0.05
-  syncPosition: 1
-  syncRotation: 0
-  syncScale: 0
-  interpolatePosition: 1
-  interpolateRotation: 0
-  interpolateScale: 0
-  bufferTimeMultiplier: 1
-  bufferSizeLimit: 64
-  catchupThreshold: 4
-  catchupMultiplier: 0.1
-  onlySyncOnChange: 1
-  bufferResetMultiplier: 5
-  positionSensitivity: 0.01
-  rotationSensitivity: 0.01
-  scaleSensitivity: 0.01
-  showGizmos: 0
-  showOverlay: 0
-  overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
-  target: {fileID: 7744705425670506651}
 --- !u!1 &7744705425670506650
 GameObject:
   m_ObjectHideFlags: 0
@@ -183,8 +146,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.04, y: 0.03, z: 0.04}
   m_Children: []
-  m_Father: {fileID: 7744705424954965451}
-  m_RootOrder: 1
+  m_Father: {fileID: 7744705425890743930}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7744705425670506644
 MeshFilter:
@@ -389,7 +352,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 7744705425670506651}
   m_Father: {fileID: 7744705424954965451}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
