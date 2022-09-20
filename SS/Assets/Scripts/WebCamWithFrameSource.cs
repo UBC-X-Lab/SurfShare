@@ -187,7 +187,7 @@ namespace CustomVideoSources
                 SharingMode = MediaCaptureSharingMode.ExclusiveControl,
                 MemoryPreference = MediaCaptureMemoryPreference.Cpu,
                 StreamingCaptureMode = StreamingCaptureMode.Video,
-                PhotoCaptureSource = PhotoCaptureSource.VideoPreview
+                PhotoCaptureSource = PhotoCaptureSource.Photo
             };
 
             bool profile_found = false;
@@ -210,7 +210,7 @@ namespace CustomVideoSources
                             sourceInfoList.Add(sourceInfo);
                         }
                     }
-                    colorSourceInfo = sourceInfoList[1];
+                    colorSourceInfo = sourceInfoList[0]; // 1280 is in profile 0, 960 is in profile 1
                     
                     // Debug.Log(sourceInfoList.Count); // 2, the one with lower resolution is in the second
                     
@@ -255,7 +255,7 @@ namespace CustomVideoSources
 
             var preferredFormat = colorFrameSource.SupportedFormats.Where(format =>
             {
-                return format.VideoFormat.Width == 960;
+                return format.VideoFormat.Width == 1280; // change back to 960 (or even 640) if the performance is not good enough
                 //&& format.Subtype == MediaEncodingSubtypes.Argb32;
             }).FirstOrDefault();
 
@@ -347,7 +347,7 @@ namespace CustomVideoSources
                                 // corners are set, ready to transmit masked frames
                                 if (FrameHandler.corners.Count == 4 && mediaFrameReference.CoordinateSystem != null)
                                 {
-                                    //FrameProcessor.NaiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
+                                    // FrameProcessor.NaiveMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
                                     FrameProcessor.ProjectionMasking(mediaFrameReference.CoordinateSystem, videoMediaFrame, dataInBytes, bufferLayout.StartIndex, bufferLayout.Width, bufferLayout.Height);
 
                                     if (Main.meshCreation)
