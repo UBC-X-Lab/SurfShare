@@ -135,6 +135,8 @@ public class UpdateMesh : NetworkBehaviour
             {
                 BaseMesh.GetComponent<Rigidbody>().useGravity = useGravity;
             }
+
+            BaseMesh.GetComponent<Rigidbody>().mass = BaseMesh.transform.localScale.magnitude; // make thing heavier / lighter with scaling
         }
 
         if (frameCount % updateRate == 0)
