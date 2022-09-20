@@ -81,8 +81,8 @@ namespace CameraFrameUtilities
     public unsafe static class FrameProcessor
     {
         public static byte* target_frame;
-        public static int targetWidth = 640;
-        public static int targetHeight = 360;
+        public static int targetWidth = 640; // 720
+        public static int targetHeight = 360; // 428
         private static float[] first_frame; // store the first frame in HSV format
         private static bool is_first_frame = true;
         // private static bool enable_bg_subtraction = false;
@@ -226,6 +226,9 @@ namespace CameraFrameUtilities
                 world_X_Axis = (NumericsConversionExtensions.ToSystem(FrameHandler.corners[1]) - world_origin) / targetWidth;
                 world_Y_Axis = (NumericsConversionExtensions.ToSystem(FrameHandler.corners[2]) - world_origin) / targetHeight;
 
+                // camera coordinate system seems to be on the right of the Unity system
+                world_origin -= 0.02f * System.Numerics.Vector3.Normalize(world_X_Axis);
+
                 // all world coordinates are constants, fill in
                 for (int Y = 0; Y < targetHeight; Y++)
                 {
@@ -349,7 +352,7 @@ namespace CameraFrameUtilities
                     return null;
                 }
                 System.Numerics.Vector3 world_coor = System.Numerics.Vector3.Transform(frame_coor, transformToWorld.Value);
-                world_coors[index] = NumericsConversionExtensions.ToUnity(world_coor);
+                world_coors[index] = NumericsConversionExtensions.ToUnity(world_coor) + 0.02f * (FrameHandler.corners[1] - FrameHandler.corners[0]).normalized;
                 index++;
             }
             return world_coors;
