@@ -1,6 +1,10 @@
 .DS_Store
 *.mp4
 *.avi
+Demo_Cut
+vo
+*.srt
+*.zip
 
 *_clone_*
 
