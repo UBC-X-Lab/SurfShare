@@ -3,12 +3,38 @@ using System.Collections.Generic;
 using UnityEngine;
 using DelaunatorSharp;
 
+using TriangleNet.Geometry;
+using TriangleNet.Meshing;
+
 public static class MeshCreator
 {
     public static Mesh CreateMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, float meshHeight = 0.01f)
     {
-        IPoint[] points = DelaunatorSharp.Unity.Extensions.DelaunatorExtensions.ToPoints(poly_vertices);
-        Delaunator delaunator = new Delaunator(points);
+        int[] delaunay_triangles;
+
+        var polygon = new Polygon();
+        Vertex[] vertices = new Vertex[poly_vertices.Length];
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            vertices[i] = new Vertex(poly_vertices[i].x, poly_vertices[i].y);
+        }
+        polygon.Add(new Contour(vertices));
+
+        // int[] delaunay_triangles;
+        IMesh meshTemp = polygon.Triangulate();
+
+        delaunay_triangles = new int[meshTemp.Triangles.Count * 3];
+        int index = 0;
+        foreach (TriangleNet.Topology.Triangle t in meshTemp.Triangles)
+        {
+            delaunay_triangles[index * 3 + 2] = t.GetVertexID(0);
+            delaunay_triangles[index * 3 + 1] = t.GetVertexID(1);
+            delaunay_triangles[index * 3] = t.GetVertexID(2);
+            index++;
+        }
+
+        Debug.Log("New Triangulation Success!");
 
         Mesh mesh = new Mesh();
 
@@ -30,21 +56,21 @@ public static class MeshCreator
         mesh.vertices = mesh_vertices;
         //mesh.uv = meshUV;
 
-        int[] meshTriangle = new int[delaunator.Triangles.Length * 2 + 6 * poly_vertices.Length]; // make room for triangles for the top/bottom face + 6 triangle vertice each side
+        int[] meshTriangle = new int[delaunay_triangles.Length * 2 + 6 * poly_vertices.Length]; // make room for triangles for the top/bottom face + 6 triangle vertice each side
         // assign the bottom, as is
-        for (int i = 0; i < delaunator.Triangles.Length; i++)
+        for (int i = 0; i < delaunay_triangles.Length; i++)
         {
-            meshTriangle[i] = delaunator.Triangles[delaunator.Triangles.Length - 1 - i];
+            meshTriangle[i] = delaunay_triangles[delaunay_triangles.Length - 1 - i];
         }
         //assign the top, but offsetting
-        for (int i = delaunator.Triangles.Length; i < delaunator.Triangles.Length * 2; i++)
+        for (int i = delaunay_triangles.Length; i < delaunay_triangles.Length * 2; i++)
         {
-            meshTriangle[i] = delaunator.Triangles[i - delaunator.Triangles.Length] + poly_vertices.Length;
+            meshTriangle[i] = delaunay_triangles[i - delaunay_triangles.Length] + poly_vertices.Length;
         }
         // assign the side
         for (int i = 0; i < poly_vertices.Length; i++)
         {
-            int start = delaunator.Triangles.Length * 2 + i * 6; // start index in meshTriangle
+            int start = delaunay_triangles.Length * 2 + i * 6; // start index in meshTriangle
             // i, i + poly_vertices.Length, i + 1 + poly_vertices.Length, i + 1;
 
             // to face outward, reverse
