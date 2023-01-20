@@ -7,12 +7,17 @@ public class MyNetWorkManager : NetworkManager
 {
     public bool isServer = false;
 
+    public bool isHost = false;
+
     public override void Start()
     {
         if (isServer)
         {
             singleton.StartServer();
-            //singleton.StartHost();
+        }
+        else if (isHost)
+        {
+            singleton.StartHost();
         }
     }
 
