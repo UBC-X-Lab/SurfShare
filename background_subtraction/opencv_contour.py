@@ -36,7 +36,7 @@ for obj in objs_indices:
     # print(obj)
     for i, cnt_index in enumerate(obj):
         cnt = contours[cnt_index]
-        thresh = (2 if i == 0 else 1)
+        thresh = (2500 if i == 0 else 1000)
         area = cv.contourArea(cnt)
         if area > thresh:
             # contour approx
