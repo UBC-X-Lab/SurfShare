@@ -75,7 +75,7 @@ def get_naive_mask(first_frame, hsv_frame, thresh_H=0.042, thresh_S=0.5, thresh_
 def main():
     parser = argparse.ArgumentParser(description='This program shows how to use background subtraction methods provided by \
                                                 OpenCV. You can process both videos and images.')
-    parser.add_argument('--input', type=str, help='Path to a video or a sequence of image.', default='test_images/holes.mp4')
+    parser.add_argument('--input', type=str, help='Path to a video or a sequence of image.', default='test_images/holesholes.mp4')
     args = parser.parse_args()
 
     capture = cv.VideoCapture(cv.samples.findFileOrKeep(args.input))

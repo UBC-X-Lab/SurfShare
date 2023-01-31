@@ -2,7 +2,7 @@ from tokenize import Imagnumber
 import cv2 as cv
 import numpy as np
 
-im = cv.imread('holes_mask.jpg')
+im = cv.imread('holes_holes_mask.jpg')
 imgray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
 
 ret, thresh = cv.threshold(imgray, 127, 255, 0)
@@ -36,7 +36,7 @@ for obj in objs_indices:
     # print(obj)
     for i, cnt_index in enumerate(obj):
         cnt = contours[cnt_index]
-        thresh = (2500 if i == 0 else 1000)
+        thresh = (2 if i == 0 else 1)
         area = cv.contourArea(cnt)
         if area > thresh:
             # contour approx
