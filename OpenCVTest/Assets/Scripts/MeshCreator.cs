@@ -33,21 +33,15 @@ public static class MeshCreator
             index++;
         }
 
-        //IPoint[] points = DelaunatorSharp.Unity.Extensions.DelaunatorExtensions.ToPoints(poly_vertices);
-        //Delaunator delaunator = new DelaunatorSharp.Delaunator(points);
-
         Mesh mesh = new Mesh();
 
         Vector3[] mesh_vertices = new Vector3[poly_vertices.Length * 2];
-        //Vector2[] meshUV = new Vector2[poly_vertices.Length];
 
-        // assign poly_vertices for bottom and top
         for (int i = 0; i < mesh_vertices.Length; i++)
         {
             int poly_vertices_index = i % poly_vertices.Length;
             float height = i < poly_vertices.Length ? 0 : meshHeight;
             mesh_vertices[i] = new Vector3(poly_vertices[poly_vertices_index].x, height, poly_vertices[poly_vertices_index].y);
-            // Debug.Log(mesh_vertices[i].x + "," + mesh_vertices[i].y + "," + mesh_vertices[i].x);
         }
 
         mesh.vertices = mesh_vertices;
