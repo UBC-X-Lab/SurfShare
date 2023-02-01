@@ -8,15 +8,15 @@ public class DelaunatorTest : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Vector2[] poly_vertices = new Vector2[4];
-        poly_vertices[0] = new Vector2(0, 0);
-        poly_vertices[1] = new Vector2(0, 1);
-        poly_vertices[2] = new Vector2(1, 1);
-        poly_vertices[3] = new Vector2(1, 0);
+        //Vector2[] poly_vertices = new Vector2[4];
+        //poly_vertices[0] = new Vector2(0, 0);
+        //poly_vertices[1] = new Vector2(0, 1);
+        //poly_vertices[2] = new Vector2(1, 1);
+        //poly_vertices[3] = new Vector2(1, 0);
 
-        GameObject newObject = Instantiate(baseObject);
-        Mesh newMesh = MeshCreator.CreateMesh(poly_vertices);
-        newObject.GetComponent<MeshFilter>().mesh = newMesh;
+        //GameObject newObject = Instantiate(baseObject);
+        //Mesh newMesh = MeshCreator.CreateMesh(poly_vertices);
+        //newObject.GetComponent<MeshFilter>().mesh = newMesh;
     }
 
     // Update is called once per frame

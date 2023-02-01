@@ -9,6 +9,8 @@ public class UpdateMesh : NetworkBehaviour
 
     public readonly SyncList<Vector2> vertices = new SyncList<Vector2>();
 
+    public readonly SyncList<int> vertices_count = new SyncList<int>();
+
     [SyncVar]
     public bool vertices_initialized = false;
 
@@ -47,9 +49,14 @@ public class UpdateMesh : NetworkBehaviour
         //obj.GetComponent<UpdateMesh>().enabled = true;
         transform.position = image_origin;
         Vector2[] MeshVertices = new Vector2[vertices.Count];
+        int[] MeshVerticesCount = new int[vertices_count.Count];
+
         vertices.CopyTo(MeshVertices, 0);
-        BaseMesh.GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(MeshVertices);
+        vertices_count.CopyTo(MeshVerticesCount, 0);
+
+        BaseMesh.GetComponent<MeshFilter>().mesh = MeshCreator.CreateMesh(MeshVertices, MeshVerticesCount);
         BaseMesh.GetComponent<MeshCollider>().sharedMesh = BaseMesh.GetComponent<MeshFilter>().mesh;
+        
         for (int i = 0; i < MeshVertices.Length; i++)
         {
             BaseMesh.transform.GetChild(0).localPosition += new Vector3(MeshVertices[i].x, 0.2f, MeshVertices[i].y);

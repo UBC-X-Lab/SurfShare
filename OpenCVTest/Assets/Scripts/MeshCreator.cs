@@ -8,23 +8,30 @@ using TriangleNet.Meshing;
 
 public static class MeshCreator
 {
-    public static Mesh CreateMesh(Vector2[] poly_vertices, float meshHeight=0.1f)
+    public static Mesh CreateMesh(Vector2[] poly_vertices, int[] vertices_count, float meshHeight=0.1f)
     {
         int[] delaunay_triangles;
 
         var polygon = new Polygon();
-        Vertex[] vertices = new Vertex[poly_vertices.Length];
 
-        for (int i = 0; i < vertices.Length; i++)
+        int index = 0;
+        bool is_hole = false;
+        foreach (int count in vertices_count)
         {
-            vertices[i] = new Vertex(poly_vertices[i].x, poly_vertices[i].y);
+            Vertex[] vertices = new Vertex[count];
+            for (int i = 0; i < count; i++)
+            {
+                vertices[i] = new Vertex(poly_vertices[index].x, poly_vertices[index].y);
+                index++;
+            }
+            polygon.Add(new Contour(vertices), is_hole);
+            is_hole = true;
         }
-        polygon.Add(new Contour(vertices));
 
         IMesh meshTemp = polygon.Triangulate();
 
         delaunay_triangles = new int[meshTemp.Triangles.Count * 3];
-        int index = 0;
+        index = 0;
         foreach (TriangleNet.Topology.Triangle t in meshTemp.Triangles)
         {
             delaunay_triangles[index * 3 + 2] = t.GetVertexID(0);
@@ -58,20 +65,38 @@ public static class MeshCreator
         {
             meshTriangle[i] = delaunay_triangles[i - delaunay_triangles.Length] + poly_vertices.Length;
         }
-        // assign the side
-        for (int i = 0; i < poly_vertices.Length; i++)
-        {
-            int start = delaunay_triangles.Length * 2 + i * 6; // start index in meshTriangle
-            // i, i + poly_vertices.Length, i + 1 + poly_vertices.Length, i + 1;
 
-            // to face outward, reverse
-            meshTriangle[start] = (i + 1) % poly_vertices.Length + poly_vertices.Length; // 2
-            meshTriangle[start + 1] = i + poly_vertices.Length; // 1
-            meshTriangle[start + 2] = i; // 0
-            meshTriangle[start + 3] = i; // 0
-            meshTriangle[start + 4] = (i + 1) % poly_vertices.Length; // 3
-            meshTriangle[start + 5] = (i + 1) % poly_vertices.Length + poly_vertices.Length; // 2
+        // assign the side
+        int vertice_start = 0;
+        for (int i = 0; i < vertices_count.Length; i++)
+        {
+            for (int j = 0; j < vertices_count[i]; j++)
+            {
+                int start = delaunay_triangles.Length * 2 + (vertice_start + j) * 6;
+                meshTriangle[start] = vertice_start + (j + 1) % vertices_count[i] + poly_vertices.Length; // 2
+                meshTriangle[start + 1] = vertice_start + j + poly_vertices.Length; // 1
+                meshTriangle[start + 2] = vertice_start + j; // 0
+                meshTriangle[start + 3] = vertice_start + j; // 0
+                meshTriangle[start + 4] = vertice_start + (j + 1) % vertices_count[i]; // 3
+                meshTriangle[start + 5] = vertice_start + (j + 1) % vertices_count[i] + poly_vertices.Length; // 2
+            }
+            vertice_start += vertices_count[i];
         }
+
+
+        //for (int i = 0; i < poly_vertices.Length; i++)
+        //{
+        //    int start = delaunay_triangles.Length * 2 + i * 6; // start index in meshTriangle
+        //    // i, i + poly_vertices.Length, i + 1 + poly_vertices.Length, i + 1;
+
+        //    // to face outward, reverse
+        //    meshTriangle[start] = (i + 1) % poly_vertices.Length + poly_vertices.Length; // 2
+        //    meshTriangle[start + 1] = i + poly_vertices.Length; // 1
+        //    meshTriangle[start + 2] = i; // 0
+        //    meshTriangle[start + 3] = i; // 0
+        //    meshTriangle[start + 4] = (i + 1) % poly_vertices.Length; // 3
+        //    meshTriangle[start + 5] = (i + 1) % poly_vertices.Length + poly_vertices.Length; // 2
+        //}
 
         mesh.triangles = meshTriangle;
         mesh.RecalculateNormals();

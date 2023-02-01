@@ -65,7 +65,7 @@ public class OpenCVTest : MonoBehaviour
                 List<Point[]> new_object = new List<Point[]>();
                 
                 // contour approx
-                double eps = 0.005 * Cv2.ArcLength(contours[i], true);
+                double eps = 0.01 * Cv2.ArcLength(contours[i], true);
                 new_object.Add(Cv2.ApproxPolyDP(contours[i], eps, true));
 
                 // now find all the holes that are big enough in this object
@@ -75,7 +75,7 @@ public class OpenCVTest : MonoBehaviour
                     if (Cv2.ContourArea(contours[hier.Child]) > 1000)
                     {
                         // contour approx
-                        eps = 0.005 * Cv2.ArcLength(contours[hier.Child], true);
+                        eps = 0.01 * Cv2.ArcLength(contours[hier.Child], true);
                         new_object.Add(Cv2.ApproxPolyDP(contours[hier.Child], eps, true));
                     }
                     HierarchyIndex hier_hole = hierarchy[hier.Child];
@@ -86,7 +86,7 @@ public class OpenCVTest : MonoBehaviour
                         if (Cv2.ContourArea(contours[hier_hole.Next]) > 1000)
                         {
                             // contour approx
-                            eps = 0.005 * Cv2.ArcLength(contours[hier_hole.Next], true);
+                            eps = 0.01 * Cv2.ArcLength(contours[hier_hole.Next], true);
                             new_object.Add(Cv2.ApproxPolyDP(contours[hier_hole.Next], eps, true));
                         }
                         hier_hole = hierarchy[hier_hole.Next];
@@ -120,12 +120,16 @@ public class OpenCVTest : MonoBehaviour
             {
                 // calculate number of vertices
                 int ver_count = 0;
-                foreach (Point[] contour in obj)
+                int[] vertices_count = new int[obj.Count];
+                for (int i = 0; i < obj.Count; i++)
                 {
+                    Point[] contour = obj[i];
                     ver_count += contour.Length;
+                    Debug.Log("Countour Length " + contour.Length);
+                    vertices_count[i] = contour.Length;
                 }
-                Vector2[] vertices = new Vector2[ver_count];
 
+                Vector2[] vertices = new Vector2[ver_count];
                 // combine all the vertices in the object
                 int index = 0;
                 foreach (Point[] contour in obj)
@@ -133,23 +137,24 @@ public class OpenCVTest : MonoBehaviour
                     foreach (Point vertex in contour)
                     {
                         vertices[index] = new Vector2(vertex.X / (float)originalTex.width * image_width, vertex.Y / (float)originalTex.height * image_height);
+                        index++;
                     }
                 }
 
-                // vertices by hierarchy
-                List<Vector2[]> hierarchy_vertices = new List<Vector2[]>();
-                foreach (Point[] contour in obj)
-                {
-                    Vector2[] sub_vertices = new Vector2[contour.Length];
-                    for (int i = 0; i < sub_vertices.Length; i++)
-                    {
-                        sub_vertices[i] = new Vector2(contour[i].X / (float)originalTex.width * image_width, contour[i].Y / (float)originalTex.height * image_height);
-                    }
-                    hierarchy_vertices.Add(sub_vertices);
-                }
+                //// vertices by hierarchy
+                //List<Vector2[]> hierarchy_vertices = new List<Vector2[]>();
+                //foreach (Point[] contour in obj)
+                //{
+                //    Vector2[] sub_vertices = new Vector2[contour.Length];
+                //    for (int i = 0; i < sub_vertices.Length; i++)
+                //    {
+                //        sub_vertices[i] = new Vector2(contour[i].X / (float)originalTex.width * image_width, contour[i].Y / (float)originalTex.height * image_height);
+                //    }
+                //    hierarchy_vertices.Add(sub_vertices);
+                //}
 
 
-                // NetworkClient.localPlayer.gameObject.GetComponent<PlayerControl>().CmdSpawnMesh(hierarchy_vertices, createKinematic);
+                NetworkClient.localPlayer.gameObject.GetComponent<PlayerControl>().CmdSpawnMesh(vertices, vertices_count, createKinematic);
             }
 
             //foreach (Point[] con in res_con)

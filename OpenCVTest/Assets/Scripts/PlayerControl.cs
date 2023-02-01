@@ -34,12 +34,13 @@ public class PlayerControl : NetworkBehaviour
 
 
     [Command]
-    public void CmdSpawnMesh(Vector2[] vertices, bool stayKinematic)
+    public void CmdSpawnMesh(Vector2[] vertices, int[] vertices_count, bool stayKinematic)
     {
         GameObject meshObj = Instantiate(MeshPrefab);
         NetworkServer.Spawn(meshObj);
         meshObj.GetComponent<UpdateMesh>().stayKinematic = stayKinematic;
         meshObj.GetComponent<UpdateMesh>().vertices.AddRange(vertices);
+        meshObj.GetComponent<UpdateMesh>().vertices_count.AddRange(vertices_count);
         meshObj.GetComponent<UpdateMesh>().vertices_initialized = true;
     }
 
