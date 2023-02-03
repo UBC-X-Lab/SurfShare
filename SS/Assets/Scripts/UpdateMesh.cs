@@ -21,6 +21,7 @@ public class UpdateMesh : NetworkBehaviour
 
     // network
     public readonly SyncList<Vector2> sync_poly_vertices = new SyncList<Vector2>();
+    public readonly SyncList<int> sync_vertices_count = new SyncList<int>();
     public readonly SyncList<Vector3> sync_world_vertices = new SyncList<Vector3>();
 
     [SyncVar]
@@ -150,10 +151,12 @@ public class UpdateMesh : NetworkBehaviour
     {
         Vector2[] poly_vertices = new Vector2[sync_poly_vertices.Count];
         sync_poly_vertices.CopyTo(poly_vertices, 0);
+        int[] vertices_count = new int[sync_vertices_count.Count];
+        sync_vertices_count.CopyTo(vertices_count, 0);
         Vector3[] world_vertices = new Vector3[sync_world_vertices.Count];
         sync_world_vertices.CopyTo(world_vertices, 0);
 
-        Mesh newMesh = MeshCreator.CreateMesh(poly_vertices, world_vertices, heightNormal);
+        Mesh newMesh = MeshCreator.CreateMesh(poly_vertices, vertices_count, world_vertices, heightNormal);
         BaseMesh.GetComponent<MeshFilter>().mesh = newMesh;
         BaseMesh.GetComponent<MeshCollider>().sharedMesh = newMesh;
         this.GetComponent<UpdateMesh>().myMesh = newMesh;

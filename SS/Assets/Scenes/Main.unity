@@ -1406,8 +1406,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PeerConnection: {fileID: 1641159553}
   AutoLogErrors: 1
-  LocalPeerId: Hololens2
-  RemotePeerId: Hololens1
+  LocalPeerId: Hololens1
+  RemotePeerId: Hololens2
   HttpServerAddress: http://192.168.0.194:3000
   PollTimeMs: 500
 --- !u!4 &675028750
@@ -2314,7 +2314,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!65 &1537020924
 BoxCollider:
   m_ObjectHideFlags: 0

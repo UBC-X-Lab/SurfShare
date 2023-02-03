@@ -81,9 +81,9 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    public void SpawnMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, Color mesh_color, bool KinematicCreation)
+    public void SpawnMesh(Vector2[] poly_vertices, int[] vertices_count, Vector3[] world_vertices, Vector3 heightNormal, Color mesh_color, bool KinematicCreation)
     {
-        CmdSpawnMesh(poly_vertices, world_vertices, heightNormal, mesh_color, KinematicCreation, GetComponent<NetworkIdentity>());
+        CmdSpawnMesh(poly_vertices, vertices_count, world_vertices, heightNormal, mesh_color, KinematicCreation, GetComponent<NetworkIdentity>());
     }
 
     [Command (requiresAuthority = false)]
@@ -93,12 +93,13 @@ public class PlayerController : NetworkBehaviour
     }
 
     [Command]
-    void CmdSpawnMesh(Vector2[] poly_vertices, Vector3[] world_vertices, Vector3 heightNormal, Color mesh_color, bool KinematicCreation, NetworkIdentity netid)
+    void CmdSpawnMesh(Vector2[] poly_vertices, int[] vertices_count, Vector3[] world_vertices, Vector3 heightNormal, Color mesh_color, bool KinematicCreation, NetworkIdentity netid)
     {
         GameObject meshObj = Instantiate(RemoteObject);
         NetworkServer.Spawn(meshObj, netid.connectionToClient);
         meshObj.GetComponent<UpdateMesh>().sync_poly_vertices.AddRange(poly_vertices);
         meshObj.GetComponent<UpdateMesh>().sync_world_vertices.AddRange(world_vertices);
+        meshObj.GetComponent<UpdateMesh>().sync_vertices_count.AddRange(vertices_count);
         meshObj.GetComponent<UpdateMesh>().heightNormal = heightNormal;
         meshObj.GetComponent<UpdateMesh>().mesh_color = mesh_color;
         meshObj.GetComponent<UpdateMesh>().has_rigidbody = !KinematicCreation;

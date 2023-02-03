@@ -357,75 +357,214 @@ namespace CustomVideoSources
                                         byte* mask = FrameProcessor.Bg_subtraction();
                                         Mat greyImage = new Mat(FrameProcessor.targetHeight, FrameProcessor.targetWidth, MatType.CV_8UC1, (IntPtr)mask);
                                         // Mat greyImage = image.CvtColor(ColorConversionCodes.BGRA2GRAY).Threshold(127, 255, ThresholdTypes.Binary);
-                                        OpenCvSharp.Point[][] contours = greyImage.FindContoursAsArray(RetrievalModes.Tree, ContourApproximationModes.ApproxSimple);
+                                        // OpenCvSharp.Point[][] contours = greyImage.FindContoursAsArray(RetrievalModes.Tree, ContourApproximationModes.ApproxSimple);
+
+                                        OpenCvSharp.Point[][] contours;
+                                        HierarchyIndex[] hierarchy;
+
+                                        greyImage.FindContours(out contours, out hierarchy, RetrievalModes.CComp, ContourApproximationModes.ApproxSimple);
 
                                         // filter contours that are too small
                                         lock (Main.res_con_lock)
                                         {
-                                            for (int i = 0; i < contours.Length; i++)
+                                            // first group the contours by objects in 2D
+                                            List<List<OpenCvSharp.Point[]>> objects = new List<List<OpenCvSharp.Point[]>>(); // stores groups of contours, each group of List<Point[]> represents an object; in each group, the first is the external contour, and the rest are holes
+                                            for (int i = 0; i < hierarchy.Length; i++)
                                             {
-                                                if (Cv2.ContourArea(contours[i]) > 1600)
+                                                HierarchyIndex hier = hierarchy[i];
+                                                // find the external contour that is big enough
+                                                if (hier.Parent == -1 && Cv2.ContourArea(contours[i]) > 1600)
                                                 {
+                                                    List<OpenCvSharp.Point[]> new_object = new List<OpenCvSharp.Point[]>();
+
                                                     // contour approx
                                                     double eps = 0.01 * Cv2.ArcLength(contours[i], true);
-                                                    OpenCvSharp.Point[] approx_contour = Cv2.ApproxPolyDP(contours[i], eps, true);
-                                                    // convert to Windows foundataion
-                                                    Windows.Foundation.Point[] pixel_pos = new Windows.Foundation.Point[approx_contour.Length];
+                                                    new_object.Add(Cv2.ApproxPolyDP(contours[i], eps, true));
 
-                                                    Windows.Foundation.Point contour_center = new Windows.Foundation.Point();
-                                                    for (int j = 0; j < pixel_pos.Length; j++)
+                                                    // now find all the holes that are big enough in this object
+                                                    if (hier.Child != -1)
                                                     {
-                                                        // the opencv image is bottom up while the system image is top down
-                                                        pixel_pos[j] = new Windows.Foundation.Point(approx_contour[j].X, FrameProcessor.targetHeight - 1 - approx_contour[j].Y);
-                                                        contour_center.X += pixel_pos[j].X;
-                                                        contour_center.Y += pixel_pos[j].Y;
+                                                        // add the first hole
+                                                        if (Cv2.ContourArea(contours[hier.Child]) > 800)
+                                                        {
+                                                            // contour approx
+                                                            eps = 0.01 * Cv2.ArcLength(contours[hier.Child], true);
+                                                            new_object.Add(Cv2.ApproxPolyDP(contours[hier.Child], eps, true));
+                                                        }
+                                                        HierarchyIndex hier_hole = hierarchy[hier.Child];
+
+                                                        // add the rest holes
+                                                        while (hier_hole.Next != -1)
+                                                        {
+                                                            if (Cv2.ContourArea(contours[hier_hole.Next]) > 800)
+                                                            {
+                                                                // contour approx
+                                                                eps = 0.01 * Cv2.ArcLength(contours[hier_hole.Next], true);
+                                                                new_object.Add(Cv2.ApproxPolyDP(contours[hier_hole.Next], eps, true));
+                                                            }
+                                                            hier_hole = hierarchy[hier_hole.Next];
+                                                        }
                                                     }
 
-                                                    // calculate color
-                                                    contour_center.X /= pixel_pos.Length;
-                                                    contour_center.Y /= pixel_pos.Length;
+                                                    // add the completed object contours to objects
+                                                    objects.Add(new_object);
+                                                }
+                                            }
 
-                                                    Color mesh_color = new Color(0, 0, 0);
-                                                    int color_extraction_count = 0;
-                                                    for (int y = (int) contour_center.Y - 5; y < (int) contour_center.Y + 5; y++)
+                                            // calculate numbder of vertices for each ext and holes and combine all together
+                                            foreach (List<OpenCvSharp.Point[]> obj in objects)
+                                            {
+                                                int ver_count = 0;
+                                                int[] vertices_count = new int[obj.Count];
+                                                for (int i = 0; i < obj.Count; i++)
+                                                {
+                                                    ver_count += obj[i].Length;
+                                                    Debug.Log("Countour Length " + obj[i].Length);
+                                                    vertices_count[i] = obj[i].Length;
+                                                }
+
+                                                // combine all the vertices in the object
+                                                OpenCvSharp.Point[] vertices = new OpenCvSharp.Point[ver_count];
+                                                int index = 0;
+                                                foreach (OpenCvSharp.Point[] contour in obj)
+                                                {
+                                                    foreach (OpenCvSharp.Point vertex in contour)
                                                     {
-                                                        if (y > FrameProcessor.targetHeight - 1)
+                                                        vertices[index] = new OpenCvSharp.Point(vertex.X, vertex.Y);
+                                                        index++;
+                                                    }
+                                                }
+
+                                                // then convert the contour objects to windows pixels, voxels in 3D, and calculate the object color
+                                                // List<List<Windows.Foundation.Point[]>> object_pixels = new List<List<Windows.Foundation.Point[]>>();
+                                                //List<List<Vector3[]>> object_world = new List<List<Vector3[]>>();
+                                                //List<Color> object_colors = new List<Color>();
+
+                                                Windows.Foundation.Point[] pixel_pos = new Windows.Foundation.Point[vertices.Length];
+                                                Windows.Foundation.Point contour_center = new Windows.Foundation.Point();
+                                                for (int i = 0; i < pixel_pos.Length; i++)
+                                                {
+                                                    pixel_pos[i] = new Windows.Foundation.Point(vertices[i].X, FrameProcessor.targetHeight - 1 - vertices[i].Y);
+
+                                                    // only use extern contour for color calculation
+                                                    if (i < vertices_count[0])
+                                                    {
+                                                        contour_center.X += pixel_pos[i].X;
+                                                        contour_center.Y += pixel_pos[i].Y;
+                                                    }
+                                                }
+
+                                                // calculate color
+                                                contour_center.X /= vertices_count[0];
+                                                contour_center.Y /= vertices_count[0];
+
+                                                Color mesh_color = new Color(0, 0, 0);
+                                                int color_extraction_count = 0;
+                                                for (int y = (int)contour_center.Y - 5; y < (int)contour_center.Y + 5; y++)
+                                                {
+                                                    if (y > FrameProcessor.targetHeight - 1)
+                                                    {
+                                                        break;
+                                                    }
+
+                                                    for (int x = (int)contour_center.X - 5; x < (int)contour_center.X + 5; x++)
+                                                    {
+                                                        if (x > FrameProcessor.targetWidth - 1)
                                                         {
                                                             break;
                                                         }
 
-                                                        for (int x = (int) contour_center.X - 5; x < (int) contour_center.X + 5; x++)
-                                                        {
-                                                            if (x > FrameProcessor.targetWidth - 1)
-                                                            {
-                                                                break;
-                                                            }
-
-                                                            mesh_color.b += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4] / 255f;
-                                                            mesh_color.g += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4 + 1] / 255f;
-                                                            mesh_color.r += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4 + 2] / 255f;
-                                                            color_extraction_count += 1;
-                                                        }
-                                                    }
-
-                                                    mesh_color.b /= color_extraction_count;
-                                                    mesh_color.g /= color_extraction_count;
-                                                    mesh_color.r /= color_extraction_count;
-                                                    Debug.Log("Mesh Color is R:" + mesh_color.r + ", G:" + mesh_color.b + ", B:" + mesh_color.b);
-
-
-                                                    Vector3[] contour_world = FrameProcessor.ProjectFrameCoorsToWorld(pixel_pos, mediaFrameReference.CoordinateSystem);
-                                                    if (contour_world != null)
-                                                    {
-                                                        Main.res_con.Add(approx_contour);
-                                                        Main.res_con_world.Add(contour_world);
-                                                        Main.mesh_colors.Add(mesh_color);
-                                                        Debug.Log("Contour size:" + Main.res_con[Main.res_con.Count - 1].Length);
-                                                        Debug.Log(Cv2.ContourArea(contours[i]));
+                                                        mesh_color.b += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4] / 255f;
+                                                        mesh_color.g += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4 + 1] / 255f;
+                                                        mesh_color.r += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4 + 2] / 255f;
+                                                        color_extraction_count += 1;
                                                     }
                                                 }
+
+                                                mesh_color.b /= color_extraction_count;
+                                                mesh_color.g /= color_extraction_count;
+                                                mesh_color.r /= color_extraction_count;
+                                                Debug.Log("Mesh Color is R:" + mesh_color.r + ", G:" + mesh_color.b + ", B:" + mesh_color.b);
+
+                                                Vector3[] contour_world = FrameProcessor.ProjectFrameCoorsToWorld(pixel_pos, mediaFrameReference.CoordinateSystem);
+
+                                                if (contour_world != null)
+                                                {
+                                                    Main.res_con.Add(vertices);
+                                                    Main.res_con_world.Add(contour_world);
+                                                    Main.vertices_count.Add(vertices_count);
+                                                    Main.mesh_colors.Add(mesh_color);
+                                                    // Debug.Log("Contour size:" + Main.res_con[Main.res_con.Count - 1].Length);
+                                                    // Debug.Log(Cv2.ContourArea(contours[i]));
+                                                }
                                             }
-                                            Debug.Log("Number of Meshes to create:" + Main.res_con.Count);
+
+
+
+                                            //for (int i = 0; i < contours.Length; i++)
+                                            //{
+                                            //    if (Cv2.ContourArea(contours[i]) > 1600)
+                                            //    {
+                                            //        // contour approx
+                                            //        double eps = 0.01 * Cv2.ArcLength(contours[i], true);
+                                            //        OpenCvSharp.Point[] approx_contour = Cv2.ApproxPolyDP(contours[i], eps, true);
+                                            //        // convert to Windows foundataion
+                                            //        Windows.Foundation.Point[] pixel_pos = new Windows.Foundation.Point[approx_contour.Length];
+
+                                            //        Windows.Foundation.Point contour_center = new Windows.Foundation.Point();
+                                            //        for (int j = 0; j < pixel_pos.Length; j++)
+                                            //        {
+                                            //            // the opencv image is bottom up while the system image is top down
+                                            //            pixel_pos[j] = new Windows.Foundation.Point(approx_contour[j].X, FrameProcessor.targetHeight - 1 - approx_contour[j].Y);
+                                            //            contour_center.X += pixel_pos[j].X;
+                                            //            contour_center.Y += pixel_pos[j].Y;
+                                            //        }
+
+                                            //        // calculate color
+                                            //        contour_center.X /= pixel_pos.Length;
+                                            //        contour_center.Y /= pixel_pos.Length;
+
+                                            //        Color mesh_color = new Color(0, 0, 0);
+                                            //        int color_extraction_count = 0;
+                                            //        for (int y = (int) contour_center.Y - 5; y < (int) contour_center.Y + 5; y++)
+                                            //        {
+                                            //            if (y > FrameProcessor.targetHeight - 1)
+                                            //            {
+                                            //                break;
+                                            //            }
+
+                                            //            for (int x = (int) contour_center.X - 5; x < (int) contour_center.X + 5; x++)
+                                            //            {
+                                            //                if (x > FrameProcessor.targetWidth - 1)
+                                            //                {
+                                            //                    break;
+                                            //                }
+
+                                            //                mesh_color.b += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4] / 255f;
+                                            //                mesh_color.g += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4 + 1] / 255f;
+                                            //                mesh_color.r += FrameProcessor.target_frame[y * FrameProcessor.targetWidth * 4 + x * 4 + 2] / 255f;
+                                            //                color_extraction_count += 1;
+                                            //            }
+                                            //        }
+
+                                            //        mesh_color.b /= color_extraction_count;
+                                            //        mesh_color.g /= color_extraction_count;
+                                            //        mesh_color.r /= color_extraction_count;
+                                            //        Debug.Log("Mesh Color is R:" + mesh_color.r + ", G:" + mesh_color.b + ", B:" + mesh_color.b);
+
+
+                                            //        Vector3[] contour_world = FrameProcessor.ProjectFrameCoorsToWorld(pixel_pos, mediaFrameReference.CoordinateSystem);
+                                            //        if (contour_world != null)
+                                            //        {
+                                            //            Main.res_con.Add(approx_contour);
+                                            //            Main.res_con_world.Add(contour_world);
+                                            //            Main.mesh_colors.Add(mesh_color);
+                                            //            Debug.Log("Contour size:" + Main.res_con[Main.res_con.Count - 1].Length);
+                                            //            Debug.Log(Cv2.ContourArea(contours[i]));
+                                            //        }
+                                            //    }
+                                            //}
+                                            //Debug.Log("Number of Meshes to create:" + Main.res_con.Count);
                                         }
 
                                         // Cv2.DrawContours(image, res_con, -1, new Scalar(0, 255, 0), 3); // the contours points are ordered clock-wise

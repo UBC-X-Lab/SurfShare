@@ -18,6 +18,7 @@ public class Main : MonoBehaviour
     public bool KinematicCreation = false;
 
     public static List<Point[]> res_con = new List<Point[]>(); // contour position on the image
+    public static List<int[]> vertices_count = new List<int[]>();
     public static List<Vector3[]> res_con_world = new List<Vector3[]>(); // contour position in the world
     public static List<Color> mesh_colors = new List<Color>();
     public static readonly object res_con_lock = new object();
@@ -66,9 +67,10 @@ public class Main : MonoBehaviour
                     Vector3 Y_Axis = FrameHandler.corners[2] - FrameHandler.corners[0];
                     Vector3 heightNormal = Vector3.Normalize(Vector3.Cross(X_Axis, Y_Axis));
 
-                    NetworkClient.localPlayer.gameObject.GetComponent<PlayerController>().SpawnMesh(vertices, res_con_world[i], heightNormal, mesh_colors[i], KinematicCreation);
+                    NetworkClient.localPlayer.gameObject.GetComponent<PlayerController>().SpawnMesh(vertices, vertices_count[i], res_con_world[i], heightNormal, mesh_colors[i], KinematicCreation);
                 }
                 res_con.Clear();
+                vertices_count.Clear();
                 res_con_world.Clear();
                 mesh_colors.Clear();
                 Debug.Log("Meshes Created!");
