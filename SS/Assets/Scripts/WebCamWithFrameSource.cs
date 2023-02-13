@@ -378,14 +378,14 @@ namespace CustomVideoSources
                                                     List<OpenCvSharp.Point[]> new_object = new List<OpenCvSharp.Point[]>();
 
                                                     // contour approx
-                                                    double eps = 0.01 * Cv2.ArcLength(contours[i], true);
+                                                    double eps = 0.005 * Cv2.ArcLength(contours[i], true);
                                                     new_object.Add(Cv2.ApproxPolyDP(contours[i], eps, true));
 
                                                     // now find all the holes that are big enough in this object
                                                     if (hier.Child != -1)
                                                     {
                                                         // add the first hole
-                                                        if (Cv2.ContourArea(contours[hier.Child]) > 800)
+                                                        if (Cv2.ContourArea(contours[hier.Child]) > 200)
                                                         {
                                                             // contour approx
                                                             eps = 0.01 * Cv2.ArcLength(contours[hier.Child], true);
@@ -396,7 +396,7 @@ namespace CustomVideoSources
                                                         // add the rest holes
                                                         while (hier_hole.Next != -1)
                                                         {
-                                                            if (Cv2.ContourArea(contours[hier_hole.Next]) > 800)
+                                                            if (Cv2.ContourArea(contours[hier_hole.Next]) > 200)
                                                             {
                                                                 // contour approx
                                                                 eps = 0.01 * Cv2.ArcLength(contours[hier_hole.Next], true);
