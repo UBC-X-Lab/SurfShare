@@ -21,6 +21,7 @@ bgs_test/
 [Bb]uild/
 [Bb]uilds/
 *[Aa]pp[s]/
+[Uu]serSettings/
 Assets/AssetStoreTools*
 
 # Visual Studio cache directory
