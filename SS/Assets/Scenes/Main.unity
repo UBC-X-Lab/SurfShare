@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657892, g: 0.4964128, b: 0.5748173, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -354,7 +354,7 @@ MonoBehaviour:
   offlineScene: 
   onlineScene: 
   transport: {fileID: 211222437}
-  networkAddress: 192.168.0.194
+  networkAddress: 127.0.0.1
   maxConnections: 4
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 1802745496984246640, guid: 7c7009416951dee4094d41045d3cd01f,
@@ -1391,7 +1391,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &675028749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1406,9 +1406,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PeerConnection: {fileID: 1641159553}
   AutoLogErrors: 1
-  LocalPeerId: Hololens2
-  RemotePeerId: Hololens1
-  HttpServerAddress: http://192.168.0.194:3000
+  LocalPeerId: Hololens1
+  RemotePeerId: Hololens2
+  HttpServerAddress: http://127.0.0.1:3000
   PollTimeMs: 500
 --- !u!4 &675028750
 Transform:
@@ -2411,7 +2411,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1641159553
 MonoBehaviour:
   m_ObjectHideFlags: 0
