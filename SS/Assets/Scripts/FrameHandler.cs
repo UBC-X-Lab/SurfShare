@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class FrameHandler : MonoBehaviour
 {
     // use below to draw lines
     public GameObject lineSample; 
-    private List<LineRenderer> lineRenderers;
+    public static List<LineRenderer> lineRenderers;
     // Corners of the frame, make them adjustable this time
     public static List<Vector3> corners; // left top, right top, left bottom, right bottom
                                          // (maybe we should just forbid users from starting with bottom borders...)
@@ -45,8 +46,8 @@ public class FrameHandler : MonoBehaviour
             float cos_alpha = Vector3.Dot(firstBorderVec, cursorVec) / (firstBorderVec.magnitude * cursorVec.magnitude);
             Vector3 middle_point = firstBorderVec * ((cursorVec.magnitude * cos_alpha) / firstBorderVec.magnitude); // AM
             Vector3 target_vec = cursorVec - middle_point; // MC
-            this.lineRenderers[1].SetPosition(1, corners[0] + target_vec);
-            this.lineRenderers[2].SetPosition(1, corners[1] + target_vec);
+            lineRenderers[1].SetPosition(1, corners[0] + target_vec);
+            lineRenderers[2].SetPosition(1, corners[1] + target_vec);
 
             // remote frame indicator (full)
             //if (RemoteSpaceControl.remoteSet && target_vec.magnitude > 0)
@@ -59,6 +60,10 @@ public class FrameHandler : MonoBehaviour
             //    this.remoteLines[3].SetPosition(1, this.remoteLines[0].GetPosition(1) + RemoteSpaceControl.remoteHeight * direction);
             //}
         }
+        else if (corners.Count == 4) // need a button to turn this on and off
+        {
+            // make local portal moveable
+        }
         
     }
 
@@ -70,7 +75,7 @@ public class FrameHandler : MonoBehaviour
         {
             corners.Add(HandEventsHandler.handray_cursor_position);
             LineRenderer firstBorder = this.CreateNewLine(corners[0], corners[0], "firstBorder");
-            this.lineRenderers.Add(firstBorder);
+            lineRenderers.Add(firstBorder);
 
             // remote frame indicator, start with just the first line (just to avoid surface finding)
             //LineRenderer firstRemoteBorder = this.CreateNewLine(corners[0], corners[0], "firstRemoteBorder");
@@ -82,8 +87,8 @@ public class FrameHandler : MonoBehaviour
             corners.Add(HandEventsHandler.handray_cursor_position);
             LineRenderer secondBorder = this.CreateNewLine(corners[0], corners[0], "secondBorder"); // second border is the left border
             LineRenderer thirdBorder = this.CreateNewLine(corners[1], corners[1], "thirdBorder"); // rightborder
-            this.lineRenderers.Add(secondBorder);
-            this.lineRenderers.Add(thirdBorder);
+            lineRenderers.Add(secondBorder);
+            lineRenderers.Add(thirdBorder);
 
             // remote frame indicator, display the full frame
             //if (RemoteSpaceControl.remoteSet)
@@ -101,10 +106,10 @@ public class FrameHandler : MonoBehaviour
         }
         else if (cornersDetermined == 2) // Done!
         {
-            corners.Add(this.lineRenderers[1].GetPosition(1)); // left bottom corner - second border
-            corners.Add(this.lineRenderers[2].GetPosition(1)); // right bottom corner - third border
+            corners.Add(lineRenderers[1].GetPosition(1)); // left bottom corner - second border
+            corners.Add(lineRenderers[2].GetPosition(1)); // right bottom corner - third border
             LineRenderer fourthBorder = CreateNewLine(corners[2], corners[3], "fourthBorder");
-            this.lineRenderers.Add(fourthBorder);
+            lineRenderers.Add(fourthBorder);
 
             // Destroy remote frame indicator if exists
             //for (int i = 0; i < remoteLines.Count; i++)
@@ -112,12 +117,14 @@ public class FrameHandler : MonoBehaviour
             //    Destroy(remoteLines[i].gameObject);
             //}
             //remoteLines.Clear();
+
+            //Debug.Log(corners[0].ToString() + " ; " + corners[1].ToString() + " ; " + corners[2].ToString() + " ; " + corners[3].ToString());
         }
     }
 
     private LineRenderer CreateNewLine(Vector3 start, Vector3 end, string name, float width=0.005f)
     {
-        GameObject newLine = Object.Instantiate(this.lineSample);
+        GameObject newLine = Object.Instantiate(this.lineSample, transform);
         newLine.name = name;
         LineRenderer newLineRenderer = newLine.GetComponent<LineRenderer>();
         //newLineRenderer.enabled = true;

@@ -15,6 +15,8 @@ public class HandEventsHandler : MonoBehaviour
 
     public GameObject RemoteSpaceControlObject;
 
+    public FrameHandler frameHandler;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -74,7 +76,7 @@ public class HandEventsHandler : MonoBehaviour
         {
             if (RemoteSpaceControl.STATE == RemoteSpaceControl.PLACE_LOCAL)
             {
-                this.GetComponent<FrameHandler>().SetLocalPinched();
+                frameHandler.SetLocalPinched();
                 if (FrameHandler.corners.Count == 1)
                 {
                     RemoteSpaceControlObject.GetComponent<RemoteSpaceControl>().NotifySetLocal(); // this sets the peer's state to PLACE_REMOTE

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using TMPro.EditorUtilities;
 
 public class RemoteSpaceControl : NetworkBehaviour
 {
@@ -83,6 +84,18 @@ public class RemoteSpaceControl : NetworkBehaviour
             Menu.gameObject.SetActive(true);
             Menu.position = (FrameHandler.corners[2] + FrameHandler.corners[3] + localYAxis) / 2 + Vector3.Cross(localXAxis, localYAxis).normalized * 0.05f;
             Menu.rotation = LocalVideoPlayer.rotation;
+            Menu.SetParent(LocalVideoPlayer, true);
+
+            // set the lines to local space so they move with the portal
+            foreach (LineRenderer lr in FrameHandler.lineRenderers)
+            {
+                Vector3 local_start = LocalVideoPlayer.InverseTransformPoint(lr.GetPosition(0));
+                Vector3 local_end = LocalVideoPlayer.InverseTransformPoint(lr.GetPosition(1)) ;
+
+                lr.useWorldSpace = false;
+                lr.SetPosition(0, local_start);
+                lr.SetPosition(1, local_end);
+            }
 
             CmdSync(NetworkClient.localPlayer.GetComponent<NetworkIdentity>(), localWidth, localHeight); // this toggles peer's remote set
 
@@ -156,6 +169,7 @@ public class RemoteSpaceControl : NetworkBehaviour
 
     void SetRemoteVideo(Vector3[] RemoteCorners = null, bool matchCenter = false)
     {
+        // remote corners are null for the first user, so set automatically
         if (RemoteCorners == null)
         {
             RemoteCorners = new Vector3[4];
