@@ -3023,6 +3023,8 @@ GameObject:
   - component: {fileID: 2044513593}
   - component: {fileID: 2044513597}
   - component: {fileID: 2044513596}
+  - component: {fileID: 2044513599}
+  - component: {fileID: 2044513598}
   m_Layer: 0
   m_Name: LocalVideoPlayer
   m_TagString: Untagged
@@ -3193,6 +3195,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   autoConstraintSelection: 1
   selectedConstraints: []
+--- !u!114 &2044513598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2044513589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b3e6359c9750ad4fb8a05c9b8704d7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handType: 3
+  proximityType: 2
+  constraintOnRotation: 3
+  useLocalSpaceForConstraint: 1
+--- !u!114 &2044513599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2044513589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149fa3ae453128b41940b5caa905f8ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handType: 3
+  proximityType: 2
+  constraintOnMovement: 4
+  useLocalSpaceForConstraint: 1
 --- !u!1 &2047271279
 GameObject:
   m_ObjectHideFlags: 0
