@@ -20,8 +20,8 @@ namespace Microsoft.MixedReality.WebRTC.Unity
     [RequireComponent(typeof(Renderer))]
     [AddComponentMenu("MixedReality-WebRTC/Custom Video Renderer")]
     public class CustomVideoRenderer : MonoBehaviour
-    {
-        private bool backgroundSet = false;
+    {   
+        public bool backgroundSet = false;
 
         [Tooltip("Max playback framerate, in frames per second")]
         [Range(0.001f, 120f)]

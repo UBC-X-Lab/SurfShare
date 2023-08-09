@@ -642,9 +642,9 @@ PlayerSettings:
   metroPackageVersion: 1.0.0.0
   metroCertificatePath: Assets\WSATestCertificate.pfx
   metroCertificatePassword: 
-  metroCertificateSubject: DefaultCompany
-  metroCertificateIssuer: DefaultCompany
-  metroCertificateNotAfter: 00705ddf9780d901
+  metroCertificateSubject: XLAB
+  metroCertificateIssuer: XLAB
+  metroCertificateNotAfter: 8062385022e6da01
   metroApplicationDescription: Template_3D
   wsaImages: {}
   metroTileShortName: 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SocialPlatforms.Impl;
 
 public class FrameHandler : MonoBehaviour
@@ -11,6 +12,8 @@ public class FrameHandler : MonoBehaviour
     // Corners of the frame, make them adjustable this time
     public static List<Vector3> corners; // left top, right top, left bottom, right bottom
                                          // (maybe we should just forbid users from starting with bottom borders...)
+    public static readonly object frame_corner_lock = new object();
+    public static bool corners_updated = false;
     // private List<LineRenderer> remoteLines;
 
     // surface stats
@@ -60,10 +63,6 @@ public class FrameHandler : MonoBehaviour
             //    this.remoteLines[3].SetPosition(1, this.remoteLines[0].GetPosition(1) + RemoteSpaceControl.remoteHeight * direction);
             //}
         }
-        else if (corners.Count == 4) // need a button to turn this on and off
-        {
-            // make local portal moveable
-        }
         
     }
 
@@ -73,7 +72,10 @@ public class FrameHandler : MonoBehaviour
         int cornersDetermined = corners.Count;
         if (cornersDetermined == 0) // first corner
         {
-            corners.Add(HandEventsHandler.handray_cursor_position);
+            lock (frame_corner_lock) 
+            {
+                corners.Add(HandEventsHandler.handray_cursor_position);
+            }
             LineRenderer firstBorder = this.CreateNewLine(corners[0], corners[0], "firstBorder");
             lineRenderers.Add(firstBorder);
 
@@ -84,7 +86,10 @@ public class FrameHandler : MonoBehaviour
         }
         else if (cornersDetermined == 1)
         {
-            corners.Add(HandEventsHandler.handray_cursor_position);
+            lock (frame_corner_lock)
+            {
+                corners.Add(HandEventsHandler.handray_cursor_position);
+            }
             LineRenderer secondBorder = this.CreateNewLine(corners[0], corners[0], "secondBorder"); // second border is the left border
             LineRenderer thirdBorder = this.CreateNewLine(corners[1], corners[1], "thirdBorder"); // rightborder
             lineRenderers.Add(secondBorder);
@@ -106,8 +111,10 @@ public class FrameHandler : MonoBehaviour
         }
         else if (cornersDetermined == 2) // Done!
         {
-            corners.Add(lineRenderers[1].GetPosition(1)); // left bottom corner - second border
-            corners.Add(lineRenderers[2].GetPosition(1)); // right bottom corner - third border
+            lock (frame_corner_lock) { 
+                corners.Add(lineRenderers[1].GetPosition(1)); // left bottom corner - second border
+                corners.Add(lineRenderers[2].GetPosition(1)); // right bottom corner - third border
+            }
             LineRenderer fourthBorder = CreateNewLine(corners[2], corners[3], "fourthBorder");
             lineRenderers.Add(fourthBorder);
 
@@ -119,6 +126,26 @@ public class FrameHandler : MonoBehaviour
             //remoteLines.Clear();
 
             //Debug.Log(corners[0].ToString() + " ; " + corners[1].ToString() + " ; " + corners[2].ToString() + " ; " + corners[3].ToString());
+        }
+    }
+
+    // turn local portal reposition on and off
+    public void ToggleLocalPortalReposition()
+    {
+        Vector3 X_Axis = corners[1] - corners[0];
+        Vector3 Y_Axis = corners[2] - corners[0];
+        Vector3 heightNormal = Vector3.Normalize(Vector3.Cross(X_Axis, Y_Axis));
+
+        if (GetComponent<BoxCollider>().enabled)
+        {
+            GetComponent<BoxCollider>().enabled = false;
+            transform.position -= 0.03f * heightNormal;
+        }
+        else
+        {
+            GetComponent<BoxCollider>().enabled = true;
+
+            transform.position += 0.03f * heightNormal;
         }
     }
 

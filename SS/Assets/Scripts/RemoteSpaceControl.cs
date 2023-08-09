@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
-using TMPro.EditorUtilities;
+using Microsoft.MixedReality.WebRTC.Unity;
+//using TMPro.EditorUtilities;
 
 public class RemoteSpaceControl : NetworkBehaviour
 {
@@ -36,7 +37,7 @@ public class RemoteSpaceControl : NetworkBehaviour
     public Transform PeerWorldOrigin;
 
     [SyncVar]
-    bool SetupWorld = true;
+    bool SetupWorld = false;
 
     Vector3 world_offset = new Vector3(0, 0, 0);
     Quaternion world_quaternion_offset = new Quaternion();
@@ -63,29 +64,32 @@ public class RemoteSpaceControl : NetworkBehaviour
 
         if (FrameHandler.corners.Count == 4 && !localSet)
         {
-            localSet = true;
-            Vector3 localXAxis = FrameHandler.corners[1] - FrameHandler.corners[0];
-            Vector3 localYAxis = FrameHandler.corners[2] - FrameHandler.corners[0];
-            localWidth = (FrameHandler.corners[1] - FrameHandler.corners[0]).magnitude;
-            localHeight = (FrameHandler.corners[2] - FrameHandler.corners[0]).magnitude;
+            lock (FrameHandler.frame_corner_lock)
+            {
+                localSet = true;
+                Vector3 localXAxis = FrameHandler.corners[1] - FrameHandler.corners[0];
+                Vector3 localYAxis = FrameHandler.corners[2] - FrameHandler.corners[0];
+                localWidth = (FrameHandler.corners[1] - FrameHandler.corners[0]).magnitude;
+                localHeight = (FrameHandler.corners[2] - FrameHandler.corners[0]).magnitude;
 
-            Vector3 localFrameCenter = (FrameHandler.corners[0] + FrameHandler.corners[1] + FrameHandler.corners[2] + FrameHandler.corners[3]) / 4.0f;
-            Quaternion localFrameQuaternion = Quaternion.LookRotation(-Vector3.Cross(localXAxis, localYAxis), -localYAxis);
+                Vector3 localFrameCenter = (FrameHandler.corners[0] + FrameHandler.corners[1] + FrameHandler.corners[2] + FrameHandler.corners[3]) / 4.0f;
+                Quaternion localFrameQuaternion = Quaternion.LookRotation(-Vector3.Cross(localXAxis, localYAxis), -localYAxis);
 
-            LocalVideoPlayer.position = localFrameCenter;
-            LocalVideoPlayer.rotation = localFrameQuaternion;
-            LocalVideoPlayer.localScale = new Vector3(localXAxis.magnitude, localYAxis.magnitude, 1);
+                LocalVideoPlayer.position = localFrameCenter;
+                LocalVideoPlayer.rotation = localFrameQuaternion;
+                LocalVideoPlayer.localScale = new Vector3(localXAxis.magnitude, localYAxis.magnitude, 1);
 
-            // Setup world position
-            world_offset = LocalVideoPlayer.InverseTransformPoint(MyWorldOrigin.position);
-            world_quaternion_offset = Quaternion.Inverse(LocalVideoPlayer.GetComponent<Transform>().rotation) * MyWorldOrigin.rotation; // from localvideo to world
+                // Setup world position
+                world_offset = LocalVideoPlayer.InverseTransformPoint(MyWorldOrigin.position);
+                world_quaternion_offset = Quaternion.Inverse(LocalVideoPlayer.GetComponent<Transform>().rotation) * MyWorldOrigin.rotation; // from localvideo to world
 
-            // setup menu position
-            Menu.gameObject.SetActive(true);
-            Menu.position = (FrameHandler.corners[2] + FrameHandler.corners[3] + localYAxis) / 2 + Vector3.Cross(localXAxis, localYAxis).normalized * 0.05f;
-            Menu.rotation = LocalVideoPlayer.rotation;
-            Menu.SetParent(LocalVideoPlayer, true);
-
+                // setup menu position
+                Menu.gameObject.SetActive(true);
+                Menu.position = (FrameHandler.corners[2] + FrameHandler.corners[3] + localYAxis) / 2 + Vector3.Cross(localXAxis, localYAxis).normalized * 0.05f;
+                Menu.rotation = LocalVideoPlayer.rotation;
+                Menu.SetParent(LocalVideoPlayer, true);
+            }
+            
             // set the lines to local space so they move with the portal
             foreach (LineRenderer lr in FrameHandler.lineRenderers)
             {
@@ -164,6 +168,9 @@ public class RemoteSpaceControl : NetworkBehaviour
         {
             PeerWorldSet = true;
             CmdSetupPeerWorld(NetworkClient.localPlayer.GetComponent<NetworkIdentity>(), world_offset, world_quaternion_offset);
+
+            // only allow local portal repositioning after initilization
+            //LocalVideoPlayer.GetComponent<BoxCollider>().enabled = true;
         }
     }
 
@@ -173,9 +180,15 @@ public class RemoteSpaceControl : NetworkBehaviour
         if (RemoteCorners == null)
         {
             RemoteCorners = new Vector3[4];
-            Vector3 remoteFrameOrigin = FrameHandler.corners[3];
-            Vector3 remoteXAxis = (FrameHandler.corners[0] - FrameHandler.corners[1]).normalized * remoteWidth;
-            Vector3 remoteYAxis = (FrameHandler.corners[0] - FrameHandler.corners[2]).normalized * remoteHeight;
+            Vector3 remoteFrameOrigin;
+            Vector3 remoteXAxis;
+            Vector3 remoteYAxis;
+            lock (FrameHandler.frame_corner_lock)
+            {
+                remoteFrameOrigin = FrameHandler.corners[3];
+                remoteXAxis = (FrameHandler.corners[0] - FrameHandler.corners[1]).normalized * remoteWidth;
+                remoteYAxis = (FrameHandler.corners[0] - FrameHandler.corners[2]).normalized * remoteHeight;
+            }
             RemoteCorners[0] = remoteFrameOrigin;
             RemoteCorners[1] = remoteFrameOrigin + remoteXAxis;
             RemoteCorners[2] = remoteFrameOrigin + remoteYAxis;
@@ -208,8 +221,12 @@ public class RemoteSpaceControl : NetworkBehaviour
 
         if (matchCenter)
         {
+            Vector3 localCenter;
             // match the centers
-            Vector3 localCenter = (FrameHandler.corners[0] + FrameHandler.corners[1] + FrameHandler.corners[2] + FrameHandler.corners[3]) / 4.0f;
+            lock (FrameHandler.frame_corner_lock)
+            {
+                localCenter = (FrameHandler.corners[0] + FrameHandler.corners[1] + FrameHandler.corners[2] + FrameHandler.corners[3]) / 4.0f;
+            }
             Vector3 remoteCenter = (RemoteCorners[0] + RemoteCorners[1] + RemoteCorners[2] + RemoteCorners[3]) / 4.0f;
 
             remoteVideoTransform.position += (localCenter - remoteCenter);
@@ -301,6 +318,25 @@ public class RemoteSpaceControl : NetworkBehaviour
     //}
 
     //===============================   Sync space offset ==============================//
+    public void OnLocalPortalReposition()
+    {   
+        // update the global coordinates of the corners
+        LineRenderer topBorder = FrameHandler.lineRenderers[0];
+        LineRenderer bottomBorder = FrameHandler.lineRenderers[3];
+
+        lock (FrameHandler.frame_corner_lock)
+        {
+            FrameHandler.corners[0] = LocalVideoPlayer.TransformPoint(topBorder.GetPosition(0));
+            FrameHandler.corners[1] = LocalVideoPlayer.TransformPoint(topBorder.GetPosition(1));
+            FrameHandler.corners[2] = LocalVideoPlayer.TransformPoint(bottomBorder.GetPosition(0));
+            FrameHandler.corners[3] = LocalVideoPlayer.TransformPoint(bottomBorder.GetPosition(1));
+
+            FrameHandler.corners_updated = true;
+        }
+        ChangeSpaceOffset();
+
+        Debug.Log("Local Portal Moved!");
+    }
 
     public void ChangeSpaceOffset()
     {
@@ -318,6 +354,7 @@ public class RemoteSpaceControl : NetworkBehaviour
             if (netid != originId.connectionToClient)
             {
                 TargetApplySpaceOffset(netid, new_space_offset, new_quaternion_offset);
+                RemoteVideoPlane.GetComponent<CustomVideoRenderer>().backgroundSet = false; // command the remote video renderer to reset the background texture too
             }
         }
     }

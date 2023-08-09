@@ -219,12 +219,22 @@ namespace CameraFrameUtilities
             }
 
             // get the X_Axis and Y_Axis of the region to crop in the world (constant, only initialize once)
-            if (!world_system_defined)
+            if (!world_system_defined || FrameHandler.corners_updated)
             {
-                // we directly use the HL system
-                world_origin = NumericsConversionExtensions.ToSystem(FrameHandler.corners[0]);
-                world_X_Axis = (NumericsConversionExtensions.ToSystem(FrameHandler.corners[1]) - world_origin) / targetWidth;
-                world_Y_Axis = (NumericsConversionExtensions.ToSystem(FrameHandler.corners[2]) - world_origin) / targetHeight;
+                lock (FrameHandler.frame_corner_lock)
+                {
+                    // If local portal has been repositioned
+                    if (FrameHandler.corners_updated)
+                    {
+                        FrameHandler.corners_updated = false;
+                        is_first_frame = true; // take another background
+                    }
+
+                    // we directly use the HL system
+                    world_origin = NumericsConversionExtensions.ToSystem(FrameHandler.corners[0]);
+                    world_X_Axis = (NumericsConversionExtensions.ToSystem(FrameHandler.corners[1]) - world_origin) / targetWidth;
+                    world_Y_Axis = (NumericsConversionExtensions.ToSystem(FrameHandler.corners[2]) - world_origin) / targetHeight;
+                }
 
                 // camera coordinate system seems to be on the right of the Unity system
                 world_origin -= 0.02f * System.Numerics.Vector3.Normalize(world_X_Axis);
@@ -352,7 +362,10 @@ namespace CameraFrameUtilities
                     return null;
                 }
                 System.Numerics.Vector3 world_coor = System.Numerics.Vector3.Transform(frame_coor, transformToWorld.Value);
-                world_coors[index] = NumericsConversionExtensions.ToUnity(world_coor) + 0.02f * (FrameHandler.corners[1] - FrameHandler.corners[0]).normalized;
+                lock (FrameHandler.frame_corner_lock)
+                {
+                    world_coors[index] = NumericsConversionExtensions.ToUnity(world_coor) + 0.02f * (FrameHandler.corners[1] - FrameHandler.corners[0]).normalized;
+                }
                 index++;
             }
             return world_coors;
