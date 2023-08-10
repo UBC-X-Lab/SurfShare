@@ -15,7 +15,10 @@ public class RemoteSpaceControl : NetworkBehaviour
     public static float remoteWidth = 0.5f;
     public static float remoteHeight = 0.3f;
 
+    public bool setRemoteVideoPlanePosition = false;
+    public bool setRemoteVideoPlaneRotation = false;
     public bool setRemoteVideoPlane = false;
+    
     public static Vector3[] RemoteCorners = new Vector3[4];
     public GameObject RemoteVideoPlane;
     public GameObject RemoteVideoFrame;
@@ -24,6 +27,14 @@ public class RemoteSpaceControl : NetworkBehaviour
     // STATES (Note this implementation is not atomic! Make sure the users communicate before hand)
     public static readonly int PLACE_LOCAL = 0, PLACE_REMOTE = 1, PLACE_COMPLETE = 2;
     public static int STATE = PLACE_LOCAL;
+
+    public static readonly int SET_POSITION = 0, SET_ROTATION = 1;
+    public static int PLACE_REMOTE_SUB_STATE = SET_POSITION;
+
+    Vector3 CursorLookAt = Vector3.zero;
+    Vector3 Up = Vector3.zero;
+    Vector3 FramePosition = Vector3.zero;
+    Quaternion FrameQuaternion = new Quaternion();
 
     // public int DEBUG_STATE;
 
@@ -46,6 +57,7 @@ public class RemoteSpaceControl : NetworkBehaviour
     static public bool remoteSpaceSetupCompleted = false;
 
     public Transform Menu;
+    public Transform RemoteMenu;
 
 
 
@@ -118,48 +130,69 @@ public class RemoteSpaceControl : NetworkBehaviour
                 // if local is not set, then I was the second user, I set remote and then decide our initial relative position
                 if (!localSet)
                 {
-                    Vector3 CursorLookAt = HandEventsHandler.handray_cursor_orientation * Vector3.forward;
-                    Vector3 Handray = HandEventsHandler.handray_cursor_position - HandEventsHandler.handray_start_position;
-                    float angle = Vector3.Angle(CursorLookAt, Handray);
-                    Vector3 Up = CursorLookAt.magnitude / Mathf.Cos(angle) * Handray.normalized + CursorLookAt;
-                    if (Vector3.Dot(HandEventsHandler.handray_cursor_orientation * Vector3.up, Up) < 0)
+                    if (PLACE_REMOTE_SUB_STATE == SET_POSITION)
                     {
-                        Up = -Up;
+                        CursorLookAt = HandEventsHandler.handray_cursor_orientation * Vector3.forward;
+                        Vector3 Handray = HandEventsHandler.handray_cursor_position - HandEventsHandler.handray_start_position;
+                        float angle = Vector3.Angle(CursorLookAt, Handray);
+                        Up = CursorLookAt.magnitude / Mathf.Cos(angle) * Handray.normalized + CursorLookAt;
+                        if (Vector3.Dot(HandEventsHandler.handray_cursor_orientation * Vector3.up, Up) < 0)
+                        {
+                            Up = -Up;
+                        }
+                        FrameQuaternion = Quaternion.LookRotation(CursorLookAt, Up.normalized);
+                        FramePosition = HandEventsHandler.handray_cursor_position;
+
+                        if (setRemoteVideoPlanePosition)
+                        {
+                            PLACE_REMOTE_SUB_STATE = SET_ROTATION;
+                            RemoteMenu.gameObject.SetActive(true);
+                            RemoteMenu.position = FramePosition + CursorLookAt.normalized * 0.05f;
+                            RemoteMenu.rotation = Quaternion.LookRotation(-CursorLookAt, Up.normalized);
+                            RemoteMenu.SetParent(RemoteVideoPlane.transform, true);
+                        }
                     }
-                    Quaternion FrameQuaternion = Quaternion.LookRotation(CursorLookAt, Up.normalized);
+                    else if (PLACE_REMOTE_SUB_STATE == SET_ROTATION)
+                    {
+                        if (setRemoteVideoPlaneRotation)
+                        {
+                            setRemoteVideoPlaneRotation = false;
+                            Up = -Up;
+                            FrameQuaternion = Quaternion.LookRotation(CursorLookAt, Up.normalized);
+                            
+                            RemoteMenu.position = FramePosition + CursorLookAt.normalized * 0.05f;
+                            RemoteMenu.rotation = Quaternion.LookRotation(-CursorLookAt, Up.normalized);
+                        }
 
-                    //Debug.Log(Up);
-
-                    //Debug.Log(HandEventsHandler.handray_cursor_orientation * Vector3.up);
-                    // Quaternion FrameQuaternion = HandEventsHandler.handray_cursor_orientation;
+                        if (setRemoteVideoPlane)
+                        {
+                            Transform remoteVideoTransform = RemoteVideoPlane.GetComponent<Transform>();
+                            RemoteCorners[0] = remoteVideoTransform.TransformPoint(RemoteVideoFrame.GetComponent<LineRenderer>().GetPosition(2));
+                            RemoteCorners[1] = remoteVideoTransform.TransformPoint(RemoteVideoFrame.GetComponent<LineRenderer>().GetPosition(3));
+                            RemoteCorners[2] = remoteVideoTransform.TransformPoint(RemoteVideoFrame.GetComponent<LineRenderer>().GetPosition(1));
+                            RemoteCorners[3] = remoteVideoTransform.TransformPoint(RemoteVideoFrame.GetComponent<LineRenderer>().GetPosition(0));
+                            RemoteMenu.gameObject.SetActive(false);
+                            SetRemoteVideo(RemoteCorners);
+                            STATE = PLACE_LOCAL;
+                        }
+                    }
 
                     RemoteVideoFrame.GetComponent<LineRenderer>().positionCount = 4;
                     RemoteVideoFrame.GetComponent<LineRenderer>().SetWidth(0.005f, 0.005f);
                     RemoteVideoFrame.GetComponent<LineRenderer>().SetPosition(0, RemoteVideoFrame.GetComponentInParent<Transform>()
-                        .InverseTransformPoint(HandEventsHandler.handray_cursor_position + FrameQuaternion * (remoteWidth * new Vector3(1, 0, 0) + remoteHeight * new Vector3(0, 1, 0)) / 2));
+                        .InverseTransformPoint(FramePosition + FrameQuaternion * (remoteWidth * new Vector3(1, 0, 0) + remoteHeight * new Vector3(0, 1, 0)) / 2));
                     RemoteVideoFrame.GetComponent<LineRenderer>().SetPosition(1, RemoteVideoFrame.GetComponentInParent<Transform>()
-                        .InverseTransformPoint(HandEventsHandler.handray_cursor_position + FrameQuaternion * (remoteWidth * new Vector3(-1, 0, 0) + remoteHeight * new Vector3(0, 1, 0)) / 2));
+                        .InverseTransformPoint(FramePosition + FrameQuaternion * (remoteWidth * new Vector3(-1, 0, 0) + remoteHeight * new Vector3(0, 1, 0)) / 2));
                     RemoteVideoFrame.GetComponent<LineRenderer>().SetPosition(2, RemoteVideoFrame.GetComponentInParent<Transform>()
-                        .InverseTransformPoint(HandEventsHandler.handray_cursor_position + FrameQuaternion * (remoteWidth * new Vector3(-1, 0, 0) + remoteHeight * new Vector3(0, -1, 0)) / 2));
+                        .InverseTransformPoint(FramePosition + FrameQuaternion * (remoteWidth * new Vector3(-1, 0, 0) + remoteHeight * new Vector3(0, -1, 0)) / 2));
                     RemoteVideoFrame.GetComponent<LineRenderer>().SetPosition(3, RemoteVideoFrame.GetComponentInParent<Transform>()
-                        .InverseTransformPoint(HandEventsHandler.handray_cursor_position + FrameQuaternion * (remoteWidth * new Vector3(1, 0, 0) + remoteHeight * new Vector3(0, -1, 0)) / 2));
+                        .InverseTransformPoint(FramePosition + FrameQuaternion * (remoteWidth * new Vector3(1, 0, 0) + remoteHeight * new Vector3(0, -1, 0)) / 2));
 
 
                     FrameUpIndicator.GetComponent<LineRenderer>().SetPosition(0, RemoteVideoFrame.GetComponentInParent<Transform>()
-                        .InverseTransformPoint(HandEventsHandler.handray_cursor_position + FrameQuaternion * (remoteWidth * new Vector3(1, 0, 0) + remoteHeight * new Vector3(0, -1.1f, 0)) / 2));
+                        .InverseTransformPoint(FramePosition + FrameQuaternion * (remoteWidth * new Vector3(1, 0, 0) + remoteHeight * new Vector3(0, -1.1f, 0)) / 2));
                     FrameUpIndicator.GetComponent<LineRenderer>().SetPosition(1, RemoteVideoFrame.GetComponentInParent<Transform>()
-                        .InverseTransformPoint(HandEventsHandler.handray_cursor_position + FrameQuaternion * (remoteWidth * new Vector3(-1, 0, 0) + remoteHeight * new Vector3(0, -1.1f, 0)) / 2));
-
-                    if (setRemoteVideoPlane)
-                    {
-                        Transform remoteVideoTransform = RemoteVideoPlane.GetComponent<Transform>();
-                        RemoteCorners[0] = remoteVideoTransform.TransformPoint(RemoteVideoFrame.GetComponent<LineRenderer>().GetPosition(2));
-                        RemoteCorners[1] = remoteVideoTransform.TransformPoint(RemoteVideoFrame.GetComponent<LineRenderer>().GetPosition(3));
-                        RemoteCorners[2] = remoteVideoTransform.TransformPoint(RemoteVideoFrame.GetComponent<LineRenderer>().GetPosition(1));
-                        RemoteCorners[3] = remoteVideoTransform.TransformPoint(RemoteVideoFrame.GetComponent<LineRenderer>().GetPosition(0));
-                        SetRemoteVideo(RemoteCorners);
-                        STATE = PLACE_LOCAL;
-                    }
+                        .InverseTransformPoint(FramePosition + FrameQuaternion * (remoteWidth * new Vector3(-1, 0, 0) + remoteHeight * new Vector3(0, -1.1f, 0)) / 2)); 
                 }
             }
         }
@@ -172,6 +205,11 @@ public class RemoteSpaceControl : NetworkBehaviour
             // only allow local portal repositioning after initilization
             //LocalVideoPlayer.GetComponent<BoxCollider>().enabled = true;
         }
+    }
+
+    public void SetRemotePlane()
+    {
+        setRemoteVideoPlane = true;
     }
 
     void SetRemoteVideo(Vector3[] RemoteCorners = null, bool matchCenter = false)

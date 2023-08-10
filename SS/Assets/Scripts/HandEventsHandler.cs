@@ -82,9 +82,13 @@ public class HandEventsHandler : MonoBehaviour
                     RemoteSpaceControlObject.GetComponent<RemoteSpaceControl>().NotifySetLocal(); // this sets the peer's state to PLACE_REMOTE
                 }
             }
-            else if (RemoteSpaceControl.STATE == RemoteSpaceControl.PLACE_REMOTE)
+            else if (RemoteSpaceControl.STATE == RemoteSpaceControl.PLACE_REMOTE && RemoteSpaceControl.PLACE_REMOTE_SUB_STATE == RemoteSpaceControl.SET_POSITION)
             {
-                RemoteSpaceControlObject.GetComponent<RemoteSpaceControl>().setRemoteVideoPlane = true;
+                RemoteSpaceControlObject.GetComponent<RemoteSpaceControl>().setRemoteVideoPlanePosition = true;
+            }
+            else if (RemoteSpaceControl.STATE == RemoteSpaceControl.PLACE_REMOTE && RemoteSpaceControl.PLACE_REMOTE_SUB_STATE == RemoteSpaceControl.SET_ROTATION)
+            {
+                RemoteSpaceControlObject.GetComponent<RemoteSpaceControl>().setRemoteVideoPlaneRotation = true;
             }
         }
     }
