@@ -363,7 +363,7 @@ MonoBehaviour:
   playerSpawnMethod: 0
   spawnPrefabs:
   - {fileID: 7744705424954965450, guid: 73314ad92df143d44b35524365e42831, type: 3}
-  isServer: 1
+  isServer: 0
   isHost: 0
 --- !u!4 &211222439
 Transform:
@@ -453,7 +453,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &358077484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1357,7 +1357,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 515433805}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4074ba0ea18eca4469b218258b16904c, type: 3}
   m_Name: 
@@ -1408,8 +1408,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PeerConnection: {fileID: 1641159553}
   AutoLogErrors: 1
-  LocalPeerId: Hololens1
-  RemotePeerId: Hololens2
+  LocalPeerId: Hololens2
+  RemotePeerId: Hololens1
   HttpServerAddress: http://192.168.0.194:3000
   PollTimeMs: 500
 --- !u!4 &675028750
@@ -2320,7 +2320,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &1537020924
 BoxCollider:
   m_ObjectHideFlags: 0

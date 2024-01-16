@@ -385,7 +385,7 @@ namespace CustomVideoSources
                                                     if (hier.Child != -1)
                                                     {
                                                         // add the first hole
-                                                        if (Cv2.ContourArea(contours[hier.Child]) > 200)
+                                                        if (Cv2.ContourArea(contours[hier.Child]) > 400)
                                                         {
                                                             // contour approx
                                                             eps = 0.01 * Cv2.ArcLength(contours[hier.Child], true);
@@ -396,7 +396,7 @@ namespace CustomVideoSources
                                                         // add the rest holes
                                                         while (hier_hole.Next != -1)
                                                         {
-                                                            if (Cv2.ContourArea(contours[hier_hole.Next]) > 200)
+                                                            if (Cv2.ContourArea(contours[hier_hole.Next]) > 400)
                                                             {
                                                                 // contour approx
                                                                 eps = 0.01 * Cv2.ArcLength(contours[hier_hole.Next], true);

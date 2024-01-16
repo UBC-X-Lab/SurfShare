@@ -27,7 +27,7 @@ public class PlayerController : NetworkBehaviour
         Head = transform.GetChild(0).gameObject;
         PeerWorldOrigin = GameObject.Find("PeerWorldOrigin").transform;
         RemoteVideoPlayer = GameObject.Find("RemoteVideoPlayer");
-        RemoteAudio = GameObject.Find("RemoteAudio");
+        //RemoteAudio = GameObject.Find("RemoteAudio");
     }
 
     // Update is called once per frame
@@ -51,10 +51,10 @@ public class PlayerController : NetworkBehaviour
                 Head.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().enabled = Main.head_on;
             }
 
-            if (RemoteAudio.GetComponent<AudioSource>().spatialize != Main.head_on)
-            {
-                RemoteAudio.GetComponent<AudioSource>().spatialize = Main.head_on;
-            }
+            //if (RemoteAudio.GetComponent<AudioSource>().spatialize != Main.head_on)
+            //{
+            //    RemoteAudio.GetComponent<AudioSource>().spatialize = Main.head_on;
+            //}
 
             if (!transform.position.Equals(PeerWorldOrigin.position))
             {
@@ -66,11 +66,11 @@ public class PlayerController : NetworkBehaviour
                 transform.rotation = PeerWorldOrigin.rotation;
             }
 
-            if (Main.head_on)
-            {
-                RemoteAudio.transform.position = Head.transform.position;
-                RemoteAudio.transform.rotation = Head.transform.rotation;
-            }
+            //if (Main.head_on)
+            //{
+            //    RemoteAudio.transform.position = Head.transform.position;
+            //    RemoteAudio.transform.rotation = Head.transform.rotation;
+            //}
         }
 
         if (hasAuthority && headInitialized)
